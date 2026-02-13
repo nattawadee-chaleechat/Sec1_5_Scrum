@@ -1,3 +1,14 @@
+<!-- 
+๊Contributer: suttipad rodhom
+- เพิ่มตาราง "Review" สำหรับระบบรีวิวผู้ใช้งาน [17:05|13/2/2569]
+- เพิ่มความสัมพันธ์ระหว่าง Review กับ Booking (bookingId) [17:12|13/2/2569]
+- เพิ่มความสัมพันธ์ระหว่าง Review กับ User (reviewerId) [17:18|13/2/2569]
+- เพิ่มความสัมพันธ์ระหว่าง Review กับ User (reviewedUserId) [17:24|13/2/2569]
+- เพิ่ม index สำหรับ reviewedUserId และ reviewerId ในตาราง Review [17:30|13/2/2569]
+- อัปเดต Model User ให้รองรับ reviewsGiven และ reviewsReceived [17:36|13/2/2569]
+- อัปเดต Model Booking ให้รองรับความสัมพันธ์กับ Review [17:42|13/2/2569]
+-->
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -88,6 +99,8 @@ model User {
   notification          Notification[]
   createdRoutes         Route[]             @relation("DriverRoutes")
   bookings              Booking[]           @relation("PassengerBookings")
+  reviewsGiven    Review[] @relation("Reviewer")        // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ reviewerId
+  reviewsReceived Review[] @relation("ReviewedUser")    // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ reviewedUserId
 
   @@index([role])
   @@index([isActive])
@@ -210,4 +223,22 @@ model Booking {
   pickupLocation  Json          @db.Json
   dropoffLocation Json          @db.Json
   createdAt       DateTime      @default(now())
+  reviews         Review[]      // // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ bookingId
+}
+
+// สร้างตาราง Review
+model Review {
+  id              String      @id @default(cuid())
+  Star            Int
+  comment         String?
+  picture         Json?       @db.Json
+  bookingId     String
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewedUserId String
+  reviewedUser   User     @relation("ReviewedUser", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  @@index([reviewedUserId])
+  @@index([reviewerId])
 }
