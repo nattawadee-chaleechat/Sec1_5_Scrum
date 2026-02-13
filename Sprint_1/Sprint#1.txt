@@ -1,0 +1,5 @@
+Sprint#1 Sec1_5
+
+sprint backlog item :
+[15] As a passenger, I want to give a review for each ride that I took to support the community.	
+value : 20,000

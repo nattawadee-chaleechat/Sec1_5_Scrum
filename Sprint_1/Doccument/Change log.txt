@@ -1,0 +1,13 @@
+[Chetsada]
+schema.prisma V.02
+Update 13 Feb 2026
+File includes schema.prisma
+
+[Change Log]
+- เพิ่ม driver_comfirm_arrived และ passenger_comfirm_arrived ในการตาราง Booking
+   โดย ทั้ง Driver และ Passenger ต้องกด สิ้นสุด booking
+   จากนั้นจึง แสดงหน้ารีวิว ให้ passenger รีวิว Driver
+- เพิ่ม @@unique() ในตาราง review กำหนดในตาราง Reviews 
+   โดย paseenger แต่ละคน รีวิว booking นั้น ได้แค่ 1 ครั้ง
+- ที่ BookingStatus เพิ่ม status 'COMPLETE' 
+   ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
