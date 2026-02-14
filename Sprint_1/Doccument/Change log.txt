@@ -1,8 +1,11 @@
+ADAPT_Blueprint V.01
+Update 13 Feb 2026
+File includes ACCEPTANCE TEST, USER INTERFACE (UI), BUSINESS LOGIC, DATABASE, SUPPORT
+
 [Chetsada]
 schema.prisma V.02
 Update 13 Feb 2026
 File includes schema.prisma
-
 [Change Log]
 - เพิ่ม driver_comfirm_arrived และ passenger_comfirm_arrived ในการตาราง Booking
    โดย ทั้ง Driver และ Passenger ต้องกด สิ้นสุด booking
