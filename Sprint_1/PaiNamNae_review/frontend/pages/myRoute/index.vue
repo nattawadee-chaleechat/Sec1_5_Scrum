@@ -300,6 +300,13 @@
                         class="status-badge status-cancelled"
                         >ยกเลิก</span
                       >
+                      <!--(Start)เพิ่ม status "สิ้นสุดการเดินทาง" [16:31|14/2/2569]-->
+                      <span
+                        v-else-if="trip.status === 'completed'"
+                        class="status-badge status-completed"
+                        >สิ้นสุดการเดินทาง</span
+                      >
+                      <!--(Finish)-->
                     </div>
                     <p class="mt-1 text-sm text-gray-600">
                       จุดนัดพบ: {{ trip.pickupPoint }}
@@ -552,6 +559,15 @@
                   >
                     ลบรายการ
                   </button>
+                  <!--(Start) เพิ่มส่วนของปุ่มสิ้นสุดการเดินทาง [16:34|14/2/2569]-->
+                  <button
+                    v-if="trip.status === 'confirmed'"
+                    @click.stop="openConfirmModal(trip, 'complete')"
+                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 text-sm"
+                  >
+                    สิ้นสุดการเดินทาง
+                  </button>
+                  <!--(Finish)-->
                 </div>
               </div>
             </div>
@@ -1112,7 +1128,18 @@ const openConfirmModal = (trip, action) => {
       action: "delete",
       variant: "danger",
     };
+    //(Start) เพิ่มกรณีสำหรับ 'complete' (สิ้นสุดการเดินทาง) [16:37|14/2/2569]
+    //ใช้ Gemini AI ช่วยเขียน
+  } else if (action === "complete") {
+    modalContent.value = {
+      title: "ยืนยันการสิ้นสุดการเดินทาง",
+      message: `คุณมาถึงที่ "${trip.destination}" แล้วใช่หรือไม่?`,
+      confirmText: "ใช่! สิ้นสุดการเดินทาง",
+      action: "complete",
+      variant: "success",
+    };
   }
+  //(Finish)
   isModalVisible.value = true;
 };
 
@@ -1138,6 +1165,15 @@ const handleConfirmAction = async () => {
         body: { status: "REJECTED" },
       });
       toast.success("สำเร็จ", "ปฏิเสธคำขอแล้ว");
+      //(Start) เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง) [16:38|14/2/2569]
+      //ใช้ Gemini AI ช่วยเขียน
+    } else if (action === "complete") {
+      await $api(`/bookings/${tripId}/complete`, {
+        method: "PATCH",
+        body: { status: "COMPLETED" },
+      });
+      toast.success("สิ้นสุดการเดินทางสำเร็จ", 'ขอบคุณที่ใช้บริการ "ไปนำแหน่"');
+      //(Finish)
     } else if (action === "delete") {
       await $api(`/bookings/${bookingId}`, { method: "DELETE" });
       toast.success("ลบรายการสำเร็จ", "ลบคำขอออกจากรายการแล้ว");
@@ -1337,6 +1373,14 @@ watch(activeTab, () => {
   background-color: #f3f4f6;
   color: #6b7280;
 }
+
+/*(Start) เพิ่มสีให้ปุ่ม "สิ้นสุดการเดินทาง" [16:40|14/2/2569]*/
+/*ใช้ Gemini AI ช่วยเขียน*/
+.status-completed {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+/*(Finish) */
 
 @keyframes slide-in-from-top {
   from {
