@@ -24,8 +24,22 @@
       </p>
 
       <!-- ดาว -->
-      <div class="flex justify-center mt-4 mb-5 text-3xl text-gray-300">
-        <span v-for="star in 5" :key="star">★</span>
+      <div class="flex justify-center mt-4 mb-5 text-3xl">
+        <!-- 
+            เพิ่มการ hover และการ คลิ๊ก เพื่อใช้เป็นคะแนนรีวิวตามดาว
+            ใช้ AI ช่วยในการหาวิธีทำให้ดาวสามารถตามเมาส์ได้
+        -->
+        <span
+          v-for="star in 5"
+          :key="star"
+          @click="rating = star"
+          @mouseover="hoverRating = star"
+          @mouseleave="hoverRating = 0"
+          class="cursor-pointer transition"
+          :class="(hoverRating || rating) >= star ? 'text-yellow-400' : 'text-gray-300'"
+        >
+          ★
+        </span>
       </div>
 
       <!-- คอมเมนต์ -->
