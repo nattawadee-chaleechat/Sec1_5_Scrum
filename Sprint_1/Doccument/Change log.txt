@@ -14,3 +14,11 @@ File includes schema.prisma
    โดย paseenger แต่ละคน รีวิว booking นั้น ได้แค่ 1 ครั้ง
 - ที่ BookingStatus เพิ่ม status 'COMPLETE' 
    ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
+
+add completed tabs V.01
+Update 14 Feb 2026
+File includes
+PaiNamNae_review\frontend\pages\myRoute\index.vue
+PaiNamNae_review\frontend\pages\myTrip\index.vue
+[Change Log]
+- เพิ่มปุ่ม "การเดินทางเสร็จสิ้น" ในแถบบาร์ ที่มีสถานะเป็น completed
