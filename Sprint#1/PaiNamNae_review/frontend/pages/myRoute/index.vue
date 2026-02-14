@@ -1,3 +1,19 @@
+<!--
+Contributer: Ratchapoom Thongdaeng
+[Description]
+This file contains the Vue.js component for the "My Route" page of the PaiNamNae web application.
+- It allows drivers to view, manage, and track their trips with various statuses.
+[What I Changed?]
+- You can see comment tags like (Start)...and (Finish)...indicating where changes were made.
+[Change Log]
+- เพิ่ม status "สิ้นสุดการเดินทาง" [16:31|14/2/2569]
+- เพิ่มส่วนของปุ่มสิ้นสุดการเดินทาง [16:34|14/2/2569]
+- เพิ่มกรณีสำหรับ 'complete' (สิ้นสุดการเดินทาง) [16:37|14/2/2569]
+- เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง) [16:38|14/2/2569]
+- เพิ่มสีให้ปุ่ม "สิ้นสุดการเดินทาง" [16:40|14/2/2569]
+
+
+-->
 <template>
     <div>
         <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -196,6 +212,10 @@
                                                 class="status-badge status-rejected">ปฏิเสธ</span>
                                             <span v-else-if="trip.status === 'cancelled'"
                                                 class="status-badge status-cancelled">ยกเลิก</span>
+                                            <!--(Start)เพิ่ม status "สิ้นสุดการเดินทาง" [16:31|14/2/2569]-->
+                                            <span v-else-if="trip.status === 'completed'"
+                                                class="status-badge status-completed">สิ้นสุดการเดินทาง</span>
+                                            <!--(Finish)-->
                                         </div>
                                         <p class="mt-1 text-sm text-gray-600">จุดนัดพบ: {{ trip.pickupPoint }}</p>
                                         <p class="text-sm text-gray-600">
@@ -358,6 +378,13 @@
                                         class="px-4 py-2 text-sm text-gray-600 transition duration-200 border border-gray-300 rounded-md hover:bg-gray-50">
                                         ลบรายการ
                                     </button>
+                                    <!--(Start) เพิ่มส่วนของปุ่มสิ้นสุดการเดินทาง [16:34|14/2/2569]-->
+                                    <button v-if="trip.status === 'confirmed'"
+                                        @click.stop="openConfirmModal(trip, 'complete')"
+                                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 text-sm">
+                                        สิ้นสุดการเดินทาง
+                                    </button>
+                                    <!--(Finish)-->
                                 </div>
                             </div>
                         </div>
@@ -782,7 +809,18 @@ const openConfirmModal = (trip, action) => {
             action: 'delete',
             variant: 'danger',
         }
+    //(Start) เพิ่มกรณีสำหรับ 'complete' (สิ้นสุดการเดินทาง) [16:37|14/2/2569]
+    //ใช้ Gemini AI ช่วยเขียน
+    } else if (action === 'complete') {
+        modalContent.value = {
+            title: 'ยืนยันการสิ้นสุดการเดินทาง',
+            message: `คุณมาถึงที่ "${trip.destination}" แล้วใช่หรือไม่?`,
+            confirmText: 'ใช่! สิ้นสุดการเดินทาง',
+            action: 'complete',
+            variant: 'success',
+        };
     }
+    //(Finish)
     isModalVisible.value = true
 }
 
@@ -802,6 +840,15 @@ const handleConfirmAction = async () => {
         } else if (action === 'reject') {
             await $api(`/bookings/${bookingId}/status`, { method: 'PATCH', body: { status: 'REJECTED' } })
             toast.success('สำเร็จ', 'ปฏิเสธคำขอแล้ว')
+        //(Start) เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง) [16:38|14/2/2569]
+        //ใช้ Gemini AI ช่วยเขียน
+        } else if (action === 'complete') {
+            await $api(`/bookings/${tripId}/complete`, {
+                method: 'PATCH',
+                body: { status: 'COMPLETED' }
+            });
+            toast.success('สิ้นสุดการเดินทางสำเร็จ', 'ขอบคุณที่ใช้บริการ "ไปนำแหน่"');
+        //(Finish)
         } else if (action === 'delete') {
             await $api(`/bookings/${bookingId}`, { method: 'DELETE' })
             toast.success('ลบรายการสำเร็จ', 'ลบคำขอออกจากรายการแล้ว')
@@ -991,6 +1038,13 @@ watch(activeTab, () => {
     background-color: #f3f4f6;
     color: #6b7280;
 }
+/*(Start) เพิ่มสีให้ปุ่ม "สิ้นสุดการเดินทาง" [16:40|14/2/2569]*/
+/*ใช้ Gemini AI ช่วยเขียน*/
+.status-completed {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}
+/*(Finish) */
 
 @keyframes slide-in-from-top {
     from {
@@ -1016,3 +1070,44 @@ watch(activeTab, () => {
     animation-duration: 300ms;
 }
 </style>
+
+<!--
+ขั้นตอนการรัน Project
+1. clone project
+2. cd backend
+   npm install
+3. cd ../frontend
+   npm install
+4. Create a .env file in the backend directory with the following:
+
+# Server
+PORT=3000
+
+# Database
+DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<database>?schema=public"
+
+# JWT Secret
+JWT_SECRET=your_super_secret_jwt_key
+
+# Cloudinary Credentials
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Google Maps API Key (Backend)
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key_for_backend
+
+# Google Maps API Key (Frontend)
+NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_for_frontend
+
+5. Edit the .evn file in Frontend
+   NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_for_frontend
+
+6. cd backend
+   npx prisma generate
+   npx prisma migrate dev --name init
+7. cd backend
+   npm run dev # starts Express server on http://localhost:3000
+8. cd frontend
+   npm run dev # starts Nuxt.js on http://localhost:3001
+-->
