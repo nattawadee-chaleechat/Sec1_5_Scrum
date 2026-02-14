@@ -1,8 +1,15 @@
-const express = require('express');
-const validate = require('../middlewares/validate');
-const { protect, requireAdmin } = require('../middlewares/auth');
-const requireDriverVerified = require('../middlewares/driverVerified');
-const bookingController = require('../controllers/booking.controller');
+/* Contributer: Nattawadee Chaleechat 
+[Description] 
+เพิ่ม router.patch สำหรับ Driver and Passenger confirm arrived
+เพื่อรับคำขอจาก Frontend ตอนผู้ใช้กดปุ่ม สิ้นสุดการเดินทาง
+Update 14 Feb 2026
+*/
+
+const express = require("express");
+const validate = require("../middlewares/validate");
+const { protect, requireAdmin } = require("../middlewares/auth");
+const requireDriverVerified = require("../middlewares/driverVerified");
+const bookingController = require("../controllers/booking.controller");
 const {
   createBookingSchema,
   idParamSchema,
@@ -11,9 +18,9 @@ const {
   createBookingByAdminSchema,
   updateBookingByAdminSchema,
   cancelBookingSchema,
-} = require('../validations/booking.validation');
+} = require("../validations/booking.validation");
 
-const { requirePassengerNotSuspended } = require('../middlewares/suspension');
+const { requirePassengerNotSuspended } = require("../middlewares/suspension");
 
 const router = express.Router();
 
@@ -24,8 +31,8 @@ router.get(
   protect,
   requireAdmin,
   validate({ query: listBookingsQuerySchema }),
-  bookingController.adminListBookings
-)
+  bookingController.adminListBookings,
+);
 
 // GET /bookings/admin/:id
 router.get(
@@ -33,8 +40,8 @@ router.get(
   protect,
   requireAdmin,
   validate({ params: idParamSchema }),
-  bookingController.adminGetBookingById
-)
+  bookingController.adminGetBookingById,
+);
 
 // POST /bookings/admin
 router.post(
@@ -42,8 +49,8 @@ router.post(
   protect,
   requireAdmin,
   validate({ body: createBookingByAdminSchema }),
-  bookingController.adminCreateBooking
-)
+  bookingController.adminCreateBooking,
+);
 
 // PUT /bookings/admin/:id
 router.put(
@@ -51,8 +58,8 @@ router.put(
   protect,
   requireAdmin,
   validate({ params: idParamSchema, body: updateBookingByAdminSchema }),
-  bookingController.adminUpdateBooking
-)
+  bookingController.adminUpdateBooking,
+);
 
 // DELETE /bookings/admin/:id
 router.delete(
@@ -60,57 +67,79 @@ router.delete(
   protect,
   requireAdmin,
   validate({ params: idParamSchema }),
-  bookingController.adminDeleteBooking
+  bookingController.adminDeleteBooking,
 );
 
 // --- Public Routes ---
 // GET /bookings/me
-router.get(
-  '/me',
-  protect,
-  bookingController.getMyBookings
-);
+router.get("/me", protect, bookingController.getMyBookings);
 
 // GET /bookings/:id
 router.get(
-  '/:id',
+  "/:id",
   protect,
   validate({ params: idParamSchema }),
-  bookingController.getBookingById
+  bookingController.getBookingById,
 );
 
 // POST /bookings
 router.post(
-  '/',
+  "/",
   protect,
   requirePassengerNotSuspended,
   validate({ body: createBookingSchema }),
-  bookingController.createBooking
+  bookingController.createBooking,
 );
 
 // PATCH /bookings/:id/status
 router.patch(
-  '/:id/status',
+  "/:id/status",
   protect,
   requireDriverVerified,
   validate({ params: idParamSchema, body: updateBookingStatusSchema }),
-  bookingController.updateBookingStatus
+  bookingController.updateBookingStatus,
 );
 
 // PATCH /bookings/:id/cancel
 router.patch(
-  '/:id/cancel',
+  "/:id/cancel",
   protect,
   validate({ params: idParamSchema, body: cancelBookingSchema }),
-  bookingController.cancelBooking
+  bookingController.cancelBooking,
 );
 
 // DELETE /bookings/:id
 router.delete(
-  '/:id',
+  "/:id",
   protect,
   validate({ params: idParamSchema }),
-  bookingController.deleteBooking
+  bookingController.deleteBooking,
+);
+
+/*
+Contributer: Nattawadee Chaleechat 
+[Description] เพิ่ม router.patch สำหรับ Driver และ Passenger
+Driver และ Passenger ยืนยันว่าถึงแล้ว
+เมื่อทั้งคู่กดยืนยัน ถึงจะสามารถเปลี่ยนสถานะเป็น completed ได้
+[AI Declare] 
+ใช้ chatgpt ช่วยอธิบายหลักการของโค้ดโดยรวม
+*/
+
+// Driver confirm arrived
+router.patch(
+  "/:id/arrive-driver",
+  protect, //middleware ตรวจ login JWT
+  requireDriverVerified,
+  validate({ params: idParamSchema }),
+  bookingController.driverArrived,
+);
+
+// Passenger confirm arrived
+router.patch(
+  "/:id/arrive-passenger",
+  protect,
+  validate({ params: idParamSchema }),
+  bookingController.passengerArrived,
 );
 
 module.exports = router;

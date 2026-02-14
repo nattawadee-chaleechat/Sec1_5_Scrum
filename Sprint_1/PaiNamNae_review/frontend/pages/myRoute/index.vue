@@ -1166,9 +1166,9 @@ const handleConfirmAction = async () => {
       });
       toast.success("สำเร็จ", "ปฏิเสธคำขอแล้ว");
       //(Start) เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง) [16:38|14/2/2569]
-      //ใช้ Gemini AI ช่วยเขียน
     } else if (action === "complete") {
-      await $api(`/bookings/${tripId}/complete`, {
+      // Nattawadee แก้ไขเพิ่มเติม
+      await $api(`/bookings/${bookingId}/arrive-driver`, {
         method: "PATCH",
         body: { status: "COMPLETED" },
       });
