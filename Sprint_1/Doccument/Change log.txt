@@ -2,6 +2,19 @@ ADAPT_Blueprint V.01
 Update 13 Feb 2026
 File includes ACCEPTANCE TEST, USER INTERFACE (UI), BUSINESS LOGIC, DATABASE, SUPPORT
 
+[Ratchapoom]
+index.vue V.01
+Update 13 Feb 2026
+File includes index.vue [frontend\pages\myTrip\index.vue]
+[Change Log]
+- เพิ่ม status "สิ้นสุดการเดินทาง"
+- เพิ่มส่วนของปุ่มสิ้นสุดการเดินทาง
+- เพิ่มกรณีสำหรับ 'complete' (สิ้นสุดการเดินทาง)
+- เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง)
+- เพิ่มสีให้ปุ่ม "สิ้นสุดการเดินทาง"
+[AI Declare]
+- ใช้ Gemini ในการเขียนส่วนของกรณี 'complete' ปุ่มและ style ของปุ่มสิ้นสุดการเดินทาง
+
 [Chetsada]
 schema.prisma V.02
 Update 13 Feb 2026
