@@ -1,3 +1,6 @@
+/* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"
+ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว */
+
 <template>
   <div>
     <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -625,7 +628,13 @@ const tabs = [
   { status: "confirmed", label: "ยืนยันแล้ว" },
   { status: "rejected", label: "ปฏิเสธ" },
   { status: "cancelled", label: "ยกเลิก" },
+  /*
+  Contributer: Nattawadee Chaleechat
+  [Description]
+  เพิ่ม "การเดินทางเสร็จสิ้น" ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว
+  */
   { status: "completed", label: "การเดินทางเสร็จสิ้น" },
+
   { status: "all", label: "ทั้งหมด" },
   { status: "myRoutes", label: "เส้นทางของฉัน" },
 ];

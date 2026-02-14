@@ -15,6 +15,7 @@ File includes schema.prisma
 - ที่ BookingStatus เพิ่ม status 'COMPLETE' 
    ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
 
+[Nattawadee]
 add completed tabs V.01
 Update 14 Feb 2026
 File includes
