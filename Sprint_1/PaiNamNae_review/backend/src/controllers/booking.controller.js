@@ -1,10 +1,19 @@
+/* Contributer: Nattawadee Chaleechat 
+[Description] 
+เพิ่ม controller สำหรับ Driver and Passenger
+เพื่อจัดการ Request/Response
+Update 14 Feb 2026
+*/
+
 const asyncHandler = require("express-async-handler");
 const bookingService = require("../services/booking.service");
 const ApiError = require("../utils/ApiError");
 
 const adminListBookings = asyncHandler(async (req, res) => {
   const result = await bookingService.searchBookingsAdmin(req.query);
-  res.status(200).json({ success: true, message: 'Bookings (admin) retrieved', ...result });
+  res
+    .status(200)
+    .json({ success: true, message: "Bookings (admin) retrieved", ...result });
 });
 
 const adminCreateBooking = asyncHandler(async (req, res) => {
@@ -38,25 +47,22 @@ const getMyBookings = asyncHandler(async (req, res) => {
 });
 
 const adminGetBookingById = asyncHandler(async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   const booking = await bookingService.getBookingById(id);
-  if (!booking) throw new ApiError(404, 'Booking not found');
+  if (!booking) throw new ApiError(404, "Booking not found");
 
   res.status(200).json({ success: true, data: booking });
-})
+});
 
 const getBookingById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const booking = await bookingService.getBookingById(id);
-  if (!booking) throw new ApiError(404, 'Booking not found');
+  if (!booking) throw new ApiError(404, "Booking not found");
 
   const userId = req.user.sub;
-  if (
-    booking.passengerId !== userId &&
-    booking.route.driverId !== userId
-  ) {
-    throw new ApiError(403, 'Forbidden');
+  if (booking.passengerId !== userId && booking.route.driverId !== userId) {
+    throw new ApiError(403, "Forbidden");
   }
 
   res.status(200).json({ success: true, data: booking });
@@ -70,7 +76,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   const updated = await bookingService.updateBookingStatus(
     id,
     status,
-    driverId
+    driverId,
   );
   res.status(200).json({ success: true, data: updated });
 });
@@ -80,7 +86,9 @@ const cancelBooking = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { reason } = req.body;
 
-  const cancelled = await bookingService.cancelBooking(id, passengerId, { reason });
+  const cancelled = await bookingService.cancelBooking(id, passengerId, {
+    reason,
+  });
   res.status(200).json({ success: true, data: cancelled });
 });
 
@@ -97,6 +105,30 @@ const adminDeleteBooking = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: result });
 });
 
+/*
+Contributer: Nattawadee Chaleechat 
+[Description] เพิ่ม Controller สำหรับ Driver และ Passenger
+เมื่อทั้งคู่กดยืนยัน ถึงจะสามารถเปลี่ยนสถานะเป็น completed ได้
+[AI Declare] 
+ใช้ chatgpt ช่วยอธิบายหลักการของโค้ดโดยรวม
+*/
+
+const driverArrived = async (req, res) => {
+  const { id } = req.params;
+
+  const booking = await bookingService.markDriverArrived(id);
+
+  res.status(200).json({ success: true, data: booking });
+};
+
+const passengerArrived = async (req, res) => {
+  const { id } = req.params;
+
+  const booking = await bookingService.markPassengerArrived(id);
+
+  res.status(200).json({ success: true, data: booking });
+};
+
 module.exports = {
   adminListBookings,
   createBooking,
@@ -108,5 +140,7 @@ module.exports = {
   adminGetBookingById,
   adminCreateBooking,
   adminUpdateBooking,
-  adminDeleteBooking
+  adminDeleteBooking,
+  driverArrived,
+  passengerArrived,
 };

@@ -54,7 +54,7 @@ enum BookingStatus {
   CONFIRMED
   REJECTED
   CANCELLED
-  COMPLETE      // chetsada 12/2 23:29 : เพิ่มสถานะ booking จบ
+  COMPLETED      // chetsada 12/2 23:29 : เพิ่มสถานะ booking จบ
 }
 
 enum CancelReason {
@@ -238,8 +238,8 @@ model Booking {
   createdAt       DateTime      @default(now())
 
   // ถ้า driver & passenger กดสิ้นสุดการเดินทางทั้งคู่ จะเปลี่ยน status - BookingStatus เป็น 'COMPLETE'
-  driver_comfirm_arrived      Boolean   @default(false)   // chetsada 12/2 23:29
-  passenger_comfirm_arrived   Boolean   @default(false)   // chetsada 12/2 23:29
+  driver_confirm_arrived      Boolean   @default(false)   // chetsada 12/2 23:29
+  passenger_confirm_arrived   Boolean   @default(false)   // chetsada 12/2 23:29
 
   review          Review[]   @relation("UserReviewsBooking") // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ bookingId
 

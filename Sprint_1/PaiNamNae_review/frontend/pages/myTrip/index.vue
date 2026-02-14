@@ -848,9 +848,9 @@ const handleConfirmAction = async () => {
       closeConfirmModal();
       return;
       //(Start) เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง) [0:37|13/2/2569]
-      //ใช้ Gemini AI ช่วยเขียน
     } else if (action === "complete") {
-      await $api(`/bookings/${tripId}/complete`, {
+      // Nattawadee แก้ไขเพิ่มเติม
+      await $api(`/bookings/${tripId}/arrive-passenger`, {
         method: "PATCH",
         body: { status: "COMPLETED" },
       });
