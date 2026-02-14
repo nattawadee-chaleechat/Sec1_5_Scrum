@@ -258,37 +258,36 @@
                         <div class="flex flex-col items-center">
                             <img 
                                 class="object-cover w-22 h-22 rounded-full">
-                            <div class="font-medium text-gray-900">{{ driverInfo.name }}</div><!--ดึง ชื่อคนขับ จากเร้า-->
+                            <div class="font-medium text-gray-900">{{ route.id.driver.name }}</div><!--ดึง ชื่อคนขับ จากเร้า-->
                             <div class="flex items-center">
                                 <div class="flex text-sm text-yellow-400">
-                                    <span v-for="star in 5" :key="star">{{ star <=
-                                        driverInfo.driver.rating ? '★' : '☆' }}</span><!--ดึง ดาวเฉลี่ย จากฟังกชัน ของคนขับ และ แก้ v-for-->
+                                    <span v-for="star in 5" :key="star">★</span><!--ดึง ดาวเฉลี่ย จากฟังกชัน ของคนขับ และ แก้ v-for-->
                                 </div>
-                                <span class="ml-2 text-sm text-gray-600"> {{ driverInfo.driver.rating }} ({{ driverInfo.driver.reviews }} รีวิว)</span><!--ดึง ค่าเฉลี่ย จากฟังชัน ของคนขับ และ จำนวน รีวิว-->
+                                <span class="ml-2 text-sm text-gray-600"> (รีวิว)</span><!--ดึง ค่าเฉลี่ย จากฟังชัน ของคนขับ และ จำนวน รีวิว-->
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center justify-between p-6 border-b border-gray-300">
                         <h2 class="text-xl font-semibold text-gray-900">คนอื่นว่ายังไงบ้าง</h2>
                     </div>
-                    <div v-for="item in review" :key="item.id"><!--ดึง รีวิวทั้งหมด จากรีวิว ของคนขับ-->
+                    <div v-for="route in 5" :key="route.id"><!--ดึง รีวิวทั้งหมด จากรีวิว ของคนขับ-->
                         <div class="p-3 mx-3 border-b border-gray-300">
                             <div class="flex items-center justify-between">
-                                <div class="font-medium text-gray-900">{{ item.reviewerName }}</div><!--ดึง ชื่อคนรีวิว จากรีวิวทั้งหมด-->
+                                <div class="font-medium text-gray-900">name</div><!--ดึง ชื่อคนรีวิว จากรีวิวทั้งหมด-->
                                 <div class="flex items-center">
                                     <div class="flex text-sm text-yellow-400">
-                                        <span v-for="star in 5" :key="star">{{ star <=
-                                            item.review.rating ? '★' : '☆' }}</span><!--ดึง ดาวรีวิว ของคนรีวิว และ แก้ v-for-->
+                                        <span v-for="star in 5" :key="star">★</span><!--ดึง ดาวรีวิว ของคนรีวิว และ แก้ v-for-->
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="mb-2 font-small text-gray-900">{{ item.comment }}</div><!--ดึง คอมเม้น ของคนรีวิว-->
+                            <div class="mb-2 font-small text-gray-900">comment</div><!--ดึง คอมเม้น ของคนรีวิว-->
                             <div class="flex flex-wrap items-center space-x-4">
-                                <img :src="item.image" :alt="item.reviewerName"
+                                <img v-for="image in 6" 
+                                    
                                     class="mb-2 object-cover w-30 h-30"><!--ดึง รูป ของคนรีวิว และ แก้ v-for -->
                             </div>
-                            <div class="font-small text-sm text-gray-900">{{ dayjs(item.createAt).format('D MMM BBBB') }}</div><!--ดึง วันที่ ของคนรีวิว-->
+                            <div class="font-small text-sm text-gray-900">date</div><!--ดึง วันที่ ของคนรีวิว-->
                         </div>
                     </div>
                 </div>
@@ -616,6 +615,7 @@ const bookingSeats = ref(1)
 const pickupPoint = ref('')
 const dropoffPoint = ref('')
 
+const showreview = ref(false)
 
 const bookingTotalPrice = computed(() => {
     if (!bookingRoute.value) return 0
@@ -1443,22 +1443,10 @@ onMounted(() => {
     }
 })
 //reviewpopup
-const showreview = ref(false)
-const review = ref([]);
-const driverInfo = ref(null);
+async function openReviewModal(driver){
+    reviewDriver.value = driver;
 
-async function openReviewModal(route){
-    showreview.value = true;
-    driverInfo.value = route.driver;
-
-    try{
-        //แก้ api ตาม route
-        const response = await $api('/review/driver/${route.driverId}');
-        review.value = response.data;
-    }catch(error){
-        console.error(error);
-        review.value = [];
-    }
+    const response = await $api('/driver/${driver.id}/reviews');
 }
 
 </script>
