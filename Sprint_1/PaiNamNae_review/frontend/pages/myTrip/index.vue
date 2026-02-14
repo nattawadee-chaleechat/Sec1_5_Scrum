@@ -263,6 +263,7 @@ const tabs = [
     { status: 'confirmed', label: 'ยืนยันแล้ว' },
     { status: 'rejected', label: 'ปฏิเสธ' },
     { status: 'cancelled', label: 'ยกเลิก' },
+    { status: 'completed', label: 'การเดินทางเสร็จสิ้น' },
     { status: 'all', label: 'ทั้งหมด' }
 ]
 
