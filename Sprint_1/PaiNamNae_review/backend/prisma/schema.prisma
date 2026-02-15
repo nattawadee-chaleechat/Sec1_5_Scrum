@@ -1,6 +1,5 @@
-// Contributer: chetsada kongsak
-
-// จาก  Contributer: suttipad rodhom
+// <!-- 
+// Contributer: suttipad rodhom
 // - เพิ่มตาราง "Review" สำหรับระบบรีวิวผู้ใช้งาน [17:05|13/2/2569]
 // - เพิ่มความสัมพันธ์ระหว่าง Review กับ Booking (bookingId) [17:12|13/2/2569]
 // - เพิ่มความสัมพันธ์ระหว่าง Review กับ User (reviewerId) [17:18|13/2/2569]
@@ -8,6 +7,9 @@
 // - เพิ่ม index สำหรับ reviewedUserId และ reviewerId ในตาราง Review [17:30|13/2/2569]
 // - อัปเดต Model User ให้รองรับ reviewsGiven และ reviewsReceived [17:36|13/2/2569]
 // - อัปเดต Model Booking ให้รองรับความสัมพันธ์กับ Review [17:42|13/2/2569]
+// -->
+
+// Contributer: chetsada kongsak
 
 // เพิ่ม [13/2/2569]
 // - เพิ่ม driver_comfirm_arrived และ passenger_comfirm_arrived ในการตาราง Booking
@@ -19,6 +21,7 @@
 //   ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
 
 // ใช้ ChatGPT เช็ค logic
+
 
 datasource db {
   provider = "postgresql"
