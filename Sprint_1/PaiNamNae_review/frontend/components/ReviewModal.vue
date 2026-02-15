@@ -137,7 +137,7 @@ const fileInput = ref(null)
 // ถ้าเป็นชื่อไฟล์ จะไปดึงจาก backend
 // ถ้าไม่มีเลย ใช้ ui-avatars แทน
 const driverImage = computed(() => {
-  const profile = props.trip?.driver?.profilePicture
+  const profile = props.trip?.driver?.image // เปลี่ยนตัวแปรจาก profilePicture -> image [20:55|15/2/2569]
 
   if (profile && profile.startsWith('http')) {
     return profile
