@@ -54,4 +54,11 @@ Update: 15/2/2569
 - ใช้ AI ช่วยดูแนวทางการทำระบบดาวให้สามารถ hover ตามเมาส์และคลิกเลือกคะแนนได้
 - ใช้ AI ช่วยดูตัวอย่างการส่งข้อมูลแบบ FormData ไปยัง backend พร้อมแนบไฟล์รูปภาพ
 
+suttipad rodhom  
+ReviewModal.vue V.04  
+Update: 15/2/2569  
+
+[Change Log]
+- แก้ชื่อตัวแปร profilePicture เป็น image ให้ตรงกับข้อมูลที่ดึงจาก trip.driver [20:55|15/2/2569]
+
 
