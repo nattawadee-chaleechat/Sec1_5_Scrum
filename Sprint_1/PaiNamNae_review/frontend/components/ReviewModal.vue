@@ -2,6 +2,10 @@
 Contributer: suttipad rodhom
 ไฟล์นี้เป็นหน้า Popup สำหรับให้ผู้ใช้รีวิวการเดินทาง
 มีการให้คะแนนเป็นดาว เขียนคอมเมนต์ และแนบรูปภาพได้
+
+Contributer: chetsada kongsak
+[17/2/2569]
+เพิ่ม emit('reviewed') เพิ่มเอาไว้ fetch หน้าใน mytrip/index 
 -->
 
 <template>
@@ -118,7 +122,7 @@ const props = defineProps({
   trip: Object
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close'],['reviewd'])   // chetsada 17/2 เพิ่ม reviewed เอาไว้ fetch หน้าใน mytrip index
 
 // ตัวแปรเก็บค่าคะแนน และค่าที่ hover
 const rating = ref(0)
@@ -214,6 +218,8 @@ async function submitReview() {
     })
 
     toast.success('ส่งรีวิวสำเร็จ', 'ขอบคุณสำหรับความคิดเห็นของคุณ')
+
+    emit('reviewed') // chetsada 17/2 เพิ่มเอาไว้ fetch หน้าใน mytrip index
 
     // หน่วงเวลานิดนึงก่อนปิด popup
     setTimeout(() => {

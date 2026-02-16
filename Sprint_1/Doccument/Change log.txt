@@ -191,3 +191,14 @@ File Includes Reveiw.service.js ,  schema.prisma
 - เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิวใน Reveiw.service
 [AI Declare]
 - ใช้ ChatGPT ช่วยดูแนวทางการแก้ไข ใช้ transaction
+
+[Chetsada]
+fetch Reveiw in myTrip V.01
+Update: 17 Feb 2026 
+
+File Includes MyTrip/index.vue , components/ReviewModal.vue
+
+[Change Log]
+- เพิ่ม emit('reviewed') ที่ ReviewModal.vue เพิ่มเอาไว้ fetch หน้าใน mytrip/index 
+- MyTrip/index ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
+- MyTrip/index ปิดไม่ให้กดปุ่ม + เปลี่ยนสีปุ่มหลังรีวิวแล้ว

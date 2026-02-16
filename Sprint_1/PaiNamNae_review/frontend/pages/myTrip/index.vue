@@ -18,10 +18,15 @@ Contributer: Nattawadee Chaleechat
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว
 
 Contributer: Chetsada Kongsak
-[Description]
-Contributer:Chetsada 
+[16/2]
 [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
-ใช้ ChetGPT ช่วย
+[AI Declire] ใช้ ChetGPT ช่วยตรง ReviewModal ส่วนกดสิ้นสุดการเดินทาง
+
+Contributer: Chetsada Kongsak
+[17/2]
+[Description] 
+- ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
+- ปิด + เปลี่ยนสีปุ่มหลังรีวิวแล้ว
 -->
 <template>
   <div>
@@ -297,8 +302,10 @@ Contributer:Chetsada
                     [23:52|15/2/2569]
                   -->
                   <ReviewModal
-                    v-if="showReview":trip="reviewTrip"
+                    v-if="showReview"
+                    :trip="reviewTrip"
                     @close="closeReview"
+                    @reviewed="ReviewSuccess()"
                   />
                   <button
                     v-if="trip.status === 'completed' && !trip.reviewed"
@@ -306,6 +313,16 @@ Contributer:Chetsada
                     class="px-4 py-2 bg-yellow-500 text-white rounded-md"
                   >
                     รีวิวการเดินทาง
+                  </button>
+                  <!-- Contributer:Chetsada 
+                    [Description] เพิ่มส่วนของปุ่ม รีวิวแล้ว
+                    [17/2/2569] -->
+                  <button
+                    v-else-if="trip.status === 'completed' && trip.reviewed"
+                    disabled
+                    class="px-4 py-2 bg-gray-300 text-gray-600 rounded-md"
+                  >
+                    รีวิวแล้ว
                   </button>
                   <!--(Finish)-->
 
@@ -749,6 +766,13 @@ const toggleTripDetails = (tripId) => {
     selectedTripId.value = tripId;
   }
 };
+
+// chetsada 17/2 ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน
+async function ReviewSuccess() {
+  await fetchMyTrips()   
+  closeReview()
+}
+// 
 
 async function updateMap(trip) {
   if (!trip) return;
