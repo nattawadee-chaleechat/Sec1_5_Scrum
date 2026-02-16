@@ -1,7 +1,16 @@
 // Contributer: chetsada kongsak
 // [16/2/2569]
 // - ฟังก์ชั้น createReview ไว้รับข้อมูลให้ตรงกับ database
-// ใช้ ChatGPT ช่วยเขียน
+// [17/2/2569]
+// เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
+
+// Contributer: chetsada kongsak & suttipad rodhom
+// [17/2/2569]
+// เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
+
+
+// AI declare
+// - ใช้ ChatGPT ช่วยเขียน const ,แก้ไข error
 
 const prisma = require('../utils/prisma');
 const ApiError = require('../utils/ApiError');
@@ -42,17 +51,45 @@ const createReview = async (data, reviewerId, file) => {
     pictureUrl = result.url;
   }
   //
-  return prisma.review.create({
-    data: {
-      bookingId,
-      reviewerId,
-      reviewedUserId: booking.route.driverId, // ChatGPT ปรับ driverId 16/2
-      star,
-      comment,
-      picture: pictureUrl // 16/2
-    }
+
+  // เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
+  // ChatGPT
+  // ใช้ transaction ให้เช็คทำเสร็จพร้อมกัน ถ้ารีวิวสร้างได้ จะส่งแจ้งเตือน
+  return prisma.$transaction(async (tx) => {
+
+    // สร้าง Review
+    const review = await tx.review.create({
+      data: {
+        bookingId,
+        reviewerId,
+        reviewedUserId: booking.route.driverId,
+        star,
+        comment,
+        picture: pictureUrl
+      }
+    });
+
+    // สร้าง Notification ให้ Driver
+    await tx.notification.create({
+      data: {
+        userId: booking.route.driverId,
+        type: "REVIEW",
+        title: "คุณได้รับรีวิวใหม่",
+        body: `คุณได้รับ ${star} ดาว จากผู้โดยสาร`,
+        metadata: {
+          kind: "REVIEW_CREATED",
+          reviewId: review.id,
+          bookingId,
+          reviewerId,
+          star
+        }
+      }
+    });
+
+    return review;
   });
 };
+
 //  test
 const getReviewsByReviewer = (id) => {
   return prisma.review.findMany({

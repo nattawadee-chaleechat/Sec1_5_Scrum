@@ -20,6 +20,10 @@
 //   ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
 // ใช้ ChatGPT เช็ค logic
 
+// Contributer: chetsada kongsak & suttipad rodhom
+// [17/2/2569]
+// - เพิ่ม REVIEW ใน enum NotificationType {..} ไว้สำหรับการแจ้งเตือนหลังกดส่งรีวิว
+
 
 datasource db {
   provider = "postgresql"
@@ -28,6 +32,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+
 }
 
 enum Role {
@@ -82,6 +87,7 @@ enum NotificationType {
   VERIFICATION
   BOOKING
   ROUTE
+  REVIEW // เพิ่มไว้สำหรับการแจ้งเตือนหลังกดส่งรีวิว 17/2 
 }
 
 model User {

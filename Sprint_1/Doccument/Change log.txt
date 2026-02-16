@@ -157,11 +157,37 @@ backend/src/validations/review.validation.js
 - ที่ index mytrip เพิ่ม return reviewed ใน fetchMyTrips
 - ปรับ controller ส่ง file เข้า service
 [AI Declare]
-ใช้ ChatGPT
-อธิบายโครงสร้างโค้ด
-ช่วย debug error code
-ช่วยออกแบบ validation
-ช่วยจัดการ res, req
-ช่วยร่างโค้ด แก้ไขโค้ด จัดการ Error
+- ใช้ ChatGPT
+- อธิบายโครงสร้างโค้ด เน้นจาก booking และ route ทั้งหมด
+- ช่วย debug error code
+- ช่วยร่างโค้ด แก้ไขโค้ด
+- ช่วยออกแบบ validation ของ review
+- ช่วยจัดการ res, req เชื่อมส่วน service , controller กับ mytrip index.vue
 
+[Chetsada]
+add Notification in Reveiw.service.js V.01
+Update: 15–16 Feb 2026
 
+File Includes Reveiw.service.js 
+
+[Change Log]
+เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
+[AI Declare]
+- ใช้ ChatGPT
+- อธิบายโครงสร้างโค้ด
+- ช่วย debug error code
+- ช่วยออกแบบ validation
+- ช่วยจัดการ res, req
+- ช่วยร่างโค้ด แก้ไขโค้ด จัดการ Error
+
+[Chetsada & suttipad rodhom]
+add Notification in Reveiw.service.js V.01
+Update: 17 Feb 2026
+
+File Includes Reveiw.service.js ,  schema.prisma
+
+[Change Log]
+- เพิ่ม REVIEW ใน schema.prisma ตรง enum NotificationType {..} ไว้สำหรับการแจ้งเตือนหลังกดส่งรีวิว
+- เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิวใน Reveiw.service
+[AI Declare]
+- ใช้ ChatGPT ช่วยดูแนวทางการแก้ไข ใช้ transaction
