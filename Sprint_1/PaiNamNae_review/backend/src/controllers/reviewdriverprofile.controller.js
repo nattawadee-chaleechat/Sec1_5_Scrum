@@ -10,6 +10,7 @@ const ApiError = require('../utils/ApiError');
 
 //ดีงมาจากservice :getDriverProfile,getAverageRating,getDriverReview
 const getDriverProfile = asynchandler(async (req, res) => {
+
     const driverId = req.params.driverId;
     const [driverProfile, ratingData, reviews] = await Promise.all([
         reviewDriverProfileService.getDriverProfile(driverId),
@@ -20,6 +21,7 @@ const getDriverProfile = asynchandler(async (req, res) => {
         success: true,
         message: "Driver profile retrieved", 
         data: { driverProfile, ratingData, reviews }
+
     });
 });
 

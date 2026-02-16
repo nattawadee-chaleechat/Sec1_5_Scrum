@@ -20,18 +20,18 @@ const getDriverProfile = async (driverId) => {
             role: true,
         }
     });
-    if (!driver || driver.role !== 'DRIVER') {
+    if (!driver ) {
         throw new ApiError(404, 'Driver not found');
     }
     return  driver
 };
-
+//if (!driver || driver.role !== 'DRIVER') {
 
 const getAverageRating = async (reviewedUserId) => {
     const averageRating = await prisma.review.aggregate({
         where: { 
             reviewedUserId: reviewedUserId,
-            booking: { is: { status: 'COMPLETE' } } },
+            booking: { is: { status: 'COMPLETED' } } },
         
         _avg: { star: true },//คำนวณค่าเฉลี่ยของดาว
         _count: { _all: true },//นับจำนวนรีวิวทั้งหมด
@@ -47,13 +47,14 @@ const getDriverReview = async (driverId) => {
         where: {
             reviewedUserId: driverId,
             booking: {
-                is: { status: 'COMPLETE' }
+                is: { status: 'COMPLETED' }
             }
         },
         select: {
             id: true,
             star: true,
             comment: true,
+            picture: true,
             createdAt: true,
             reviewer: {
                 select: {
@@ -72,7 +73,8 @@ const getDriverReview = async (driverId) => {
         reviewerName: `${r.reviewer.firstName} ${r.reviewer.lastName}`,
         review: { rating: r.star },
         comment: r.comment,
-        image: r.reviewer.profilePicture,
+        image: typeof r.picture === 'string' ? r.picture : null,
+        images: Array.isArray(r.picture) ? r.picture : null,//แปลงรูปภาพ
         createAt: r.createdAt
     }));
 };
