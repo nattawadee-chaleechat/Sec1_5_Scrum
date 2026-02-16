@@ -121,3 +121,21 @@ Update: 15/2/2569
 - แก้ชื่อตัวแปร profilePicture เป็น image ให้ตรงกับข้อมูลที่ดึงจาก trip.driver [20:55|15/2/2569]
 
 
+[Piyawat]
+Add reviewdriverprofile V.01
+Update 16 Feb 2026
+File includes	reviewdriverprofile.service.js [backend\src\services\reviewdriverprofile.service.js]
+		reviewdriverprofile.controller.js [backend\src\controllers\reviewdriverprofile.controller.js]
+		reviewdriverprofile.routes.js [backend\src\routes\reviewdriverprofile.routes.js]
+		reviewdriverprofile.validation.js [backend\src\validations\reviewdriverprofile.validation.js]
+		index.js [backend\src\routes\index.js]
+[Change Log]
+-เพิ่มservice เพื่อที่จะมี fuction : getDriverProfile เพื่อแสดงรายละเอียด driver getAverageRating เพื่อคำนวนค่าเฉลี่ยของ คะแนน(ที่เป็นดาว)และแสดงจำนวนreviewทั้งหมด  getDriverReview แสดงค่าreview ที้งหมด
+-เพิ่มcontroller เพิ่อที่จะเชื่อมระหว่าง service กับ routes
+-เพิ่มroutes เพื่อที่จะเชื่อมกับ controller โดยที่จะทำหน้าที่เก็บURLเพื่อที่จะเชื่อมกับfrontend
+-เพิ่มvalidate เพื่อที่จะตรวจสอบความถูกต้องของข้อมูลก่อนเข้าถึง controller
+-update index.js ให้สามารถใช้กับURLที่ต้องการในที่นี้คือ /drivers
+[AI Declare]
+-ใช้ AIในการช่วยดูภาพรวมของระบบก่อนหน้านั้นเพื่อนำทำต่อใน
+-ใช้ AIในการช่วยดูแนวทางในการออกแบบระบบ
+-ใช้ AIในการช่วยดูในการ code ว่ามันerror ตรงไหนแล้ววิธีแก้
