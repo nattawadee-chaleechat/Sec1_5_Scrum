@@ -17,6 +17,11 @@ Contributer: Nattawadee Chaleechat
 เพิ่ม "การเดินทางเสร็จสิ้น"
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว
 
+Contributer: Chetsada Kongsak
+[Description]
+Contributer:Chetsada 
+[Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
+ใช้ ChetGPT ช่วย
 -->
 <template>
   <div>
@@ -284,6 +289,26 @@ Contributer: Nattawadee Chaleechat
                     สิ้นสุดการเดินทาง
                   </button>
                   <!--(Finish)-->
+
+                  <!--(Start) 
+                    Contributer:Chetsada 
+                    [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
+                    ใช้ ChetGPT
+                    [23:52|15/2/2569]
+                  -->
+                  <ReviewModal
+                    v-if="showReview":trip="reviewTrip"
+                    @close="closeReview"
+                  />
+                  <button
+                    v-if="trip.status === 'completed' && !trip.reviewed"
+                    @click.stop="openReviewModal(trip)" 
+                    class="px-4 py-2 bg-yellow-500 text-white rounded-md"
+                  >
+                    รีวิวการเดินทาง
+                  </button>
+                  <!--(Finish)-->
+
                 </div>
               </div>
             </div>
@@ -375,6 +400,9 @@ import buddhistEra from "dayjs/plugin/buddhistEra";
 import ConfirmModal from "~/components/ConfirmModal.vue";
 import { useToast } from "~/composables/useToast";
 
+import ReviewModal from "~/components/ReviewModal.vue";  // chetsada 15/2 2:34
+
+
 // Setup dayjs for Thai locale
 dayjs.locale("th");
 dayjs.extend(buddhistEra);
@@ -387,6 +415,12 @@ const activeTab = ref("pending");
 const selectedTripId = ref(null);
 const isLoading = ref(false);
 const mapContainer = ref(null);
+
+// chetsada 15/2 23:54 ให้รีวิวขึ้น
+const showReview = ref(false)
+const reviewTrip = ref(null)
+// 
+
 let map = null;
 let currentPolyline = null;
 let currentMarkers = [];
@@ -455,6 +489,18 @@ function cleanAddr(a) {
     .replace(/\s{2,}/g, " ")
     .trim();
 }
+
+// chetsada 15/2 23:56
+function openReviewModal(trip){
+  reviewTrip.value = trip
+  showReview.value = true
+}
+// chetsada 16/2 2:56
+function closeReview() {
+  showReview.value = false
+  reviewTrip.value = null
+}
+// 
 
 // --- Methods ---
 async function fetchMyTrips() {
@@ -532,6 +578,9 @@ async function fetchMyTrips() {
 
       return {
         id: b.id,
+        // ChatGPT ช่วย
+        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25
+        
         status: String(b.status || "").toLowerCase(),
         origin:
           start?.name ||

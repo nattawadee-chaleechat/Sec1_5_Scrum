@@ -120,4 +120,48 @@ Update: 15/2/2569
 [Change Log]
 - แก้ชื่อตัวแปร profilePicture เป็น image ให้ตรงกับข้อมูลที่ดึงจาก trip.driver [20:55|15/2/2569]
 
+[Chetsada]
+Implement Review System (Passenger to Driver) V.01
+Update: 15–16 Feb 2026
+
+File Includes
+frontend/components/ReviewModal.vue
+frontend/pages/myTrip/index.vue
+backend/src/routes/review.routes.js
+backend/src/controllers/reviews.controller.js
+backend/src/services/review.service.js
+backend/src/middlewares/upload.middleware.js
+backend/src/middlewares/auth.js
+backend/src/middlewares/validate.js
+backend/src/utils/cloudinary.js
+backend/src/utils/prisma.js
+backend/src/validations/review.validation.js
+
+[Description]
+บันทึกรีวิวของ Passenger ลง Database
+[Change Log 15/2/2569]
+- สร้างไฟล์  review.service 
+- สร้างฟังก์ชั้น createReview ไว้รับข้อมูลให้ตรงกับ database
+- สร้างไฟล์ reviews.controller
+-  ส่วน createReview รับข้อมูลจาก route ส่งไป review.service
+- สร้างไฟล์ review.routes
+- ส่วนสำหรับ api สร้าง review
+-  เพิ่ม createReviewSchema ใน review.validation ตรวจสอบข้อมูลที่รับเข้า
+-  เพิ่ม reviewRoute ที่ Route/index
+-  api ลองเช็ค ดูรีวิวที่ user รีวิวทั้งหมด, ดูรีวิวที่ passenger ได้รับรีวิวทั้งหมด 
+- เพิ่มตัวแปรไว้รับ url รูปภาพ ใน review.service บันทึกลง database
+- ที่ index mytrip import ReviewModal เข้ามา
+-  สร้างตัวแปร showReview ,reviewTrip ไว้เปิดรีวิว
+- function open/ColseReviewModal
+- ปรับ ปรับ body ของ FormData เทียบ database
+- ที่ index mytrip เพิ่ม return reviewed ใน fetchMyTrips
+- ปรับ controller ส่ง file เข้า service
+[AI Declare]
+ใช้ ChatGPT
+อธิบายโครงสร้างโค้ด
+ช่วย debug error code
+ช่วยออกแบบ validation
+ช่วยจัดการ res, req
+ช่วยร่างโค้ด แก้ไขโค้ด จัดการ Error
+
 
