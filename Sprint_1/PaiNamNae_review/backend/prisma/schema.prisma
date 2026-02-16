@@ -10,7 +10,6 @@
 // -->
 
 // Contributer: chetsada kongsak
-
 // เพิ่ม [13/2/2569]
 // - เพิ่ม driver_comfirm_arrived และ passenger_comfirm_arrived ในการตาราง Booking
 //   โดย ทั้ง Driver และ Passenger ต้องกด สิ้นสุด booking
@@ -19,7 +18,6 @@
 //   โดย paseenger แต่ละคน รีวิว booking นั้น ได้แค่ 1 ครั้ง
 // - ที่ BookingStatus เพิ่ม status 'COMPLETE' 
 //   ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
-
 // ใช้ ChatGPT เช็ค logic
 
 

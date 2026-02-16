@@ -8,6 +8,7 @@ const reviewService = require('../services/review.service');
 
 const createReview = asyncHandler(async (req, res) => {
   const reviewerId = req.user.sub;
+
   const review = await reviewService.createReview(
     req.body,
     reviewerId,
