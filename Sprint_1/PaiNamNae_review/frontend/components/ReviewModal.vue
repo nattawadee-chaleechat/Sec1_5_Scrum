@@ -10,7 +10,7 @@ Contributer: chetsada kongsak
 
 <template>
   <!-- overlay ดำครอบทั้งหน้า เพื่อให้เป็นลักษณะ modal -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
     <div class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl">
 
       <!-- แสดงรูปโปรไฟล์คนขับ -->
@@ -122,7 +122,7 @@ const props = defineProps({
   trip: Object
 })
 
-const emit = defineEmits(['close'],['reviewd'])   // chetsada 17/2 เพิ่ม reviewed เอาไว้ fetch หน้าใน mytrip index
+const emit = defineEmits(['close','reviewd'])   // chetsada 17/2 เพิ่ม reviewed เอาไว้ fetch หน้าใน mytrip index
 
 // ตัวแปรเก็บค่าคะแนน และค่าที่ hover
 const rating = ref(0)
@@ -224,7 +224,7 @@ async function submitReview() {
     // หน่วงเวลานิดนึงก่อนปิด popup
     setTimeout(() => {
       emit('close')
-    }, 800)
+    }, 400)
 
   } catch (error) {
     console.error(error?.data || error)

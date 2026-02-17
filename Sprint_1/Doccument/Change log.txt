@@ -18,7 +18,6 @@ File includes index.vue [frontend\pages\myTrip\index.vue]
 [suttipad rodhom]
 schema.prisma V.01
 Update: 13/2/2569
-
 [Change Log]
 - เพิ่มตาราง "Review" สำหรับระบบรีวิวผู้ใช้งาน [17:05|13/2/2569]
 - เพิ่มความสัมพันธ์ระหว่าง Review กับ Booking (bookingId) [17:12|13/2/2569]
@@ -73,7 +72,6 @@ use chatgpt to explain the original code and help write some parts of the code
 [suttipad rodhom]
 ReviewModal.vue V.01
 Update: 14/2/2569
-
 [Change Log]
 - สร้างหน้า Modal สำหรับให้คะแนนคนขับ (Driver Review UI) [17:00|14/2/2569]
 - เพิ่มการแสดงรูปโปรไฟล์คนขับ (รองรับ URL เต็ม และไฟล์จาก backend) [17:08|14/2/2569]
@@ -89,14 +87,12 @@ Update: 14/2/2569
 [suttipad rodhom]
 ReviewModal.vue V.02
 Update: 14/2/2569
-
 [Change Log]
 - เพิ่มฟีเจอร์ hover คลิกให้คะแนนดาว และสามารถแสดงผลแบบตาม mouse ได้ [18.42|14/2/2569]
 
 [suttipad rodhom] 
 ReviewModal.vue V.03  
 Update: 15/2/2569  
-
 [Change Log]
 - เชื่อมต่อหน้า ReviewModal กับ backend เพื่อบันทึกข้อมูลรีวิว [18:12|15/2/2569]
 - ส่งข้อมูล rating, comment, bookingId และ driverId ไปยัง API [18:18|15/2/2569]
@@ -108,7 +104,6 @@ Update: 15/2/2569
 - เพิ่มระบบ preview รูปก่อนส่งจริง [18:55|15/2/2569]
 - จำกัดขนาดไฟล์อัปโหลดไม่เกิน 10MB [19:02|15/2/2569]
 - ปรับให้ modal ปิดอัตโนมัติหลังจากส่งรีวิวสำเร็จ [19:08|15/2/2569]
-
 [AI Declare]
 - ใช้ AI ช่วยดูแนวทางการทำระบบดาวให้สามารถ hover ตามเมาส์และคลิกเลือกคะแนนได้
 - ใช้ AI ช่วยดูตัวอย่างการส่งข้อมูลแบบ FormData ไปยัง backend พร้อมแนบไฟล์รูปภาพ
@@ -116,14 +111,12 @@ Update: 15/2/2569
 [suttipad rodhom]  
 ReviewModal.vue V.04  
 Update: 15/2/2569  
-
 [Change Log]
 - แก้ชื่อตัวแปร profilePicture เป็น image ให้ตรงกับข้อมูลที่ดึงจาก trip.driver [20:55|15/2/2569]
 
 [Chetsada]
 Implement Review System (Passenger to Driver) V.01
 Update: 15–16 Feb 2026
-
 File Includes
 frontend/components/ReviewModal.vue
 frontend/pages/myTrip/index.vue
@@ -136,7 +129,6 @@ backend/src/middlewares/validate.js
 backend/src/utils/cloudinary.js
 backend/src/utils/prisma.js
 backend/src/validations/review.validation.js
-
 [Description]
 บันทึกรีวิวของ Passenger ลง Database
 [Change Log 15/2/2569]
@@ -218,3 +210,47 @@ File Includes MyTrip/index.vue , review.service.js, schema.prisma
 - mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
 [AI Declare]
 - ใช้ ChatGPT แนะนำการเทส และปรับการประกาศฟังก์ชั่น
+[Nattawadee]
+auto-complete booking status V.02
+Update 16 Feb 2026
+File includes
+frontend\pages\myTrip\index.vue
+frontend\pages\myRoute\index.vue
+[Description]
+edit Display button
+logic : If both the driver and passenger press "End Trip", the status will change to completed.
+[different from v.1]
+V.01 When driver press button End Trip
+but passenger did not press , Button End Trip still display and not thing happened but pop-up show Thank you
+in V.02
+When driver press button End Trip
+but passenger did not press , Button End Trip NOT display ,pop-up show Thank you and have a message show "Wait for passenger press End Trip" to show process of End Trip
+[AI Declare]
+use chatgpt to explain why the button didn't disappear
+
+[Nattawadee]
+notifyTripCompleted V.01
+Update 17 Feb 2026
+File includes
+backend\src\services\booking.service.js
+backend\src\services\notification.service.js
+[Description]
+if status = completed then the system will send notification to driver and passenger
+
+[Kittichai]
+Test V.02
+Update 17 Feb 2026
+File includes
+Doccument/Test/test report/ReviewModalTest_Report.docx
+[Change Log]
+- เพิ่ม test data, test design, test report 
+- เพิ่มโค้ด Sprint_1Test.robot สำหรับการทดสอบ และทดสอบแยกอีกเพื่อเอา report.html ของแต่ละกรณี
+[AI Declare]
+ใช้ AI เพื่ออธิบายโค้ด robot การตรวจเช็คสถานะว่าสถานะไหนถือว่าสิ้นสุดและองค์ประกอบไหนควรใช้ในการเช็ค และส่วนการให้กดปุ่มโดยละเว้นปุ่มที่มีซ้อนกัน (ปุ่มดาวคะแนนสำหรับรีวิว)
+
+[Kittichai]
+Test Document V.03
+Update 17 Feb 2026
+File include: ReviewModalTest_Report.docx
+[Change log]
+-เพิ่ม สรุป summary

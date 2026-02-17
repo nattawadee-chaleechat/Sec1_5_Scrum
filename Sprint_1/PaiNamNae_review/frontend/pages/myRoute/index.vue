@@ -559,14 +559,32 @@
                   >
                     ลบรายการ
                   </button>
-                  <!--(Start) เพิ่มส่วนของปุ่มสิ้นสุดการเดินทาง [16:34|14/2/2569]-->
+                  <!--(Start) Contributer: Ratchapoom Thongdaeng เพิ่มส่วนของปุ่มสิ้นสุดการเดินทาง [16:34|14/2/2569]-->
+
+                  <!--Contributer: Nattawadee Chaleechat Update 16 Feb 2026-->
+                  <!--[Description] เพิ่มเงื่อนไขการแสดงผล หากไม่ได้กด สิ้นสุดการเดินทาง จะขึ้นปุ่มให้กด หากกดปุ่มแล้ว จะแสดงข้อความ การเดินทางเสร็จสิ้นแล้ว (รอให้อีกฝ่ายยืนยันการสิ้นสุดการเดินทาง)-->
+
                   <button
-                    v-if="trip.status === 'confirmed'"
+                    v-if="
+                      trip.status === 'confirmed' &&
+                      !trip.driver_confirm_arrived
+                    "
                     @click.stop="openConfirmModal(trip, 'complete')"
                     class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 text-sm"
                   >
                     สิ้นสุดการเดินทาง
                   </button>
+
+                  <div
+                    v-else-if="
+                      trip.status === 'confirmed' &&
+                      trip.driver_confirm_arrived &&
+                      !trip.passenger_confirm_arrived
+                    "
+                    class="text-sm text-yellow-600 font-medium"
+                  >
+                    รอ ผู้โดยสาร ยืนยันการสิ้นสุดการเดินทาง
+                  </div>
                   <!--(Finish)-->
                 </div>
               </div>
@@ -778,6 +796,12 @@ async function fetchMyRoutes() {
         formatted.push({
           id: b.id,
           status: (b.status || "").toLowerCase(),
+
+          // Contributer: Nattawadee Chaleechat
+          // เพิ่มfield driver_confirm_arrived, passenger_confirm_arrived เมื่อทำการ fetchMyRoutes() ดึงข้อมูลจาก backend จะได้ค่ามาด้วย
+          driver_confirm_arrived: b.driver_confirm_arrived,
+          passenger_confirm_arrived: b.passenger_confirm_arrived,
+
           origin:
             start?.name ||
             `(${Number(start.lat).toFixed(2)}, ${Number(start.lng).toFixed(2)})`,
@@ -1166,12 +1190,13 @@ const handleConfirmAction = async () => {
       });
       toast.success("สำเร็จ", "ปฏิเสธคำขอแล้ว");
       //(Start) เพิ่ม action ของ 'complete' (สิ้นสุดการเดินทาง) [16:38|14/2/2569]
-    } else if (action === "complete") {
       // Nattawadee แก้ไขเพิ่มเติม
+    } else if (action === "complete") {
       await $api(`/bookings/${bookingId}/arrive-driver`, {
         method: "PATCH",
         body: { status: "COMPLETED" },
       });
+      await fetchMyRoutes();
       toast.success("สิ้นสุดการเดินทางสำเร็จ", 'ขอบคุณที่ใช้บริการ "ไปนำแหน่"');
       //(Finish)
     } else if (action === "delete") {

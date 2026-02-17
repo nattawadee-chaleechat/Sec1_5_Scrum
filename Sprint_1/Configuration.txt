@@ -1,3 +1,16 @@
+ติดตั้ง environment ที่จำเป็น
+1. Node.js
+2. PostgreSQL
+3. DBeaver
+
+ขั้นตอนการเชื่อมต่อและสร้าง Schema มาใน DBeaver
+1. เปิดโปรแกรม DBeaver กดคลิก New Database Connection
+2. กด New Database Connection จะแสดงหน้าต่าง Connect to a database ให้เลือก SQL เป็น PostgreSQL แล้วกด Next เพื่อแสดงหน้าต่างถัดไป
+3. กำหนด Database เป็น postgres และ Port 5432
+4. กำหนด usename เป็น postgres ใส่รหัสที่ตั้งไว้ตอนติดตั้ง และกด Finish เพื่อบันทึกการเชื่อมต่อpostgres
+5. ในแถบ Database Navigator ของหน้าโปรแกรม DBeaver ให้เลือกการเชื่อมต่อ postgres (localhost:5432) และขยายรายการ Databases กับ postgres ตามลําดับ
+6. ให้คลิกขวาที่ Schemas แล้วเลือก Create New Schema จะแสดงหน้าต่าง Create Schema ให้กําหนดค่า Schema name เป็น painamnae และกด ok เพื่อสร้างSchema และตรวจสอบว่าSchemaที่สร้างปรากฏอยู่ภายใต้รายการ Schemas
+
 ขั้นตอนการรัน Project
 1. clone project
 2. cd backend
@@ -36,3 +49,195 @@ NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_for_frontend
    npm run dev # starts Express server on http://localhost:3000
 8. cd frontend
    npm run dev # starts Nuxt.js on http://localhost:3001
+
+
+ขั้นตอนการ Deploy
+# build Frontend เป็น Static เพื่อไปใส่ใน Web hosting
+1. รัน npm run generate ใน Frontend
+2. upload file ไปใน public_html
+
+#VM
+1. เปิด command prompt
+2. พิมพ์ ssh User@Host IP ที่คณะให้มา
+3. พิมพ์รหัสผ่าน ที่คณะให้มา
+4. ติดตั้ง environment
+	sudo apt install npm
+
+	curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+	sudo apt install -y nodejs
+5. สร้าง kku_auto_login
+	#!/bin/bash
+
+KKU_HOST="nac03.kku.ac.th"
+
+INTERNET_HOST="8.8.8.8"
+
+KKU_LOGIN_URL="https://nac03.kku.ac.th/login"
+KKU_USERNAME="YOUR_STUDENT_ID"
+KKU_PASSWORD="YOUR_PASSWORD"
+
+check_internet() {
+
+        ping -c 1 -W 2 "$INTERNET_HOST" > /dev/null 2>&1
+        return $?
+}
+
+echo "Checking KKU WiFi connection..."
+
+ping -c 1 -W 1 "$KKU_HOST" > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+        echo "Connected to KKU WiFi Network. Now checking internet access..."
+
+        curl -X GET "https://nac03.kku.ac.th/logout" > /dev/null
+        if check_internet; then
+                echo "Internet connection is active"
+        else
+                echo "Internet connection is down. Attemping to log in to KKU WiFi..."
+
+                if [ -z "$KKU_USERNAME" ]; then
+                        echo "Error: Please set your KKU_USERNAME in the script."
+                        exit 1
+                fi
+
+                curl -s -k -X POST "$KKU_LOGIN_URL" --data "username=$KKU_USERNAME&password=$KKU_PASSWORD" > /dev/null
+
+                echo "Login attempt sent. Verifying connection status..."
+
+                sleep 2
+
+                if check_internet; then
+                        echo "Success: Login successful. Internet connection is now active."
+                else
+                        echo "Failed: Login failed. Please check your username/password or network status."
+                fi
+        fi
+else
+        echo "Not connected to KKU network. Checking general internet connection..."
+        if check_internet; then
+                echo "Internet connection is active"
+        else
+                echo "Internet connection is down"
+        fi
+fi
+6. git clone ______
+7. ติดตั้ง postgresql
+	sudo apt update
+	sudo apt install postgresql postgresql-contrib -y
+8. Start service
+	sudo systemctl start postgresql
+	sudo systemctl enable PostgreSQL
+	sudo systemctl status PostgreSQL
+9.  sudo -u postgres psql
+	postgres=# ALTER USER postgres WITH PASSWORD 'PostgreSQL';
+	\c postgres
+	postgres=# CREATE SCHEMA painamnae;
+	\q
+10. cd backend
+	nano .env
+	npx prisma generate	
+	npx prisma migrate dev --name init
+	npm run dev
+11. # Setup Docker 
+```
+sudo apt update && sudo apt upgrade -y 
+
+sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc | cut -f1)
+
+# Add Docker's official GPG key:
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo usermod -aG docker $USER 
+newgrp docker 
+
+docker --version
+
+docker compose version
+
+sudo systemctl status docker 
+
+sudo systemctl start docker 
+```
+
+12. # Setup Firewall
+```
+sudo apt install ufw -y 
+sudo ufw allow OpenSSH
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw enable 
+
+sudo ufw status 
+```
+
+# Setup Ngnix Reverse Proxy 
+```
+sudo apt install ngnix -y 
+sudo nano /etc/nginx/sites-available/app
+
+server {
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+sudo ln -s /etc/nginx/sites-available/app /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+
+```
+13. ## Install cloud flare 
+
+```
+# Add cloudflare gpg key
+sudo mkdir -p --mode=0755 /usr/share/keyrings
+curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+
+# Add this repo to your apt repositories
+# Stable
+echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared noble main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+# Nightly
+echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://next.pkg.cloudflare.com/cloudflared noble main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+
+# install cloudflared
+sudo apt-get update && sudo apt-get install cloudflared
+```
+14. cloudflared tunnel --url http://localhost:3000
+15. Copy URL ใหม่ ไปแก้ใน nuxt.config.js
+16. build Frontend เป็น Static เพื่อไปใส่ใน Web hosting
+
+ขั้นตอนการรัน เมื่อ set ทุกอย่างเรียบร้อยแล้ว
+1. ssh project@0.198.200.96
+2. เข้าไปที่พาท GitHub ที่ต้องการรัน backend
+cd Sec1_5_Scrum/Sprint_1/PaiNamNae_review/backend
+3. รัน	npx prisma generate	
+	npx prisma migrate dev --name init
+	npm run dev
+4. เปิด terminal อีกอัน ขณะที่ npm run dev
+5. ssh project@0.198.200.96
+6. ./login.sh
+7. cloudflared tunnel --url http://localhost:3000
+8. Copy URL ใหม่ ไปแก้ใน nuxt.config.js
+9. build Frontend เป็น Static เพื่อไปใส่ใน Web hosting

@@ -9,6 +9,7 @@ const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 const { RouteStatus, BookingStatus } = require("@prisma/client");
 const { checkAndApplyPassengerSuspension } = require("./penalty.service");
+const { notifyTripCompleted } = require("./notification.service")
 
 const ACTIVE_STATUSES = [BookingStatus.PENDING, BookingStatus.CONFIRMED];
 
@@ -602,7 +603,7 @@ const markDriverArrived = async (bookingId) => {
       data: { status: "COMPLETED" },
     });
   }
-
+  await notifyTripCompleted(bookingId);
   return updated;
 };
 
@@ -626,7 +627,7 @@ const markPassengerArrived = async (bookingId) => {
       data: { status: "COMPLETED" },
     });
   }
-
+  await notifyTripCompleted(bookingId);
   return updated;
 };
 
