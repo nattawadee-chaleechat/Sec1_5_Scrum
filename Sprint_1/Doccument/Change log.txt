@@ -193,3 +193,10 @@ Doccument/Test/test report/ReviewModalTest_Report.docx
 - เพิ่มโค้ด Sprint_1Test.robot สำหรับการทดสอบ และทดสอบแยกอีกเพื่อเอา report.html ของแต่ละกรณี
 [AI Declare]
 ใช้ AI เพื่ออธิบายโค้ด robot การตรวจเช็คสถานะว่าสถานะไหนถือว่าสิ้นสุดและองค์ประกอบไหนควรใช้ในการเช็ค และส่วนการให้กดปุ่มโดยละเว้นปุ่มที่มีซ้อนกัน (ปุ่มดาวคะแนนสำหรับรีวิว)
+
+[Kittichai]
+Test Document V.03
+Update 17 Feb 2026
+File include: ReviewModalTest_Report.docx
+[Change log]
+-เพิ่ม สรุป summary
