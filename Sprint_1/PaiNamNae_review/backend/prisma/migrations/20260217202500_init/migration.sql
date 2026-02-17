@@ -1,17 +1,23 @@
 /*
   Warnings:
 
-  - You are about to drop the `Reviews` table. If the table is not empty, all the data it contains will be lost.
+  - Added the required column `updatedAt` to the `Booking` table without a default value. This is not possible if the table is not empty.
 
 */
--- DropForeignKey
-ALTER TABLE "Reviews" DROP CONSTRAINT "Reviews_booking_id_fkey";
+-- CreateEnum
+CREATE TYPE "CancelReason" AS ENUM ('CHANGE_OF_PLAN', 'FOUND_ALTERNATIVE', 'DRIVER_DELAY', 'PRICE_ISSUE', 'WRONG_LOCATION', 'DUPLICATE_OR_WRONG_DATE', 'SAFETY_CONCERN', 'WEATHER_OR_FORCE_MAJEURE', 'COMMUNICATION_ISSUE');
 
--- DropForeignKey
-ALTER TABLE "Reviews" DROP CONSTRAINT "Reviews_user_id_fkey";
+-- AlterEnum
+ALTER TYPE "BookingStatus" ADD VALUE 'COMPLETED';
 
--- DropTable
-DROP TABLE "Reviews";
+-- AlterEnum
+ALTER TYPE "NotificationType" ADD VALUE 'REVIEW';
+
+-- AlterTable
+ALTER TABLE "Booking" ADD COLUMN     "cancelReason" "CancelReason",
+ADD COLUMN     "driver_confirm_arrived" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "passenger_confirm_arrived" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL;
 
 -- CreateTable
 CREATE TABLE "Review" (
