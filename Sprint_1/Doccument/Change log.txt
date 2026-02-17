@@ -218,3 +218,42 @@ File Includes MyTrip/index.vue , review.service.js, schema.prisma
 - mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
 [AI Declare]
 - ใช้ ChatGPT แนะนำการเทส และปรับการประกาศฟังก์ชั่น
+
+[Piyawat]
+Add reviewdriverprofile V.01
+Update 16 Feb 2026
+File includes	reviewdriverprofile.service.js [backend\src\services\reviewdriverprofile.service.js]
+		reviewdriverprofile.controller.js [backend\src\controllers\reviewdriverprofile.controller.js]
+		reviewdriverprofile.routes.js [backend\src\routes\reviewdriverprofile.routes.js]
+		reviewdriverprofile.validation.js [backend\src\validations\reviewdriverprofile.validation.js]
+		index.js [backend\src\routes\index.js]
+[Change Log]
+-เพิ่มservice เพื่อที่จะมี fuction : getDriverProfile เพื่อแสดงรายละเอียด driver getAverageRating เพื่อคำนวนค่าเฉลี่ยของ คะแนน(ที่เป็นดาว)และแสดงจำนวนreviewทั้งหมด  getDriverReview แสดงค่าreview ที้งหมด
+-เพิ่มcontroller เพิ่อที่จะเชื่อมระหว่าง service กับ routes
+-เพิ่มroutes เพื่อที่จะเชื่อมกับ controller โดยที่จะทำหน้าที่เก็บURLเพื่อที่จะเชื่อมกับfrontend
+-เพิ่มvalidate เพื่อที่จะตรวจสอบความถูกต้องของข้อมูลก่อนเข้าถึง controller
+-update index.js ให้สามารถใช้กับURLที่ต้องการในที่นี้คือ /drivers
+-ใช้ AIในการช่วยดูภาพรวมของระบบก่อนหน้านั้นเพื่อนำทำต่อใน
+-ใช้ AIในการช่วยดูแนวทางในการออกแบบระบบ
+-ใช้ AIในการช่วยดูในการ code ว่ามันerror ตรงไหนแล้ววิธีแก้
+
+[Piyawat]
+Add reviewdriverprofile V.02
+Update 17 Feb 2026
+File includes	\frontend\pages\findTrip\index.vue
+\frontend\pages\findTrip\index_review.vue
+\frontend\pages\myRoute\index.vue
+\frontend\pages\myRoute\index_review.vue
+\frontend\pages\myTrip\index.vue
+\frontend\pages\myTrip\index_review.vue
+\frontend\tsconfig.json
+\frontend\components\ReviewModal.vue
+[Change Log]
+-แก้ชื่อตัวแปรให้ตรงกันรวมถึงdata ไม่ขึ้นก็แก้ให้มันขึ้น
+-เพิ่มหน้ารีวิวเพิ่มเติม
+
+-ใช้ AIในการช่วยดูภาพรวมของระบบก่อนหน้านั้นเพื่อนำทำต่อใน
+-ใช้ AIในการช่วยดูแนวทางในการออกแบบระบบ
+-ใช้ AIในการช่วยดูในการ code ว่ามันerror ตรงไหนแล้ววิธีแก้
+
+

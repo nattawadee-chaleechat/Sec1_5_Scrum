@@ -120,15 +120,14 @@ Contributer: Piyawat Sawatkul
                                                     </div>
                                                 </div>
                                                 <!--reviewpopup-->
-                                                <div class="flex items-center mt-1" @click.stop="openReviewModal(route)">
+                                                <div class="flex items-center mt-1" @click.stop="openReviewModal(route.driver)">
                                                     <div class="flex text-yellow-400">
                                                         <span v-for="star in 5" :key="star">
-                                                            {{ star <= Math.floor(route?.driver?.rating || 0) ? '★' : '☆' }}
-                                                        </span>
+                                                           {{ star <= (route.driver?.rating ?? 0) ? '★' : '☆' }}</span>
                                                     </div>
-                                                    <span class="ml-2 text-sm text-gray-600">
-                                                        {{ (route?.driver?.rating ?? 0).toFixed(1) }} 
-                                                        ({{ route?.driver?.reviews ?? 0 }} รีวิว)
+                                                    <span class="ml-2 text-sm text-gray-600 cursor-pointer hover:underline">
+                                                        {{ route.driver?.rating ?? 0 }} ({{ route.driver?.reviews ?? 0 }} รีวิว)
+
                                                     </span>
                                                 </div>
                                             </div>
@@ -247,9 +246,8 @@ Contributer: Piyawat Sawatkul
 
         <!--reviewpopup-->
         <transition name="modal-fade">
-            <div v-if="showreview" class="modal-overlay" @click.self="showreview=false">
+             <div v-if="showreview && driverInfo" class="modal-overlay" @click.self="showreview=false">
                 <div class="modal-content">
-                    <!-- Header -->
                     <div class="flex items-center justify-between p-6 border-b border-gray-300">
                         <h3 class="text-xl font-semibold text-gray-900">รีวิวผู้ขับ</h3>
                         <button @click="showreview=false" class="text-gray-400 hover:text-gray-600">
@@ -259,87 +257,43 @@ Contributer: Piyawat Sawatkul
                             </svg>
                         </button>
                     </div>
-
-                    <!-- Driver Profile -->
                     <div class="p-6">
                         <div class="flex flex-col items-center">
                             <img 
-                                :src="driverInfo?.driver?.image || driverInfo?.driver?.profilePicture"
-                                :alt="driverInfo?.name || 'Driver'"
+                                :src="driverInfo?.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(driverInfo?.name || 'U')"
+                                :alt="driverInfo?.name"
                                 class="object-cover w-22 h-22 rounded-full">
-                            
-                            <div class="font-medium text-gray-900 mt-2">
-                                {{ driverInfo?.name || 'ไม่มีข้อมูล' }}
-                            </div>
-                            
-                            <div class="flex items-center mt-1">
+                            <div class="font-medium text-gray-900 mt-3">{{ driverProfile?.name || driverInfo?.name || 'ไม่มีข้อมูล' }}</div>
+                            <div class="flex items-center mt-2">
                                 <div class="flex text-sm text-yellow-400">
-                                    <span v-for="star in 5" :key="star">
-                                        {{ star <= Math.floor(driverInfo?.driver?.rating || 0) ? '★' : '☆' }}
-                                    </span>
+                                    <span v-for="star in 5" :key="star">{{ star <= Math.round(driverProfile?.driver?.rating ?? 0) ? '★' : '☆' }}</span>
                                 </div>
-                                <span class="ml-2 text-sm text-gray-600">
-                                    {{ (driverInfo?.driver?.rating || 0).toFixed(1) }} 
-                                    ({{ driverInfo?.driver?.reviews || 0 }} รีวิว)
-                                </span>
+                                <span class="ml-2 text-sm text-gray-600">{{ (driverProfile?.driver?.rating ?? 0).toFixed(1) }} ({{ driverProfile?.driver?.reviews ?? 0 }} รีวิว)</span>
                             </div>
                         </div>
                     </div>
-
                     <div class="flex items-center justify-between p-6 border-b border-gray-300">
                         <h2 class="text-xl font-semibold text-gray-900">คนอื่นว่ายังไงบ้าง</h2>
                     </div>
-
-
-                    <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
-                        ยังไม่มีรีวิว
-                    </div>
-
-                    <!-- Reviews List -->
-                    <div v-else>
-                        <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
-                            <div class="flex items-center justify-between">
-                                <div class="font-medium text-gray-900">
-                                    {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="flex text-sm text-yellow-400">
-                                        <span v-for="star in 5" :key="star">
-                                            {{ star <= Number(item.review?.rating || 0) ? '★' : '☆' }}
-                                        </span>
+                    <div v-if="driverProfile?.reviews && driverProfile.reviews.length > 0">
+                        <div v-for="review in driverProfile.reviews" :key="review.id">
+                            <div class="p-3 mx-3 border-b border-gray-300">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-medium text-gray-900">{{ review.reviewerName || 'ไม่มีข้อมูล' }}</div>
+                                    <div class="flex items-center">
+                                        <div class="flex text-sm text-yellow-400">
+                                            <span v-for="star in 5" :key="star">{{ star <= review.review.rating ? '★' : '☆' }}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Comment -->
-                            <div class="mb-2 text-sm text-gray-900">
-                                {{ item.comment || 'ไม่มีความคิดเห็น' }}
-                            </div>
-                            
-                            <div v-if="item.image || item.images" class="flex flex-wrap items-center gap-2 mb-2">
-                                <!-- If images is an array -->
-                                <template v-if="Array.isArray(item.images)">
-                                    <img 
-                                        v-for="(img, index) in item.images" 
-                                        :key="index"
-                                        :src="img" 
-                                        :alt="`Review image ${index + 1}`"
-                                        class="object-cover w-30 h-30 rounded">
-                                </template>
-                                <!-- If image is a single value -->
-                                <img 
-                                    v-else-if="item.image"
-                                    :src="item.image" 
-                                    :alt="item.reviewerName"
-                                    class="object-cover w-30 h-30 rounded">
-                            </div>
-                            
-                            <div class="text-sm text-gray-500">
-                                {{ item.createdAt ? dayjs(item.createdAt).format('D MMM BBBB') : 
-                                item.createAt ? dayjs(item.createAt).format('D MMM BBBB') : 
-                                'ไม่ระบุวันที่' }}
+                                
+                                <div class="mb-2 font-small text-gray-900">{{ review.comment || 'ไม่มีความเห็น' }}</div>
+                                <div class="font-small text-sm text-gray-500">{{ new Date(review.createAt).toLocaleDateString('th-TH') }}</div>
                             </div>
                         </div>
+                    </div>
+                    <div v-else class="p-6 text-center text-gray-500">
+                        ยังไม่มีรีวิว
                     </div>
                 </div>
             </div>
@@ -412,8 +366,8 @@ Contributer: Piyawat Sawatkul
                                     </div>
                                     <div class="flex items-center">
                                         <div class="flex text-sm text-yellow-400">
-                                            <span v-for="star in 5" :key="star">
-                                                {{ star <= bookingRoute.driver.rating? '★' : '☆' }}</span>
+                                            <span v-for="star in 5" :key="star">{{ star <= bookingRoute.driver.rating
+                                                ? '★' : '☆' }}</span>
                                         </div>
                                         <span class="ml-2 text-sm text-gray-600">{{ bookingRoute.driver.rating }} ({{
                                             bookingRoute.driver.reviews }} รีวิว)</span>
@@ -649,7 +603,6 @@ const RADIUS_METERS = 500
 const routes = ref([])
 const selectedRoute = ref(null)
 const isLoading = ref(false)
-const driverRatingCache = new Map()
 
 const mapContainer = ref(null)
 let gmap = null               // แผนที่ของ Google
@@ -667,6 +620,10 @@ const bookingSeats = ref(1)
 const pickupPoint = ref('')
 const dropoffPoint = ref('')
 
+const showreview = ref(false)
+const driverProfile = ref(null)
+const driverInfo = ref(null)
+const reviewDriver = ref(null)
 
 const bookingTotalPrice = computed(() => {
     if (!bookingRoute.value) return 0
@@ -783,13 +740,13 @@ async function handleSearch() {
                 destinationName: route.endLocation?.name || `(${route.endLocation.lat.toFixed(2)}, ${route.endLocation.lng.toFixed(2)})`,
                 originAddress: route.startLocation?.address ? cleanAddr(route.startLocation.address) : null,
                 destinationAddress: route.endLocation?.address ? cleanAddr(route.endLocation.address) : null,
-               driver: {
+                driver: {
                     id: route.driver?.id,
-                        name: `${route.driver?.firstName || ''} ${route.driver?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
-                        image: route.driver?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(route.driver?.firstName || 'U')}&background=random&size=64`,
-                        rating: route.driver?.rating ?? 0,
-                        reviews: route.driver?.reviews ?? 0,
-                        isVerified: !!route.driver?.isVerified
+                    name: `${route.driver?.firstName || ''} ${route.driver?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
+                    image: route.driver?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(route.driver?.firstName || 'U')}&background=random&size=64`,
+                    rating: route.driver?.rating ?? 0,
+                    reviews: route.driver?.reviews ?? 0,
+                    isVerified: !!route.driver?.isVerified
                 },
 
                 carDetails: route.vehicle
@@ -804,8 +761,6 @@ async function handleSearch() {
                 stopsCoords,
             }
         })
-
-        void hydrateDriverRatings(routes.value)
 
         await waitMapReady()
         const jobs = routes.value.map(async (r, i) => {
@@ -826,65 +781,6 @@ async function handleSearch() {
     } finally {
         isLoading.value = false
     }
-}
-//แปลงapi ให้เป็น UI แบบเดียวกัน
-function normalizeRatingSummary(response) {
-    let rating = null
-    let reviews = null
-
-    if (response?.driver) {
-        const r = Number(response.driver.rating)
-        const c = Number(response.driver.reviews)
-        rating = Number.isFinite(r) ? r : null
-        reviews = Number.isFinite(c) ? c : null
-    }
-
-    if ((rating == null || reviews == null) && Array.isArray(response?.reviews)) {
-        const values = response.reviews
-            .map(item => Number(item?.review?.rating ?? item?.rating))
-            .filter(v => Number.isFinite(v))
-        if (values.length) {
-            const sum = values.reduce((acc, v) => acc + v, 0)
-            rating = sum / values.length
-            reviews = values.length
-        } else if (reviews == null) {
-            reviews = response.reviews.length
-        }
-    }
-
-    return {
-        rating: Number.isFinite(rating) ? rating : 0,
-        reviews: Number.isFinite(reviews) ? reviews : 0
-    }
-}
-//ป้องกันยิง API ซ้ำทุกครั้ง
-async function fetchDriverRatingSummary(driverId) {
-    if (!driverId) return null
-    if (driverRatingCache.has(driverId)) return driverRatingCache.get(driverId)
-
-    try {
-        const response = await $api(`/review/${driverId}/reviews`)
-        const summary = normalizeRatingSummary(response)
-        driverRatingCache.set(driverId, summary)
-        return summary
-    } catch (error) {
-        console.warn('Failed to load driver rating:', driverId, error)
-        return null
-    }
-}
-
-async function hydrateDriverRatings(routeList) {
-    const tasks = routeList
-        .filter(r => r?.driver?.id)
-        .filter(r => !Number.isFinite(r.driver.rating) || r.driver.rating === 0 || r.driver.reviews == null)
-        .map(async (route) => {
-            const summary = await fetchDriverRatingSummary(route.driver.id)
-            if (!summary) return
-            route.driver.rating = summary.rating
-            route.driver.reviews = summary.reviews
-        })
-
-    await Promise.allSettled(tasks)
 }
 
 
@@ -1556,68 +1452,20 @@ onMounted(() => {
         handleSearch()
     }
 })
-const showreview = ref(false)
-const review = ref([]);
-const driverInfo = ref(null);
-
-async function openReviewModal(route){
+//reviewpopup
+async function openReviewModal(driver){
+    reviewDriver.value = driver;
+    driverInfo.value = driver;
     showreview.value = true;
-    driverInfo.value = route;
     
-    review.value = [];
-
-    try{
-        if (!route?.driver?.id) {
-            console.error('Driver ID is missing');
-            return;
-        }
-
-        const response = await $api(`/review/${route.driver.id}/reviews`);
-
-        if (response?.reviews) {
-            review.value = response.reviews;
-        } else if (Array.isArray(response)) {
-            review.value = response;
-        } else {
-            review.value = [];
-        }
-
-        if (response) {
-            driverInfo.value = {
-                ...driverInfo.value,
-                name: response.name || driverInfo.value?.driver?.name,
-                profilePicture: response.profilePicture || driverInfo.value?.driver?.image,
-                isVerified: response.isVerified ?? driverInfo.value?.driver?.isVerified,
-                driver: {
-                    ...driverInfo.value.driver,
-                    rating: response.driver?.rating ?? driverInfo.value?.driver?.rating,
-                    reviews: response.driver?.reviews ?? driverInfo.value?.driver?.reviews
-                }
-            };
-
-            const routeIndex = routes.value.findIndex(r => r.id === route.id);
-            if (routeIndex !== -1 && response.driver) {
-                const summary = normalizeRatingSummary(response)
-                routes.value[routeIndex].driver.rating = summary.rating
-                routes.value[routeIndex].driver.reviews = summary.reviews
-                if (route?.driver?.id) {
-                    driverRatingCache.set(route.driver.id, summary)
-                }
-            }
-        }
-        
-        console.log('Reviews loaded:', review.value.length);
-        console.log('Driver info:', driverInfo.value?.driver);
-        console.log('Reviews data:', review.value);
-        if (review.value.length > 0) {
-            console.log('First review rating:', review.value[0]?.review);
-            console.log('First review rating value:', review.value[0]?.review?.rating);
-            console.log('Rating type:', typeof review.value[0]?.review?.rating);
-        }
-        
-    }catch(error){
-        console.error('Failed to load reviews:', error);
-        review.value = [];
+    try {
+        const response = await $api(`/review/${driver.id}/reviews`);
+        driverProfile.value = response;
+        console.log('Reviews loaded:', response.reviews?.length ?? 0);
+    } catch (error) {
+        console.error('Failed to fetch driver reviews:', error);
+        toast.warning('ไม่สามารถโหลดข้อมูล', 'ลองกำหนดข้อมูลคนขับอีกครั้ง');
+        showreview.value = false;
     }
 }
 
