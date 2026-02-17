@@ -308,7 +308,7 @@ Contributer: Piyawat Sawatkul
                     @reviewed="ReviewSuccess()"
                   />
                   <button
-                    v-if="trip.status === 'completed' && !trip.reviewed"
+                    v-if="trip.status === 'completed' && !trip.reviewed && canReview(trip)"        "
                     @click.stop="openReviewModal(trip)" 
                     class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition"
                   >
@@ -325,7 +325,17 @@ Contributer: Piyawat Sawatkul
                     รีวิวแล้ว
                     </button>
                   <!--(Finish)-->
-
+                  <!-- Contributer:Chetsada 
+                    [Description] เพิ่มส่วนของปุ่ม หมดเวลารีวิว
+                    [17/2/2569] -->
+                  <button
+                    v-else-if="trip.status === 'completed' && !trip.reviewed && !canReview(trip)"
+                    disabled
+                    class="px-4 py-2 bg-yellow-100 text-gray-600 rounded-md"
+                  >
+                    หมดเวลารีวิวแล้ว (เกิน 7 วัน)
+                  </button>
+                  <!--(Finish)-->
                 </div>
               </div>
             </div>
@@ -765,6 +775,7 @@ async function fetchMyTrips() {
       return {
         id: b.id,
         // ChatGPT ช่วย
+        completedAt: b.updatedAt,
         reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25
         
         status: String(b.status || "").toLowerCase(),
@@ -942,6 +953,18 @@ async function ReviewSuccess() {
   closeReview()
 }
 // 
+// chetsada 17/2 เช็ค ว่าจบไปแล้ว 7 วันไหม
+function canReview(trip) {
+  if (!trip.completedAt) return false;
+
+  const completed = new Date(trip.completedAt);
+  const now = new Date();
+
+  const differentTime = now - completed; // ms
+  const differentDays = differentTime / (1000 * 60 * 60 * 24);
+
+  return differentDays <= 7;
+}
 async function updateMap(trip) {
   if (!trip) return;
   await waitMapReady();
