@@ -202,3 +202,19 @@ File Includes MyTrip/index.vue , components/ReviewModal.vue
 - เพิ่ม emit('reviewed') ที่ ReviewModal.vue เพิ่มเอาไว้ fetch หน้าใน mytrip/index 
 - MyTrip/index ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
 - MyTrip/index ปิดไม่ให้กดปุ่ม + เปลี่ยนสีปุ่มหลังรีวิวแล้ว
+
+[Chetsada]
+Can not review after 7 day V.01
+Update: 17 Feb 2026 
+
+File Includes MyTrip/index.vue , review.service.js, schema.prisma
+
+[Change Log]
+- ในตาราง booking เพื่ม updatedAt @updatedAt ให้คู่กับ status "COMPETED" 
+  ตอนนี้ใช้กับเช็คเวลาห้ามรีวิวหลังจาก 7 วัน
+- review.service ใน const createReview จับไม่ให้รีวิวหลังจากจบ booking ไปแล้ว 7 วัน 
+- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
+  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
+- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
+[AI Declare]
+- ใช้ ChatGPT แนะนำการเทส และปรับการประกาศฟังก์ชั่น

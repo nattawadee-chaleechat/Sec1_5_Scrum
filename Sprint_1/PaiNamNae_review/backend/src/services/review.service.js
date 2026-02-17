@@ -1,13 +1,14 @@
 // Contributer: chetsada kongsak
 // [16/2/2569]
 // - ฟังก์ชั้น createReview ไว้รับข้อมูลให้ตรงกับ database
-// [17/2/2569]
-// เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
 
 // Contributer: chetsada kongsak & suttipad rodhom
 // [17/2/2569]
-// เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
+// ใน const createReview เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
 
+// Contributer: chetsada kongsak
+// [17/2/2569]
+// ใน const createReview จับไม่ให้รีวิวหลังจากจบ booking ไปแล้ว 7 วัน 
 
 // AI declare
 // - ใช้ ChatGPT ช่วยเขียน const ,แก้ไข error
@@ -31,6 +32,19 @@ const createReview = async (data, reviewerId, file) => {
 
   if (booking.status !== 'COMPLETED')
     throw new ApiError(400, 'Trip not completed');
+
+  // chetsada 17/2
+  // เช็คว่าเกิน 7 วันไหม
+  const completedAt = booking.updatedAt; 
+  const now = new Date();
+
+  const differentTime = now - completedAt; // ms
+  const differentDays = differentTime / (1000 * 60 * 60 * 24);
+
+  if (differentDays > 7) {
+    throw new ApiError(400, 'Review period expired (over 7 days)');
+  }
+  // 
 
   const exists = await prisma.review.findUnique({
     where: {
@@ -90,7 +104,7 @@ const createReview = async (data, reviewerId, file) => {
   });
 };
 
-//  test
+//  test chatGPT
 const getReviewsByReviewer = (id) => {
   return prisma.review.findMany({
     where: { reviewerId: id },
