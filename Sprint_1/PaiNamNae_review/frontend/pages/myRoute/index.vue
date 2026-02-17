@@ -1,5 +1,12 @@
+
 /* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว */
+ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว 
+
+Contributer: Piyawat Sawatkul
+[Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว เพื่อที่เห็นจำนวนและรายละเอียดreview driver 
+รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
 
 <template>
   <div>
@@ -416,7 +423,8 @@
                       </button>
                     </div>
 
-                    <div class="flex items-center mt-1">
+                    <!--reviewpopup-->
+                    <div class="flex items-center mt-1 cursor-pointer" @click.stop="openReviewModal(trip)">
                       <div class="flex text-sm text-yellow-400">
                         <span>
                           {{ "★".repeat(Math.round(trip.passenger.rating))
@@ -620,6 +628,105 @@
       @confirm="handleConfirmAction"
       @cancel="closeConfirmModal"
     />
+
+    <!--reviewpopup-->
+    <transition name="modal-fade">
+      <div v-if="showreview" class="modal-overlay" @click.self="showreview=false">
+        <div class="modal-content">
+          <!-- Header -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-300">
+            <h3 class="text-xl font-semibold text-gray-900">รีวิวผู้โดยสาร</h3>
+            <button @click="showreview=false" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Passenger Profile -->
+          <div class="p-6">
+            <div class="flex flex-col items-center">
+              <img 
+                :src="driverInfo?.image || driverInfo?.profilePicture"
+                :alt="driverInfo?.name || 'Passenger'"
+                class="object-cover w-22 h-22 rounded-full">
+              
+              <div class="font-medium text-gray-900 mt-2">
+                {{ driverInfo?.name || 'ไม่มีข้อมูล' }}
+              </div>
+              
+              <div class="flex items-center mt-1">
+                <div class="flex text-sm text-yellow-400">
+                  <span v-for="star in 5" :key="star">
+                    {{ star <= Math.floor(driverInfo?.rating || 0) ? '★' : '☆' }}
+                  </span>
+                </div>
+                <span class="ml-2 text-sm text-gray-600">
+                  {{ (driverInfo?.rating || 0).toFixed(1) }} 
+                  ({{ driverInfo?.reviews || 0 }} รีวิว)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between p-6 border-b border-gray-300">
+            <h2 class="text-xl font-semibold text-gray-900">รีวิวที่ได้รับ</h2>
+          </div>
+
+          <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
+            ยังไม่มีรีวิว
+          </div>
+
+          <!-- Reviews List -->
+          <div v-else>
+            <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
+              <div class="flex items-center justify-between">
+                <div class="font-medium text-gray-900">
+                  {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
+                </div>
+                <div class="flex items-center">
+                  <div class="flex text-sm text-yellow-400">
+                    <span v-for="star in 5" :key="star">
+                      {{ star <= Number(item.review?.rating || 0) ? '★' : '☆' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Comment -->
+              <div class="mb-2 text-sm text-gray-900">
+                {{ item.comment || 'ไม่มีความคิดเห็น' }}
+              </div>
+              
+              <div v-if="item.image || item.images" class="flex flex-wrap items-center gap-2 mb-2">
+                <!-- If images is an array -->
+                <template v-if="Array.isArray(item.images)">
+                  <img 
+                    v-for="(img, index) in item.images" 
+                    :key="index"
+                    :src="img" 
+                    :alt="`Review image ${index + 1}`"
+                    class="object-cover w-30 h-30 rounded">
+                </template>
+                <!-- If image is a single value -->
+                <img 
+                  v-else-if="item.image"
+                  :src="item.image" 
+                  :alt="item.reviewerName"
+                  class="object-cover w-30 h-30 rounded">
+              </div>
+              
+              <div class="text-sm text-gray-500">
+                {{ item.createdAt ? dayjs(item.createdAt).format('D MMM BBBB') : 
+                item.createAt ? dayjs(item.createAt).format('D MMM BBBB') : 
+                'ไม่ระบุวันที่' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -644,6 +751,11 @@ const isLoading = ref(false);
 const mapContainer = ref(null);
 const allTrips = ref([]);
 const myRoutes = ref([]);
+
+// --- Review Modal State ---
+const showreview = ref(false);
+const review = ref([]);
+const driverInfo = ref(null);
 
 // ---------- Google Maps states ----------
 let gmap = null;
@@ -714,11 +826,75 @@ const selectedLabel = computed(() => {
   return t ? `${t.origin} → ${t.destination}` : null;
 });
 
+// --- Passenger Rating Cache and Functions ---
+const passengerRatingCache = new Map();
+//แปลงapi ให้เป็น UI แบบเดียวกัน
+function normalizeRatingSummary(response) {
+  let rating = null;
+  let reviews = null;
+
+  if (response?.passenger) {
+    const r = Number(response.passenger.rating);
+    const c = Number(response.passenger.reviews);
+    rating = Number.isFinite(r) ? r : null;
+    reviews = Number.isFinite(c) ? c : null;
+  }
+
+  if ((rating == null || reviews == null) && Array.isArray(response?.reviews)) {
+    const values = response.reviews
+      .map((item) => Number(item?.review?.rating ?? item?.rating))
+      .filter((v) => Number.isFinite(v));
+    if (values.length) {
+      const sum = values.reduce((acc, v) => acc + v, 0);
+      rating = sum / values.length;
+      reviews = values.length;
+    } else if (reviews == null) {
+      reviews = response.reviews.length;
+    }
+  }
+
+  return {
+    rating: Number.isFinite(rating) ? rating : 0,
+    reviews: Number.isFinite(reviews) ? reviews : 0,
+  };
+}
+//ป้องกันยิง API ซ้ำทุกครั้ง
+async function fetchPassengerRatingSummary(passengerId) {
+  if (!passengerId) return null;
+  if (passengerRatingCache.has(passengerId))
+    return passengerRatingCache.get(passengerId);
+
+  try {
+    const response = await $api(`/review/${passengerId}/reviews`);
+    const summary = normalizeRatingSummary(response);
+    passengerRatingCache.set(passengerId, summary);
+    return summary;
+  } catch (error) {
+    console.warn("Failed to load passenger rating:", passengerId, error);
+    return null;
+  }
+}
+
 // --- Methods ---
 async function fetchMyRoutes() {
   isLoading.value = true;
   try {
     const routes = await $api("/routes/me");
+
+    const passengerIds = Array.from(
+      new Set(
+        routes
+          .flatMap((r) => (r.bookings || []).map((b) => b?.passenger?.id))
+          .filter(Boolean),
+      ),
+    );
+    const passengerSummaryById = new Map();
+    await Promise.allSettled(
+      passengerIds.map(async (passengerId) => {
+        const summary = await fetchPassengerRatingSummary(passengerId);
+        if (summary) passengerSummaryById.set(passengerId, summary);
+      }),
+    );
 
     const allowedRouteStatuses = new Set(["AVAILABLE", "FULL", "IN_TRANSIT"]);
 
@@ -793,6 +969,7 @@ async function fetchMyRoutes() {
 
       // แปลงเป็น "คำขอจอง" ต่อ booking
       for (const b of r.bookings || []) {
+        const passengerSummary = passengerSummaryById.get(b?.passenger?.id);
         formatted.push({
           id: b.id,
           status: (b.status || "").toLowerCase(),
@@ -816,6 +993,7 @@ async function fetchMyRoutes() {
           price: (r.pricePerSeat || 0) * (b.numberOfSeats || 0),
           seats: b.numberOfSeats || 0,
           passenger: {
+            id: b.passenger?.id,
             name:
               `${b.passenger?.firstName || ""} ${b.passenger?.lastName || ""}`.trim() ||
               "ผู้โดยสาร",
@@ -824,8 +1002,8 @@ async function fetchMyRoutes() {
               `https://ui-avatars.com/api/?name=${encodeURIComponent(b.passenger?.firstName || "P")}&background=random&size=64`,
             email: b.passenger?.email || "",
             isVerified: !!b.passenger?.isVerified,
-            rating: 4.5,
-            reviews: Math.floor(Math.random() * 50) + 5,
+            rating: passengerSummary?.rating ?? 0,
+            reviews: passengerSummary?.reviews ?? 0,
           },
           coords,
           polyline: r.routePolyline || null,
@@ -888,21 +1066,25 @@ async function fetchMyRoutes() {
           : ["ไม่มีข้อมูลรถ"],
         photos: r.vehicle?.photos || [],
         conditions: r.conditions || "",
-        passengers: confirmedBookings.map((b) => ({
-          id: b.id,
-          seats: b.numberOfSeats || 0,
-          status: "confirmed",
-          name:
-            `${b.passenger?.firstName || ""} ${b.passenger?.lastName || ""}`.trim() ||
-            "ผู้โดยสาร",
-          image:
-            b.passenger?.profilePicture ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(b.passenger?.firstName || "P")}&background=random&size=64`,
-          email: b.passenger?.email || "",
-          isVerified: !!b.passenger?.isVerified,
-          rating: 4.5,
-          reviews: Math.floor(Math.random() * 50) + 5,
-        })),
+        passengers: confirmedBookings.map((b) => {
+          const passengerSummary = passengerSummaryById.get(b?.passenger?.id);
+          return {
+            id: b.id,
+            passengerId: b.passenger?.id,
+            seats: b.numberOfSeats || 0,
+            status: "confirmed",
+            name:
+              `${b.passenger?.firstName || ""} ${b.passenger?.lastName || ""}`.trim() ||
+              "ผู้โดยสาร",
+            image:
+              b.passenger?.profilePicture ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(b.passenger?.firstName || "P")}&background=random&size=64`,
+            email: b.passenger?.email || "",
+            isVerified: !!b.passenger?.isVerified,
+            rating: passengerSummary?.rating ?? 0,
+            reviews: passengerSummary?.reviews ?? 0,
+          };
+        }),
         durationText:
           (typeof r.duration === "string"
             ? formatDuration(r.duration)
@@ -1329,6 +1511,48 @@ watch(activeTab, () => {
     if (filteredTrips.value.length > 0) updateMap(filteredTrips.value[0]);
   }
 });
+
+// Review Modal Functions
+async function openReviewModal(trip) {
+  showreview.value = true;
+  driverInfo.value = trip.passenger;
+  review.value = [];
+
+  try {
+    if (!trip?.passenger?.id) {
+      console.error('Passenger ID is missing');
+      return;
+    }
+
+    const response = await $api(`/review/${trip.passenger.id}/reviews`);
+
+    if (response?.reviews) {
+      review.value = response.reviews;
+    } else if (Array.isArray(response)) {
+      review.value = response;
+    } else {
+      review.value = [];
+    }
+
+    if (response) {
+      driverInfo.value = {
+        ...driverInfo.value,
+        name: response.name || trip.passenger?.name,
+        profilePicture: response.profilePicture || trip.passenger?.image,
+        image: response.profilePicture || trip.passenger?.image,
+        isVerified: response.isVerified ?? trip.passenger?.isVerified,
+        rating: response.driver?.rating ?? trip.passenger?.rating,
+        reviews: response.driver?.reviews ?? trip.passenger?.reviews
+      };
+    }
+    
+    console.log('Reviews loaded:', review.value.length);
+  } catch (error) {
+    console.error('Failed to load reviews:', error);
+    review.value = [];
+  }
+}
+
 </script>
 
 <style scoped>
@@ -1429,5 +1653,48 @@ watch(activeTab, () => {
 
 .duration-300 {
   animation-duration: 300ms;
+}
+
+.modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 0.75rem;
+  max-width: 600px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.52, 0.02, 0.19, 1.02);
+}
+
+.modal-fade-enter-active .modal-content,
+.modal-fade-leave-active .modal-content {
+  transition: all 0.3s cubic-bezier(0.52, 0.02, 0.19, 1.02);
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-from .modal-content,
+.modal-fade-leave-to .modal-content {
+  transform: scale(0.9) translateY(1rem);
 }
 </style>
