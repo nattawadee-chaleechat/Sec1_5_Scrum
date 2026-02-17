@@ -173,3 +173,12 @@ When driver press button End Trip
 but passenger did not press , Button End Trip NOT display ,pop-up show Thank you and have a message show "Wait for passenger press End Trip" to show process of End Trip
 [AI Declare]
 use chatgpt to explain why the button didn't disappear
+
+[Nattawadee]
+notifyTripCompleted V.01
+Update 17 Feb 2026
+File includes
+backend\src\services\booking.service.js
+backend\src\services\notification.service.js
+[Description]
+if status = completed then the system will send notification to driver and passenger
