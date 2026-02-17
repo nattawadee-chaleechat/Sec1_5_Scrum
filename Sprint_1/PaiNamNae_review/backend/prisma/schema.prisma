@@ -22,6 +22,10 @@
 
 // ใช้ ChatGPT เช็ค logic
 
+// Contributer: chetsada kongsak
+// [17/2/2569]
+// - ในตาราง booking เพื่ม updatedAt @updatedAt ให้คู่กับ status "COMPETED" 
+//   ตอนนี้ใช้กับเช็คเวลาห้ามรีวิวหลังจาก 7 วัน
 
 datasource db {
   provider = "postgresql"
@@ -239,6 +243,8 @@ model Booking {
   pickupLocation  Json          @db.Json
   dropoffLocation Json          @db.Json
   createdAt       DateTime      @default(now())
+
+  updatedAt       DateTime      @updatedAt // chetsada 17/2 ไว้เก็บเวลาเช็คกับ status "COMPLETED" ตอนนี้ใช้กับเช็คเวลาห้ามรีวิวหลังจาก 7 วัน
 
   // ถ้า driver & passenger กดสิ้นสุดการเดินทางทั้งคู่ จะเปลี่ยน status - BookingStatus เป็น 'COMPLETE'
   driver_confirm_arrived      Boolean   @default(false)   // chetsada 12/2 23:29

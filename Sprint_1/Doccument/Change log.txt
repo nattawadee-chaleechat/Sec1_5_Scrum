@@ -120,22 +120,101 @@ Update: 15/2/2569
 [Change Log]
 - แก้ชื่อตัวแปร profilePicture เป็น image ให้ตรงกับข้อมูลที่ดึงจาก trip.driver [20:55|15/2/2569]
 
+[Chetsada]
+Implement Review System (Passenger to Driver) V.01
+Update: 15–16 Feb 2026
 
-[Piyawat]
-Add reviewdriverprofile V.01
-Update 16 Feb 2026
-File includes	reviewdriverprofile.service.js [backend\src\services\reviewdriverprofile.service.js]
-		reviewdriverprofile.controller.js [backend\src\controllers\reviewdriverprofile.controller.js]
-		reviewdriverprofile.routes.js [backend\src\routes\reviewdriverprofile.routes.js]
-		reviewdriverprofile.validation.js [backend\src\validations\reviewdriverprofile.validation.js]
-		index.js [backend\src\routes\index.js]
-[Change Log]
--เพิ่มservice เพื่อที่จะมี fuction : getDriverProfile เพื่อแสดงรายละเอียด driver getAverageRating เพื่อคำนวนค่าเฉลี่ยของ คะแนน(ที่เป็นดาว)และแสดงจำนวนreviewทั้งหมด  getDriverReview แสดงค่าreview ที้งหมด
--เพิ่มcontroller เพิ่อที่จะเชื่อมระหว่าง service กับ routes
--เพิ่มroutes เพื่อที่จะเชื่อมกับ controller โดยที่จะทำหน้าที่เก็บURLเพื่อที่จะเชื่อมกับfrontend
--เพิ่มvalidate เพื่อที่จะตรวจสอบความถูกต้องของข้อมูลก่อนเข้าถึง controller
--update index.js ให้สามารถใช้กับURLที่ต้องการในที่นี้คือ /drivers
+File Includes
+frontend/components/ReviewModal.vue
+frontend/pages/myTrip/index.vue
+backend/src/routes/review.routes.js
+backend/src/controllers/reviews.controller.js
+backend/src/services/review.service.js
+backend/src/middlewares/upload.middleware.js
+backend/src/middlewares/auth.js
+backend/src/middlewares/validate.js
+backend/src/utils/cloudinary.js
+backend/src/utils/prisma.js
+backend/src/validations/review.validation.js
+
+[Description]
+บันทึกรีวิวของ Passenger ลง Database
+[Change Log 15/2/2569]
+- สร้างไฟล์  review.service 
+- สร้างฟังก์ชั้น createReview ไว้รับข้อมูลให้ตรงกับ database
+- สร้างไฟล์ reviews.controller
+-  ส่วน createReview รับข้อมูลจาก route ส่งไป review.service
+- สร้างไฟล์ review.routes
+- ส่วนสำหรับ api สร้าง review
+-  เพิ่ม createReviewSchema ใน review.validation ตรวจสอบข้อมูลที่รับเข้า
+-  เพิ่ม reviewRoute ที่ Route/index
+-  api ลองเช็ค ดูรีวิวที่ user รีวิวทั้งหมด, ดูรีวิวที่ passenger ได้รับรีวิวทั้งหมด 
+- เพิ่มตัวแปรไว้รับ url รูปภาพ ใน review.service บันทึกลง database
+- ที่ index mytrip import ReviewModal เข้ามา
+-  สร้างตัวแปร showReview ,reviewTrip ไว้เปิดรีวิว
+- function open/ColseReviewModal
+- ปรับ ปรับ body ของ FormData เทียบ database
+- ที่ index mytrip เพิ่ม return reviewed ใน fetchMyTrips
+- ปรับ controller ส่ง file เข้า service
 [AI Declare]
--ใช้ AIในการช่วยดูภาพรวมของระบบก่อนหน้านั้นเพื่อนำทำต่อใน
--ใช้ AIในการช่วยดูแนวทางในการออกแบบระบบ
--ใช้ AIในการช่วยดูในการ code ว่ามันerror ตรงไหนแล้ววิธีแก้
+- ใช้ ChatGPT
+- อธิบายโครงสร้างโค้ด เน้นจาก booking และ route ทั้งหมด
+- ช่วย debug error code
+- ช่วยร่างโค้ด แก้ไขโค้ด
+- ช่วยออกแบบ validation ของ review
+- ช่วยจัดการ res, req เชื่อมส่วน service , controller กับ mytrip index.vue
+
+[Chetsada]
+add Notification in Reveiw.service.js V.01
+Update: 15–16 Feb 2026
+
+File Includes Reveiw.service.js 
+
+[Change Log]
+เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิว 17/2
+[AI Declare]
+- ใช้ ChatGPT
+- อธิบายโครงสร้างโค้ด
+- ช่วย debug error code
+- ช่วยออกแบบ validation
+- ช่วยจัดการ res, req
+- ช่วยร่างโค้ด แก้ไขโค้ด จัดการ Error
+
+[Chetsada & suttipad rodhom]
+add Notification in Reveiw.service.js V.01
+Update: 17 Feb 2026
+
+File Includes Reveiw.service.js ,  schema.prisma
+
+[Change Log]
+- เพิ่ม REVIEW ใน schema.prisma ตรง enum NotificationType {..} ไว้สำหรับการแจ้งเตือนหลังกดส่งรีวิว
+- เพิ่ม การแจ้งเตือน คนขับ เมื่อได้รีวิวใน Reveiw.service
+[AI Declare]
+- ใช้ ChatGPT ช่วยดูแนวทางการแก้ไข ใช้ transaction
+
+[Chetsada]
+fetch Reveiw in myTrip V.01
+Update: 17 Feb 2026 
+
+File Includes MyTrip/index.vue , components/ReviewModal.vue
+
+[Change Log]
+- เพิ่ม emit('reviewed') ที่ ReviewModal.vue เพิ่มเอาไว้ fetch หน้าใน mytrip/index 
+- MyTrip/index ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
+- MyTrip/index ปิดไม่ให้กดปุ่ม + เปลี่ยนสีปุ่มหลังรีวิวแล้ว
+
+[Chetsada]
+Can not review after 7 day V.01
+Update: 17 Feb 2026 
+
+File Includes MyTrip/index.vue , review.service.js, schema.prisma
+
+[Change Log]
+- ในตาราง booking เพื่ม updatedAt @updatedAt ให้คู่กับ status "COMPETED" 
+  ตอนนี้ใช้กับเช็คเวลาห้ามรีวิวหลังจาก 7 วัน
+- review.service ใน const createReview จับไม่ให้รีวิวหลังจากจบ booking ไปแล้ว 7 วัน 
+- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
+  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
+- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
+[AI Declare]
+- ใช้ ChatGPT แนะนำการเทส และปรับการประกาศฟังก์ชั่น

@@ -17,6 +17,22 @@ Contributer: Nattawadee Chaleechat
 เพิ่ม "การเดินทางเสร็จสิ้น"
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว
 
+Contributer: Chetsada Kongsak
+[16/2]
+[Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
+[AI Declire] ใช้ ChetGPT ช่วยตรง ReviewModal ส่วนกดสิ้นสุดการเดินทาง
+
+Contributer: Chetsada Kongsak
+[17/2]
+[Description] 
+- ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
+- ปิด + สร้างปุ่ม "รีวิวแล้ว"
+
+[11:17|17/2]
+[Description] 
+- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
+  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
+- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
 -->
 <template>
   <div>
@@ -284,6 +300,52 @@ Contributer: Nattawadee Chaleechat
                     สิ้นสุดการเดินทาง
                   </button>
                   <!--(Finish)-->
+
+                  <!--(Start) 
+                    Contributer:Chetsada 
+                    [23:52|15/2/2569]
+                    [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
+                    [AI declare]ใ ช้ ChetGPT
+
+                    [11:17|15/2/2569]
+                    - เพิ่มจำกัดเวลารีวิว 7 วัน  canReview(trip)
+                  -->
+                  <ReviewModal
+                    v-if="showReview"
+                    :trip="reviewTrip"
+                    @close="closeReview"
+                    @reviewed="ReviewSuccess()"
+                  />
+                  <button
+                    v-if="trip.status === 'completed' && !trip.reviewed && canReview(trip)"        
+                    @click.stop="openReviewModal(trip)" 
+                    class="px-4 py-2 bg-yellow-500 text-white rounded-md"
+                  >
+                    รีวิวการเดินทาง
+                  </button>
+                  <!-- Contributer:Chetsada 
+                    [Description] เพิ่มส่วนของปุ่ม รีวิวแล้ว
+                    [17/2/2569] -->
+                  <button
+                    v-else-if="trip.status === 'completed' && trip.reviewed"
+                    disabled
+                    class="px-4 py-2 bg-gray-300 text-gray-600 rounded-md"
+                  >
+                    รีวิวแล้ว
+                  </button>
+                  <!--(Finish)-->
+                  <!-- Contributer:Chetsada 
+                    [Description] เพิ่มส่วนของปุ่ม หมดเวลารีวิว
+                    [17/2/2569] -->
+                  <button
+                    v-else-if="trip.status === 'completed' && !trip.reviewed && !canReview(trip)"
+                    disabled
+                    class="px-4 py-2 bg-yellow-100 text-gray-600 rounded-md"
+                  >
+                    หมดเวลารีวิวแล้ว (เกิน 7 วัน)
+                  </button>
+                  <!--(Finish)-->
+
                 </div>
               </div>
             </div>
@@ -375,6 +437,9 @@ import buddhistEra from "dayjs/plugin/buddhistEra";
 import ConfirmModal from "~/components/ConfirmModal.vue";
 import { useToast } from "~/composables/useToast";
 
+import ReviewModal from "~/components/ReviewModal.vue";  // chetsada 15/2 2:34
+
+
 // Setup dayjs for Thai locale
 dayjs.locale("th");
 dayjs.extend(buddhistEra);
@@ -387,6 +452,12 @@ const activeTab = ref("pending");
 const selectedTripId = ref(null);
 const isLoading = ref(false);
 const mapContainer = ref(null);
+
+// chetsada 15/2 23:54 ให้รีวิวขึ้น
+const showReview = ref(false)
+const reviewTrip = ref(null)
+//
+
 let map = null;
 let currentPolyline = null;
 let currentMarkers = [];
@@ -455,6 +526,18 @@ function cleanAddr(a) {
     .replace(/\s{2,}/g, " ")
     .trim();
 }
+
+// chetsada 15/2 23:56
+function openReviewModal(trip){
+  reviewTrip.value = trip
+  showReview.value = true
+}
+// chetsada 16/2 2:56
+function closeReview() {
+  showReview.value = false
+  reviewTrip.value = null
+}
+// 
 
 // --- Methods ---
 async function fetchMyTrips() {
@@ -532,6 +615,10 @@ async function fetchMyTrips() {
 
       return {
         id: b.id,
+        completedAt: b.updatedAt, // เรียกใช้
+        // 16/2 ChatGPT ช่วย
+        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25
+        
         status: String(b.status || "").toLowerCase(),
         origin:
           start?.name ||
@@ -700,6 +787,27 @@ const toggleTripDetails = (tripId) => {
     selectedTripId.value = tripId;
   }
 };
+
+// chetsada 17/2 ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน
+async function ReviewSuccess() {
+  await fetchMyTrips()   
+  closeReview()
+}
+// 
+
+// chetsada 17/2 เช็ค ว่าจบไปแล้ว 7 วันไหม
+function canReview(trip) {
+  if (!trip.completedAt) return false;
+
+  const completed = new Date(trip.completedAt);
+  const now = new Date();
+
+  const differentTime = now - completed; // ms
+  const differentDays = differentTime / (1000 * 60 * 60 * 24);
+
+  return differentDays <= 7;
+}
+//
 
 async function updateMap(trip) {
   if (!trip) return;
