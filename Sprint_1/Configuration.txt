@@ -138,8 +138,7 @@ fi
 	npx prisma generate	
 	npx prisma migrate dev --name init
 	npm run dev
-11. sudo snap install ngrok
-12. # Setup Docker 
+11. # Setup Docker 
 ```
 sudo apt update && sudo apt upgrade -y 
 
@@ -177,7 +176,7 @@ sudo systemctl status docker
 sudo systemctl start docker 
 ```
 
-# Setup Firewall
+12. # Setup Firewall
 ```
 sudo apt install ufw -y 
 sudo ufw allow OpenSSH
@@ -228,3 +227,17 @@ sudo apt-get update && sudo apt-get install cloudflared
 14. cloudflared tunnel --url http://localhost:3000
 15. Copy URL ใหม่ ไปแก้ใน nuxt.config.js
 16. build Frontend เป็น Static เพื่อไปใส่ใน Web hosting
+
+ขั้นตอนการรัน เมื่อ set ทุกอย่างเรียบร้อยแล้ว
+1. ssh project@0.198.200.96
+2. เข้าไปที่พาท GitHub ที่ต้องการรัน backend
+cd Sec1_5_Scrum/Sprint_1/PaiNamNae_review/backend
+3. รัน	npx prisma generate	
+	npx prisma migrate dev --name init
+	npm run dev
+4. เปิด terminal อีกอัน ขณะที่ npm run dev
+5. ssh project@0.198.200.96
+6. ./login.sh
+7. cloudflared tunnel --url http://localhost:3000
+8. Copy URL ใหม่ ไปแก้ใน nuxt.config.js
+9. build Frontend เป็น Static เพื่อไปใส่ใน Web hosting
