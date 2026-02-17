@@ -18,24 +18,11 @@ Contributer: Nattawadee Chaleechat
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว
 
 Contributer: Chetsada Kongsak
-[16/2]
 [Description]
 Contributer:Chetsada 
 [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
-[AI Declire] ใช้ ChetGPT ช่วยตรง ReviewModal ส่วนกดสิ้นสุดการเดินทาง
 ใช้ ChetGPT ช่วย
 
-Contributer: Chetsada Kongsak
-[17/2]
-[Description] 
-- ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
-- ปิด + สร้างปุ่ม "รีวิวแล้ว"
-
-[11:17|17/2]
-[Description] 
-- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
-  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
-- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
 Contributer: Piyawat Sawatkul
 [Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว เพื่อที่เห็นจำนวนและรายละเอียดreview driver 
 รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
@@ -152,7 +139,6 @@ Contributer: Piyawat Sawatkul
                     <h5 class="font-medium text-gray-900">
                       {{ trip.driver.name }}
                     </h5>
-                    <div class="flex items-center">
                     <!--reviewpopup-->
                     <div class="flex items-center cursor-pointer" @click.stop="openReviewModalDriver(trip)">
                       <div class="flex text-sm text-yellow-400">
@@ -311,12 +297,7 @@ Contributer: Piyawat Sawatkul
 
                   <!--(Start) 
                     Contributer:Chetsada 
-                    [23:52|15/2/2569]
                     [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
-                    [AI declare]ใ ช้ ChetGPT
-
-                    [11:17|15/2/2569]
-                    - เพิ่มจำกัดเวลารีวิว 7 วัน  canReview(trip)
                     ใช้ ChetGPT
                     [23:52|15/2/2569]
                   -->
@@ -342,18 +323,7 @@ Contributer: Piyawat Sawatkul
                     class="px-4 py-2 bg-gray-300 text-gray-600 rounded-md"
                   >
                     รีวิวแล้ว
-                  </button>
-                  <!--(Finish)-->
-                  <!-- Contributer:Chetsada 
-                    [Description] เพิ่มส่วนของปุ่ม หมดเวลารีวิว
-                    [17/2/2569] -->
-                  <button
-                    v-else-if="trip.status === 'completed' && !trip.reviewed && !canReview(trip)"
-                    disabled
-                    class="px-4 py-2 bg-yellow-100 text-gray-600 rounded-md"
-                  >
-                    หมดเวลารีวิวแล้ว (เกิน 7 วัน)
-                  </button>
+                    </button>
                   <!--(Finish)-->
 
                 </div>
@@ -972,21 +942,6 @@ async function ReviewSuccess() {
   closeReview()
 }
 // 
-
-// chetsada 17/2 เช็ค ว่าจบไปแล้ว 7 วันไหม
-function canReview(trip) {
-  if (!trip.completedAt) return false;
-
-  const completed = new Date(trip.completedAt);
-  const now = new Date();
-
-  const differentTime = now - completed; // ms
-  const differentDays = differentTime / (1000 * 60 * 60 * 24);
-
-  return differentDays <= 7;
-}
-//
-
 async function updateMap(trip) {
   if (!trip) return;
   await waitMapReady();
