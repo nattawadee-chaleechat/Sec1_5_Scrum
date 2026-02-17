@@ -602,7 +602,7 @@ const markDriverArrived = async (bookingId) => {
       data: { status: "COMPLETED" },
     });
   }
-
+  await notifyTripCompleted(bookingId);
   return updated;
 };
 
@@ -626,7 +626,7 @@ const markPassengerArrived = async (bookingId) => {
       data: { status: "COMPLETED" },
     });
   }
-
+  await notifyTripCompleted(bookingId);
   return updated;
 };
 
