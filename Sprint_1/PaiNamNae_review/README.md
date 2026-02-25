@@ -1,7 +1,9 @@
 # Pai Nam Nae - A Safe Ride Sharing App
 
 <!-- A safe ride-sharing application with a **Nuxt.js** frontend and **Express.js** backend, powered by **Prisma** ORM and **PostgreSQL**. -->
-"Pai Nam Nae is a carpooling web application that connects drivers and passengers heading in the same direction, with a primary focus on safety and convenience. It is developed with a **Nuxt.js** frontend and an **Express.js**  backend, powered by the **Prisma** ORM and a **PostgreSQL** database."
+
+"Pai Nam Nae is a carpooling web application that connects drivers and passengers heading in the same direction, with a primary focus on safety and convenience. It is developed with a **Nuxt.js** frontend and an **Express.js** backend, powered by the **Prisma** ORM and a **PostgreSQL** database."
+
 ## Table of Contents
 
 - [Features](#features)
@@ -151,7 +153,7 @@ NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_for_frontend
 
 ## API Endpoints
 
-Visit [**http://localhost:3000/documentation**](http://localhost:3000/documentation) for interactive Swagger UI and full API reference.
+Visit [**http:///documentation**](http:///documentation) for interactive Swagger UI and full API reference.
 
 ### Authentication
 
@@ -256,11 +258,11 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
 ## Contact
 
 For questions or feedback, reach out to:
 
 **Email:**
+
 - [jonathandoillon2002@gmail.com](mailto:jonathandoillon2002@gmail.com)
 - [seth.s@kkumail.com](mailto:seth.s@kkumail.com)
