@@ -1,7 +1,5 @@
-import tailwindcssVite from "@tailwindcss/vite";
-
 export default defineNuxtConfig({
-  compatibilityDate: "2025-05-15",
+  modules: ["@nuxtjs/tailwindcss"],
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
@@ -28,9 +26,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-  },
-  vite: {
-    plugins: [tailwindcssVite()],
   },
 
   css: ["leaflet/dist/leaflet.css", "~/assets/css/input.css"],
