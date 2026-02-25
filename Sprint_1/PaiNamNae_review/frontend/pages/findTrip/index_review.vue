@@ -1,3 +1,7 @@
+
+Contributer: Piyawat Sawatkul
+[Description] แก้ปัญหานำข้อมูลจากbackendขึ้นfrontend ให้ถูกต้องใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
 <template>
     <div>
         <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -118,13 +122,16 @@
                                                     </div>
                                                 </div>
                                                 <!--reviewpopup-->
-                                                <div class="flex items-center mt-1" @click.stop="showreview=true">
+
+                                                <div class="flex items-center mt-1" @click.stop="openReviewModal(route.driver)">
                                                     <div class="flex text-yellow-400">
-                                                        <span v-for="star in 5" :key="star">{{ star <=
-                                                            route.driver.rating ? '★' : '☆' }}</span>
+                                                        <span v-for="star in 5" :key="star">
+                                                           {{ star <= (route.driver?.rating ?? 0) ? '★' : '☆' }}</span>
                                                     </div>
-                                                    <span class="ml-2 text-sm text-gray-600">
-                                                        {{ route.driver.rating }} ({{ route.driver.reviews }} รีวิว)
+                                                    <span class="ml-2 text-sm text-gray-600 cursor-pointer hover:underline">
+                                                        {{ route.driver?.rating ?? 0 }} ({{ route.driver?.reviews ?? 0 }} รีวิว)
+
+
                                                     </span>
                                                 </div>
                                             </div>
@@ -243,7 +250,9 @@
 
         <!--reviewpopup-->
         <transition name="modal-fade">
-            <div v-if="showreview" class="modal-overlay" @click.self="showreview=false">
+
+             <div v-if="showreview && driverInfo" class="modal-overlay" @click.self="showreview=false">
+
                 <div class="modal-content">
                     <div class="flex items-center justify-between p-6 border-b border-gray-300">
                         <h3 class="text-xl font-semibold text-gray-900">รีวิวผู้ขับ</h3>
@@ -257,39 +266,45 @@
                     <div class="p-6">
                         <div class="flex flex-col items-center">
                             <img 
+
+                                :src="driverInfo?.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(driverInfo?.name || 'U')"
+                                :alt="driverInfo?.name"
                                 class="object-cover w-22 h-22 rounded-full">
-                            <div class="font-medium text-gray-900">{{ route.id.driver.name }}</div><!--ดึง ชื่อคนขับ จากเร้า-->
-                            <div class="flex items-center">
+                            <div class="font-medium text-gray-900 mt-3">{{ driverProfile?.name || driverInfo?.name || 'ไม่มีข้อมูล' }}</div>
+                            <div class="flex items-center mt-2">
                                 <div class="flex text-sm text-yellow-400">
-                                    <span v-for="star in 5" :key="star">★</span><!--ดึง ดาวเฉลี่ย จากฟังกชัน ของคนขับ และ แก้ v-for-->
+                                    <span v-for="star in 5" :key="star">{{ star <= Math.round(driverProfile?.driver?.rating ?? 0) ? '★' : '☆' }}</span>
                                 </div>
-                                <span class="ml-2 text-sm text-gray-600"> (รีวิว)</span><!--ดึง ค่าเฉลี่ย จากฟังชัน ของคนขับ และ จำนวน รีวิว-->
+                                <span class="ml-2 text-sm text-gray-600">{{ (driverProfile?.driver?.rating ?? 0).toFixed(1) }} ({{ driverProfile?.driver?.reviews ?? 0 }} รีวิว)</span>
+
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center justify-between p-6 border-b border-gray-300">
                         <h2 class="text-xl font-semibold text-gray-900">คนอื่นว่ายังไงบ้าง</h2>
                     </div>
-                    <div v-for="route in 5" :key="route.id"><!--ดึง รีวิวทั้งหมด จากรีวิว ของคนขับ-->
-                        <div class="p-3 mx-3 border-b border-gray-300">
-                            <div class="flex items-center justify-between">
-                                <div class="font-medium text-gray-900">name</div><!--ดึง ชื่อคนรีวิว จากรีวิวทั้งหมด-->
-                                <div class="flex items-center">
-                                    <div class="flex text-sm text-yellow-400">
-                                        <span v-for="star in 5" :key="star">★</span><!--ดึง ดาวรีวิว ของคนรีวิว และ แก้ v-for-->
+
+                    <div v-if="driverProfile?.reviews && driverProfile.reviews.length > 0">
+                        <div v-for="review in driverProfile.reviews" :key="review.id">
+                            <div class="p-3 mx-3 border-b border-gray-300">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-medium text-gray-900">{{ review.reviewerName || 'ไม่มีข้อมูล' }}</div>
+                                    <div class="flex items-center">
+                                        <div class="flex text-sm text-yellow-400">
+                                            <span v-for="star in 5" :key="star">{{ star <= review.review.rating ? '★' : '☆' }}</span>
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                <div class="mb-2 font-small text-gray-900">{{ review.comment || 'ไม่มีความเห็น' }}</div>
+                                <div class="font-small text-sm text-gray-500">{{ new Date(review.createAt).toLocaleDateString('th-TH') }}</div>
                             </div>
-                            
-                            <div class="mb-2 font-small text-gray-900">comment</div><!--ดึง คอมเม้น ของคนรีวิว-->
-                            <div class="flex flex-wrap items-center space-x-4">
-                                <img v-for="image in 6" 
-                                    
-                                    class="mb-2 object-cover w-30 h-30"><!--ดึง รูป ของคนรีวิว และ แก้ v-for -->
-                            </div>
-                            <div class="font-small text-sm text-gray-900">date</div><!--ดึง วันที่ ของคนรีวิว-->
                         </div>
                     </div>
+                    <div v-else class="p-6 text-center text-gray-500">
+                        ยังไม่มีรีวิว
+                    </div>
+
                 </div>
             </div>
         </transition>
@@ -617,6 +632,10 @@ const dropoffPoint = ref('')
 
 const showreview = ref(false)
 
+const driverProfile = ref(null)
+const driverInfo = ref(null)
+const reviewDriver = ref(null)
+
 const bookingTotalPrice = computed(() => {
     if (!bookingRoute.value) return 0
     return bookingSeats.value * bookingRoute.value.price
@@ -733,12 +752,15 @@ async function handleSearch() {
                 originAddress: route.startLocation?.address ? cleanAddr(route.startLocation.address) : null,
                 destinationAddress: route.endLocation?.address ? cleanAddr(route.endLocation.address) : null,
                 driver: {
+
+                    id: route.driver?.id,
                     name: `${route.driver?.firstName || ''} ${route.driver?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
                     image: route.driver?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(route.driver?.firstName || 'U')}&background=random&size=64`,
-                    rating: 4.5,
-                    reviews: Math.floor(Math.random() * 50) + 5,
+                    rating: route.driver?.rating ?? 0,
+                    reviews: route.driver?.reviews ?? 0,
                     isVerified: !!route.driver?.isVerified
                 },
+
                 carDetails: route.vehicle
                     ? [`${route.vehicle.vehicleModel} (${route.vehicle.vehicleType})`, ...(route.vehicle.amenities || [])]
                     : ['ไม่มีข้อมูลรถ'],
@@ -1446,7 +1468,19 @@ onMounted(() => {
 async function openReviewModal(driver){
     reviewDriver.value = driver;
 
-    const response = await $api('/driver/${driver.id}/reviews');
+
+    driverInfo.value = driver;
+    showreview.value = true;
+    
+    try {
+        const response = await $api(`/review/${driver.id}/reviews`);
+        driverProfile.value = response;
+        console.log('Reviews loaded:', response.reviews?.length ?? 0);
+    } catch (error) {
+        console.error('Failed to fetch driver reviews:', error);
+        toast.warning('ไม่สามารถโหลดข้อมูล', 'ลองกำหนดข้อมูลคนขับอีกครั้ง');
+        showreview.value = false;
+    }
 }
 
 </script>

@@ -352,6 +352,7 @@ const getMyBookings = async (passengerId) => {
   return prisma.booking.findMany({
     where: { passengerId },
     include: {
+      review :true,
       route: {
         include: {
           driver: {
@@ -601,7 +602,7 @@ const markDriverArrived = async (bookingId) => {
       data: { status: "COMPLETED" },
     });
   }
-
+  await notifyTripCompleted(bookingId);
   return updated;
 };
 
@@ -625,7 +626,7 @@ const markPassengerArrived = async (bookingId) => {
       data: { status: "COMPLETED" },
     });
   }
-
+  await notifyTripCompleted(bookingId);
   return updated;
 };
 
