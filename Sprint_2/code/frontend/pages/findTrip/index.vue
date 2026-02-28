@@ -1,3 +1,17 @@
+Contributer: Piyawat Sawatkul
+[Description] แก้ปัญหานำข้อมูลจากbackendขึ้นfrontend ให้ถูกต้องใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
+// Contributer: suttipad rodhom
+// [26/2/2569]
+// - ปรับ UI Modal รีวิว แสดงผลจาก "รีวิวผู้ขับ" → "รีวิวทั้งหมด"
+// - เปลี่ยนหัวข้อเป็น "ความเห็นจากผู้โดยสาร"
+// - ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท
+//   - images
+//   - videos (กดดู fullscreen ได้)
+//   - audio
+//   - Google Drive links
+// - เพิ่มระบบ Fullscreen Video พร้อมปุ่มปิด
+
 <template>
     <div>
         <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -117,13 +131,16 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div class="flex items-center mt-1">
+                                                <!--reviewpopup-->
+                                                <div class="flex items-center mt-1" @click.stop="openReviewModal(route)">
                                                     <div class="flex text-yellow-400">
-                                                        <span v-for="star in 5" :key="star">{{ star <=
-                                                            route.driver.rating ? '★' : '☆' }}</span>
+                                                        <span v-for="star in 5" :key="star">
+                                                            {{ star <= Math.floor(route?.driver?.rating || 0) ? '★' : '☆' }}
+                                                        </span>
                                                     </div>
                                                     <span class="ml-2 text-sm text-gray-600">
-                                                        {{ route.driver.rating }} ({{ route.driver.reviews }} รีวิว)
+                                                        {{ (route?.driver?.rating ?? 0).toFixed(1) }} 
+                                                        ({{ route?.driver?.reviews ?? 0 }} รีวิว)
                                                     </span>
                                                 </div>
                                             </div>
@@ -240,6 +257,205 @@
             </div>
         </div>
 
+        <!--reviewpopup-->
+        <transition name="modal-fade">
+            <div v-if="showreview" class="modal-overlay" @click.self="showreview=false">
+                <div class="modal-content">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between p-6 border-b border-gray-300">
+                        <h3 class="text-xl font-semibold text-gray-900">รีวิวทั้งหมด</h3>
+                        <button @click="showreview=false" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Driver Profile -->
+                    <div class="p-6">
+                        <div class="flex flex-col items-center">
+                            <img 
+                                :src="driverInfo?.driver?.image || driverInfo?.driver?.profilePicture"
+                                :alt="driverInfo?.name || 'Driver'"
+                                class="object-cover w-22 h-22 rounded-full">
+                            
+                            <div class="font-medium text-gray-900 mt-2">
+                                {{ driverInfo?.name || 'ไม่มีข้อมูล' }}
+                            </div>
+                            
+                            <div class="flex items-center mt-1">
+                                <div class="flex text-sm text-yellow-400">
+                                    <span v-for="star in 5" :key="star">
+                                        {{ star <= Math.floor(driverInfo?.driver?.rating || 0) ? '★' : '☆' }}
+                                    </span>
+                                </div>
+                                <span class="ml-2 text-sm text-gray-600">
+                                    {{ (driverInfo?.driver?.rating || 0).toFixed(1) }} 
+                                    ({{ driverInfo?.driver?.reviews || 0 }} รีวิว)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-6 border-b border-gray-300">
+                        <h2 class="text-xl font-semibold text-gray-900">ความเห็นจากผู้โดยสาร</h2>
+                    </div>
+
+
+                    <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
+                        ยังไม่มีรีวิว
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div v-else>
+                        <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
+                            <div class="flex items-center justify-between">
+                                <div class="font-medium text-gray-900">
+                                    {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="flex text-sm text-yellow-400">
+                                        <span v-for="star in 5" :key="star">
+                                            {{ star <= Number(item.review?.rating || 0) ? '★' : '☆' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Comment -->
+                            <div class="mb-2 text-sm text-gray-900">
+                                {{ item.comment || 'ไม่มีความคิดเห็น' }}
+                            </div>
+                            
+                            <!-- Review Media -->
+                            <div class="flex flex-wrap gap-3 mb-3">
+
+                                <!-- Images -->
+                                <template v-if="item.images && item.images.length">
+                                    <div
+                                    v-for="(img, index) in item.images"
+                                    :key="'img-' + index"
+                                    class="w-28 h-28 rounded-xl overflow-hidden shadow-sm border bg-gray-100"
+                                    >
+                                    <img
+                                        v-if="img && img.url"
+                                        :src="img.url"
+                                        class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                                    />
+                                    </div>
+                                </template>
+
+                                <!-- Videos -->
+                                <template v-if="item.videos && item.videos.length">
+                                    <div
+                                    v-for="(vid, index) in item.videos"
+                                    :key="'vid-' + index"
+                                    class="relative w-28 h-28 rounded-xl overflow-hidden shadow-sm border cursor-pointer group bg-black"
+                                    @click="vid && vid.url ? openVideo(vid.url) : null"
+                                    >
+                                    <video
+                                        v-if="vid && vid.url"
+                                        :src="vid.url"
+                                        class="w-full h-full object-cover"
+                                        muted
+                                        video.pause()
+                                        preload="metadata"
+                                    />
+
+                                    <!-- overlay -->
+                                    <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition"></div>
+
+                                    <!-- play icon -->
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="bg-white/80 rounded-full p-2 shadow">
+                                        <svg
+                                            class="w-6 h-6 text-black"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </template>
+
+                                <!-- Fullscreen Video -->
+                                <transition name="modal-fade">
+                                    <div
+                                    v-if="fullscreenVideo"
+                                    class="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+                                    @click.self="closeVideo"
+                                    >
+                                    <button
+                                        class="absolute top-5 right-5 text-white text-3xl"
+                                        @click="closeVideo"
+                                    >
+                                        ✕
+                                    </button>
+
+                                    <video
+                                        :src="fullscreenVideo"
+                                        controls
+                                        autoplay
+                                        muted
+                                        video.pause()
+                                        class="max-w-full max-h-full rounded-lg"
+                                    />
+                                    </div>
+                                </transition>
+
+                                <!-- Audio -->
+                                <template v-if="item.audio && item.audio.length">
+                                    <div
+                                    v-for="(audio, index) in item.audio"
+                                    :key="'audio-' + index"
+                                    class="w-full bg-gray-50 p-2 rounded-lg border"
+                                    >
+                                    <audio
+                                        v-if="audio && audio.url"
+                                        :src="audio.url"
+                                        controls
+                                        class="w-full"
+                                    />
+                                    </div>
+                                </template>
+
+                                <!-- Links -->
+                                <template v-if="item.links && item.links.length">
+                                    <div
+                                    v-for="(linkItem, index) in item.links"
+                                    :key="'link-' + index"
+                                    class="w-full"
+                                    >
+                                    <a
+                                        v-if="linkItem && linkItem.url"
+                                        :href="linkItem.url"
+                                        target="_blank"
+                                        class="flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition border shadow-sm break-all"
+                                    >
+                                        <span class="text-lg">🔗</span>
+                                        <span class="text-blue-600 font-medium truncate">
+                                        {{ linkItem.url }}
+                                        </span>
+                                    </a>
+                                    </div>
+                                </template>
+
+                            </div>
+
+                            <div class="text-sm text-gray-500">
+                                {{ item.createdAt ? dayjs(item.createdAt).format('D MMM BBBB') : 
+                                item.createAt ? dayjs(item.createAt).format('D MMM BBBB') : 
+                                'ไม่ระบุวันที่' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        
         <transition name="modal-fade">
             <div v-if="showModal && bookingRoute" class="modal-overlay" @click.self="closeModal">
                 <div class="modal-content">
@@ -307,8 +523,8 @@
                                     </div>
                                     <div class="flex items-center">
                                         <div class="flex text-sm text-yellow-400">
-                                            <span v-for="star in 5" :key="star">{{ star <= bookingRoute.driver.rating
-                                                ? '★' : '☆' }}</span>
+                                            <span v-for="star in 5" :key="star">
+                                                {{ star <= bookingRoute.driver.rating? '★' : '☆' }}</span>
                                         </div>
                                         <span class="ml-2 text-sm text-gray-600">{{ bookingRoute.driver.rating }} ({{
                                             bookingRoute.driver.reviews }} รีวิว)</span>
@@ -544,6 +760,7 @@ const RADIUS_METERS = 500
 const routes = ref([])
 const selectedRoute = ref(null)
 const isLoading = ref(false)
+const driverRatingCache = new Map()
 
 const mapContainer = ref(null)
 let gmap = null               // แผนที่ของ Google
@@ -560,6 +777,7 @@ const bookingRoute = ref(null)
 const bookingSeats = ref(1)
 const pickupPoint = ref('')
 const dropoffPoint = ref('')
+
 
 const bookingTotalPrice = computed(() => {
     if (!bookingRoute.value) return 0
@@ -676,13 +894,15 @@ async function handleSearch() {
                 destinationName: route.endLocation?.name || `(${route.endLocation.lat.toFixed(2)}, ${route.endLocation.lng.toFixed(2)})`,
                 originAddress: route.startLocation?.address ? cleanAddr(route.startLocation.address) : null,
                 destinationAddress: route.endLocation?.address ? cleanAddr(route.endLocation.address) : null,
-                driver: {
-                    name: `${route.driver?.firstName || ''} ${route.driver?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
-                    image: route.driver?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(route.driver?.firstName || 'U')}&background=random&size=64`,
-                    rating: 4.5,
-                    reviews: Math.floor(Math.random() * 50) + 5,
-                    isVerified: !!route.driver?.isVerified
+               driver: {
+                    id: route.driver?.id,
+                        name: `${route.driver?.firstName || ''} ${route.driver?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
+                        image: route.driver?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(route.driver?.firstName || 'U')}&background=random&size=64`,
+                        rating: route.driver?.rating ?? 0,
+                        reviews: route.driver?.reviews ?? 0,
+                        isVerified: !!route.driver?.isVerified
                 },
+
                 carDetails: route.vehicle
                     ? [`${route.vehicle.vehicleModel} (${route.vehicle.vehicleType})`, ...(route.vehicle.amenities || [])]
                     : ['ไม่มีข้อมูลรถ'],
@@ -695,6 +915,8 @@ async function handleSearch() {
                 stopsCoords,
             }
         })
+
+        void hydrateDriverRatings(routes.value)
 
         await waitMapReady()
         const jobs = routes.value.map(async (r, i) => {
@@ -715,6 +937,65 @@ async function handleSearch() {
     } finally {
         isLoading.value = false
     }
+}
+//แปลงapi ให้เป็น UI แบบเดียวกัน
+function normalizeRatingSummary(response) {
+    let rating = null
+    let reviews = null
+
+    if (response?.driver) {
+        const r = Number(response.driver.rating)
+        const c = Number(response.driver.reviews)
+        rating = Number.isFinite(r) ? r : null
+        reviews = Number.isFinite(c) ? c : null
+    }
+
+    if ((rating == null || reviews == null) && Array.isArray(response?.reviews)) {
+        const values = response.reviews
+            .map(item => Number(item?.review?.rating ?? item?.rating))
+            .filter(v => Number.isFinite(v))
+        if (values.length) {
+            const sum = values.reduce((acc, v) => acc + v, 0)
+            rating = sum / values.length
+            reviews = values.length
+        } else if (reviews == null) {
+            reviews = response.reviews.length
+        }
+    }
+
+    return {
+        rating: Number.isFinite(rating) ? rating : 0,
+        reviews: Number.isFinite(reviews) ? reviews : 0
+    }
+}
+//ป้องกันยิง API ซ้ำทุกครั้ง
+async function fetchDriverRatingSummary(driverId) {
+    if (!driverId) return null
+    if (driverRatingCache.has(driverId)) return driverRatingCache.get(driverId)
+
+    try {
+        const response = await $api(`/review/${driverId}/reviews`)
+        const summary = normalizeRatingSummary(response)
+        driverRatingCache.set(driverId, summary)
+        return summary
+    } catch (error) {
+        console.warn('Failed to load driver rating:', driverId, error)
+        return null
+    }
+}
+
+async function hydrateDriverRatings(routeList) {
+    const tasks = routeList
+        .filter(r => r?.driver?.id)
+        .filter(r => !Number.isFinite(r.driver.rating) || r.driver.rating === 0 || r.driver.reviews == null)
+        .map(async (route) => {
+            const summary = await fetchDriverRatingSummary(route.driver.id)
+            if (!summary) return
+            route.driver.rating = summary.rating
+            route.driver.reviews = summary.reviews
+        })
+
+    await Promise.allSettled(tasks)
 }
 
 
@@ -1386,6 +1667,72 @@ onMounted(() => {
         handleSearch()
     }
 })
+const showreview = ref(false)
+const review = ref([]);
+const driverInfo = ref(null);
+const fullscreenVideo = ref(null)
+
+async function openVideo(url) {
+  fullscreenVideo.value = url
+}
+
+function closeVideo() {
+  fullscreenVideo.value = null
+}
+
+async function openReviewModal(route){
+    showreview.value = true;
+    driverInfo.value = route;
+    
+    review.value = [];
+
+    try{
+        if (!route?.driver?.id) {
+            console.error('Driver ID is missing');
+            return;
+        }
+
+        const response = await $api(`/review/${route.driver.id}/reviews`);
+
+        if (response?.reviews) {
+            review.value = response.reviews;
+        } else if (Array.isArray(response)) {
+            review.value = response;
+        } else {
+            review.value = [];
+        }
+
+        if (response) {
+            driverInfo.value = {
+                ...driverInfo.value,
+                name: response.name || driverInfo.value?.driver?.name,
+                profilePicture: response.profilePicture || driverInfo.value?.driver?.image,
+                isVerified: response.isVerified ?? driverInfo.value?.driver?.isVerified,
+                driver: {
+                    ...driverInfo.value.driver,
+                    rating: response.driver?.rating ?? driverInfo.value?.driver?.rating,
+                    reviews: response.driver?.reviews ?? driverInfo.value?.driver?.reviews
+                }
+            };
+
+            const routeIndex = routes.value.findIndex(r => r.id === route.id);
+            if (routeIndex !== -1 && response.driver) {
+                const summary = normalizeRatingSummary(response)
+                routes.value[routeIndex].driver.rating = summary.rating
+                routes.value[routeIndex].driver.reviews = summary.reviews
+                if (route?.driver?.id) {
+                    driverRatingCache.set(route.driver.id, summary)
+                }
+            }
+        }
+        
+        
+    }catch(error){
+        console.error('Failed to load reviews:', error);
+        review.value = [];
+    }
+}
+
 </script>
 
 <style scoped>

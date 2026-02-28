@@ -1,8 +1,16 @@
+/* Contributer: Nattawadee Chaleechat 
+[Description] 
+เพิ่ม router.patch สำหรับ Driver and Passenger confirm arrived
+เพื่อรับคำขอจาก Frontend ตอนผู้ใช้กดปุ่ม สิ้นสุดการเดินทาง
+Update 14 Feb 2026
+*/
+
 const express = require('express');
 const validate = require('../middlewares/validate');
 const { protect, requireAdmin } = require('../middlewares/auth');
 const requireDriverVerified = require('../middlewares/driverVerified');
 const bookingController = require('../controllers/booking.controller');
+
 const {
   createBookingSchema,
   idParamSchema,
@@ -25,7 +33,7 @@ router.get(
   requireAdmin,
   validate({ query: listBookingsQuerySchema }),
   bookingController.adminListBookings
-)
+);
 
 // GET /bookings/admin/:id
 router.get(
@@ -34,7 +42,7 @@ router.get(
   requireAdmin,
   validate({ params: idParamSchema }),
   bookingController.adminGetBookingById
-)
+);
 
 // POST /bookings/admin
 router.post(
@@ -43,7 +51,7 @@ router.post(
   requireAdmin,
   validate({ body: createBookingByAdminSchema }),
   bookingController.adminCreateBooking
-)
+);
 
 // PUT /bookings/admin/:id
 router.put(
@@ -52,7 +60,7 @@ router.put(
   requireAdmin,
   validate({ params: idParamSchema, body: updateBookingByAdminSchema }),
   bookingController.adminUpdateBooking
-)
+);
 
 // DELETE /bookings/admin/:id
 router.delete(
@@ -110,7 +118,33 @@ router.delete(
   '/:id',
   protect,
   validate({ params: idParamSchema }),
-  bookingController.deleteBooking
+  bookingController.deleteBooking,
+);
+
+/*
+Contributer: Nattawadee Chaleechat 
+[Description] เพิ่ม router.patch สำหรับ Driver และ Passenger
+Driver และ Passenger ยืนยันว่าถึงแล้ว
+เมื่อทั้งคู่กดยืนยัน ถึงจะสามารถเปลี่ยนสถานะเป็น completed ได้
+[AI Declare] 
+ใช้ chatgpt ช่วยอธิบายหลักการของโค้ดโดยรวม
+*/
+
+// Driver confirm arrived
+router.patch(
+  "/:id/arrive-driver",
+  protect, //middleware ตรวจ login JWT
+  requireDriverVerified,
+  validate({ params: idParamSchema }),
+  bookingController.driverArrived,
+);
+
+// Passenger confirm arrived
+router.patch(
+  "/:id/arrive-passenger",
+  protect,
+  validate({ params: idParamSchema }),
+  bookingController.passengerArrived,
 );
 
 module.exports = router;
