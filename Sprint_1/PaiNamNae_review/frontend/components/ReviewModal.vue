@@ -1,12 +1,16 @@
 <!-- 
-๊Contributer: suttipad rodhom
+Contributer: suttipad rodhom
 ไฟล์นี้เป็นหน้า Popup สำหรับให้ผู้ใช้รีวิวการเดินทาง
 มีการให้คะแนนเป็นดาว เขียนคอมเมนต์ และแนบรูปภาพได้
+
+Contributer: chetsada kongsak
+[17/2/2569]
+เพิ่ม emit('reviewed') เพิ่มเอาไว้ fetch หน้าใน mytrip/index 
 -->
 
 <template>
   <!-- overlay ดำครอบทั้งหน้า เพื่อให้เป็นลักษณะ modal -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
     <div class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl">
 
       <!-- แสดงรูปโปรไฟล์คนขับ -->
@@ -118,7 +122,7 @@ const props = defineProps({
   trip: Object
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close','reviewd'])   // chetsada 17/2 เพิ่ม reviewed เอาไว้ fetch หน้าใน mytrip index
 
 // ตัวแปรเก็บค่าคะแนน และค่าที่ hover
 const rating = ref(0)
@@ -194,14 +198,15 @@ async function submitReview() {
     }
 
     const formData = new FormData()
-    formData.append('rating', rating.value)
-    formData.append('comment', comment.value || '')
+    
     formData.append('bookingId', props.trip.id)
+    formData.append('star', rating.value) // chetsada 16/2 0:24 ชื่อตัวแปรตรงกับ database
+    formData.append('comment', comment.value || '')
     formData.append('driverId', props.trip.driver.id)
 
     // แนบรูปถ้ามี
     if (imageFile.value) {
-      formData.append('photos', imageFile.value)
+      formData.append('picture', imageFile.value) // chetsada 16/2 0:24 ชื่อตัวแปรตรงกับ database
     }
 
     await $fetch('http://localhost:3000/api/reviews', {
@@ -214,10 +219,12 @@ async function submitReview() {
 
     toast.success('ส่งรีวิวสำเร็จ', 'ขอบคุณสำหรับความคิดเห็นของคุณ')
 
+    emit('reviewed') // chetsada 17/2 เพิ่มเอาไว้ fetch หน้าใน mytrip index
+
     // หน่วงเวลานิดนึงก่อนปิด popup
     setTimeout(() => {
       emit('close')
-    }, 800)
+    }, 400)
 
   } catch (error) {
     console.error(error?.data || error)
