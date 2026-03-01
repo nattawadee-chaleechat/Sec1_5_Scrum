@@ -215,6 +215,17 @@ Contributer: Piyawat Sawatkul
                                             </ul>
                                         </div>
                                     </div>
+                                    
+                                    <!--เงื่อนไขเพิ่มเติม route-->
+                                    <div class="mt-4 space-y-4">
+                                        <h5 class="mb-2 font-medium text-gray-900">เงื่อนไขเพิ่มเติมอื่น ๆ</h5>
+                                        <ul class="space-y-1 p-3 text-sm text-gray-700 border border-gray-300 rounded-md bg-gray-50">
+                                            <li v-for="i in 2">{{ route.conditions }} ราคาต่อชิ้น {{ route.conditions }} บาท</li>
+                                            <!-- <li v-for="(name, price, index) in route.extra" :key="index">{{ name }} ราคาต่อชิ้น {{ price }} บาท</li>-->
+                                            <!-- async function handleSearch() รอ api backend เพื่อแสดงข้อมูล-->
+                                        </ul>
+                                    </div>
+
                                     <div class="mt-4 space-y-4">
                                         <div v-if="route.conditions">
                                             <h5 class="mb-2 font-medium text-gray-900">เงื่อนไขการเดินทาง</h5>
