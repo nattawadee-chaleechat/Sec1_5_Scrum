@@ -146,9 +146,6 @@ CREATE TABLE "Booking" (
     "completedAt" TIMESTAMP(3),
     "driver_confirm_arrived" BOOLEAN NOT NULL DEFAULT false,
     "passenger_confirm_arrived" BOOLEAN NOT NULL DEFAULT false,
-    "baseTotalPrice" DOUBLE PRECISION NOT NULL,
-    "extraTotalPrice" DOUBLE PRECISION NOT NULL,
-    "totalPrice" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "Booking_pkey" PRIMARY KEY ("id")
 );
@@ -165,29 +162,6 @@ CREATE TABLE "Review" (
     "reviewedUserId" TEXT NOT NULL,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "RouteExtraCharge" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "unitPrice" DOUBLE PRECISION NOT NULL,
-    "routeId" TEXT NOT NULL,
-
-    CONSTRAINT "RouteExtraCharge_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "BookingExtraCharge" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL,
-    "unitPrice" DOUBLE PRECISION NOT NULL,
-    "totalExtraPrice" DOUBLE PRECISION NOT NULL,
-    "bookingId" TEXT NOT NULL,
-    "routeExtraChargeId" TEXT NOT NULL,
-
-    CONSTRAINT "BookingExtraCharge_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -283,21 +257,6 @@ CREATE INDEX "Review_reviewerId_idx" ON "Review"("reviewerId");
 -- CreateIndex
 CREATE UNIQUE INDEX "Review_bookingId_reviewerId_key" ON "Review"("bookingId", "reviewerId");
 
--- CreateIndex
-CREATE INDEX "RouteExtraCharge_routeId_idx" ON "RouteExtraCharge"("routeId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "RouteExtraCharge_routeId_name_key" ON "RouteExtraCharge"("routeId", "name");
-
--- CreateIndex
-CREATE INDEX "BookingExtraCharge_bookingId_idx" ON "BookingExtraCharge"("bookingId");
-
--- CreateIndex
-CREATE INDEX "BookingExtraCharge_routeExtraChargeId_idx" ON "BookingExtraCharge"("routeExtraChargeId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "BookingExtraCharge_bookingId_routeExtraChargeId_key" ON "BookingExtraCharge"("bookingId", "routeExtraChargeId");
-
 -- AddForeignKey
 ALTER TABLE "DriverVerification" ADD CONSTRAINT "DriverVerification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -327,12 +286,3 @@ ALTER TABLE "Review" ADD CONSTRAINT "Review_reviewerId_fkey" FOREIGN KEY ("revie
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_reviewedUserId_fkey" FOREIGN KEY ("reviewedUserId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "RouteExtraCharge" ADD CONSTRAINT "RouteExtraCharge_routeId_fkey" FOREIGN KEY ("routeId") REFERENCES "Route"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "BookingExtraCharge" ADD CONSTRAINT "BookingExtraCharge_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "BookingExtraCharge" ADD CONSTRAINT "BookingExtraCharge_routeExtraChargeId_fkey" FOREIGN KEY ("routeExtraChargeId") REFERENCES "RouteExtraCharge"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
