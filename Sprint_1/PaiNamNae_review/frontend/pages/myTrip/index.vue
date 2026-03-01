@@ -23,15 +23,32 @@ Contributer:Chetsada
 [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
 ใช้ ChetGPT ช่วย
 
-Contributer: Piyawat Sawatkul
-[Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว เพื่อที่เห็นจำนวนและรายละเอียดreview driver 
-รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
+Contributer: Chetsada Kongsak
+[17/2]
+[Description] 
+- ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
+- ปิด + สร้างปุ่ม "รีวิวแล้ว"
+
+[11:17|17/2]
+[Description] 
+- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
+  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
+- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
+ใช้ ChetGPT ช่วย
+
 
 Contributer: Nattawadee Chaleechat Update 16 Feb 2026
 [Description]
 เพิ่มเงื่อนไขการแสดงผล 
 หากไม่ได้กด สิ้นสุดการเดินทาง จะขึ้นปุ่มให้กด
 หากกดปุ่มแล้ว จะแสดงข้อความ การเดินทางเสร็จสิ้นแล้ว (รอให้อีกฝ่ายยืนยันการสิ้นสุดการเดินทาง)
+
+
+Contributer: Piyawat Sawatkul
+[Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว เพื่อที่เห็นจำนวนและรายละเอียดreview driver 
+รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
 -->
 <template>
   <div>
@@ -800,15 +817,15 @@ async function fetchMyTrips() {
 
       return {
         id: b.id,
+        completedAt: b.updatedAt, // เรียกใช้
 
         // Contributer: Nattawadee Chaleechat
         // เพิ่มfield driver_confirm_arrived, passenger_confirm_arrived เมื่อทำการ fetchMyTrips() ดึงข้อมูลจาก backend จะได้ค่ามาด้วย
         driver_confirm_arrived: b.driver_confirm_arrived ?? false,
         passenger_confirm_arrived: b.passenger_confirm_arrived ?? false,
 
-        // ChatGPT ช่วย
-        completedAt: b.updatedAt,
-        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25
+        
+        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25 // ChatGPT ช่วย
 
         status: String(b.status || "").toLowerCase(),
         origin:
@@ -1151,7 +1168,7 @@ const handleConfirmAction = async () => {
         body: { status: "COMPLETED" },
       });
       await fetchMyTrips();
-      console.log("UPDATED TRIPS:", trips.value);
+      console.log("UPDATED TRIPS:",allTrips.value); // แก้ชื่อให้ตรง
       toast.success("สิ้นสุดการเดินทางสำเร็จ", 'ขอบคุณที่ใช้บริการ "ไปนำแหน่"');
       //(Finish)
     } else if (action === "delete") {
