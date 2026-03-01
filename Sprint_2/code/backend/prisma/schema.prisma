@@ -269,9 +269,9 @@ model Booking {
   driver_confirm_arrived      Boolean   @default(false)
   passenger_confirm_arrived   Boolean   @default(false)
   // 27/2 21:00
-  baseTotalPrice  Float   // อาจจองหลายที่
-  extraTotalPrice Float   // รวมที่คิดเพิ่มทุกตัวใน booking
-  totalPrice      Float   // ที่ต้องจ่่ายทั้งหมด
+  baseTotalPrice  Float   @default(0) // อาจจองหลายที่
+  extraTotalPrice Float   @default(0) // รวมที่คิดเพิ่มทุกตัวใน booking
+  totalPrice      Float   @default(0) // ที่ต้องจ่่ายทั้งหมด
 
   review          Review[]   @relation("UserReviewsBooking") // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ bookingId
   bookingExtraCharge    BookingExtraCharge[]
@@ -320,7 +320,7 @@ model BookingExtraCharge {
   name          String
   quantity      Int
   unitPrice     Float  // มันเชื่อมกันมา แต่ถ้าเปลี่ยนใน route ต้องดูว่าจะปรับใน booking ด้วยไหม
-  totalExtraPrice    Float
+  totalExtraPrice    Float  @default(0)
 
   bookingId     String
   booking             Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
