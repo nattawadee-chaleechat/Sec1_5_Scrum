@@ -1,0 +1,335 @@
+// <!-- 
+// Contributer: suttipad rodhom
+// - เพิ่มตาราง "Review" สำหรับระบบรีวิวผู้ใช้งาน [17:05|13/2/2569]
+// - เพิ่มความสัมพันธ์ระหว่าง Review กับ Booking (bookingId) [17:12|13/2/2569]
+// - เพิ่มความสัมพันธ์ระหว่าง Review กับ User (reviewerId) [17:18|13/2/2569]
+// - เพิ่มความสัมพันธ์ระหว่าง Review กับ User (reviewedUserId) [17:24|13/2/2569]
+// - เพิ่ม index สำหรับ reviewedUserId และ reviewerId ในตาราง Review [17:30|13/2/2569]
+// - อัปเดต Model User ให้รองรับ reviewsGiven และ reviewsReceived [17:36|13/2/2569]
+// - อัปเดต Model Booking ให้รองรับความสัมพันธ์กับ Review [17:42|13/2/2569]
+// -->
+
+// Contributer: chetsada kongsak
+// เพิ่ม [13/2/2569]
+// - เพิ่ม driver_comfirm_arrived และ passenger_comfirm_arrived ในการตาราง Booking
+//   โดย ทั้ง Driver และ Passenger ต้องกด สิ้นสุด booking
+//   จากนั้นจึง แสดงหน้ารีวิว ให้ passenger รีวิว Driver
+// - เพิ่ม @@unique() ในตาราง review กำหนดในตาราง Reviews 
+//   โดย paseenger แต่ละคน รีวิว booking นั้น ได้แค่ 1 ครั้ง
+// - ที่ BookingStatus เพิ่ม status 'COMPLETE' 
+//   ไว้เก็บกรณี เช็คว่า ทั้ง driver และ passenger กด 'สิ้นสุดการเดินทาง'
+// ใช้ ChatGPT เช็ค logic
+
+// Contributer: chetsada kongsak & suttipad rodhom
+// [17/2/2569]
+// - เพิ่ม REVIEW ใน enum NotificationType {..} ไว้สำหรับการแจ้งเตือนหลังกดส่งรีวิว
+
+// Contributer: chetsada kongsak
+// [17/2/2569]
+// - ในตาราง booking เพื่ม updatedAt @updatedAt ให้คู่กับ status "COMPETED" 
+//   ตอนนี้ใช้กับเช็คเวลาห้ามรีวิวหลังจาก 7 วัน
+
+// Contributer: suttipad rodhom
+// เพิ่ม [26/2/2569]
+// - เพิ่ม completedAt ในตาราง Booking
+//   ใช้เก็บเวลาที่การเดินทางเสร็จสมบูรณ์ (เมื่อทั้ง Driver และ Passenger กดยืนยันครบ)
+//   ปัจจุบันใช้เป็นตัวอ้างอิงในการจำกัดสิทธิ์รีวิว (ห้ามรีวิวหลังจาก 7 วัน)
+// - แก้ไขฟิลด์ในตาราง Review จาก picture → media (Json? @db.Json)
+//   เพื่อรองรับไฟล์หลายประเภท เช่น รูปภาพ วิดีโอ mp3
+
+// Contributer: chetsada kongsak
+// [26/2/2569]
+// - เพิ่มตาราง RouteExtraCharge สัมพันธ์ manny-to-one กับ Route
+// - เพิ่มตาราง BookingExtraCharge สัมพันธ์ manny-to-one กับ Booking และ manny-to-one กับ RouteExtraCharge
+// เพื่อใช้เก็บข้อมูลการสร้างตัวเลือกสำหรับเก็บเงินเพิ่มในการเดินทางนั้นๆ
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+enum Role {
+  PASSENGER
+  DRIVER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RouteStatus {
+  AVAILABLE
+  FULL
+  COMPLETED
+  CANCELLED
+  IN_TRANSIT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED      // 12/2 เพิ่มสถานะ booking จบ
+}
+
+enum CancelReason {
+  CHANGE_OF_PLAN               // เปลี่ยนแผน/มีธุระกะทันหัน
+  FOUND_ALTERNATIVE            // พบวิธีเดินทางอื่นแล้ว
+  DRIVER_DELAY                 // คนขับล่าช้าหรือเลื่อนเวลา
+  PRICE_ISSUE                  // ราคาหรือค่าใช้จ่ายไม่เหมาะสม
+  WRONG_LOCATION               // เลือกจุดรับ–ส่งผิด
+  DUPLICATE_OR_WRONG_DATE      // จองซ้ำหรือจองผิดวัน
+  SAFETY_CONCERN               // กังวลด้านความปลอดภัย
+  WEATHER_OR_FORCE_MAJEURE     // สภาพอากาศ/เหตุสุดวิสัย
+  COMMUNICATION_ISSUE          // สื่อสารไม่สะดวก/ติดต่อไม่ได้
+}
+
+enum LicenseType {
+  PRIVATE_CAR_TEMPORARY // รถยนต์ส่วนบุคคลชั่วคราว (2 ปี)
+  PRIVATE_CAR          // รถยนต์ส่วนบุคคล (5 ปี)
+  PUBLIC_CAR           // รถยนต์สาธารณะ
+  LIFETIME             // ตลอดชีพ
+}
+
+enum NotificationType {
+  SYSTEM
+  VERIFICATION
+  BOOKING
+  ROUTE
+  REVIEW // เพิ่มไว้สำหรับการแจ้งเตือนหลังกดส่งรีวิว 17/2 
+}
+
+model User {
+  id                    String   @id @default(cuid())
+  username              String   @unique
+  email                 String   @unique
+  password              String
+  firstName             String?
+  lastName              String?
+  gender                String?
+  phoneNumber           String?
+  profilePicture        String?
+  nationalIdNumber      String?  @unique
+  nationalIdPhotoUrl    String?  @unique
+  nationalIdExpiryDate  DateTime?
+  selfiePhotoUrl        String?
+  role                  Role     @default(PASSENGER)
+  isVerified            Boolean  @default(false)
+  isActive              Boolean  @default(true)
+  otpCode               String?
+  lastLogin             DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  passengerSuspendedUntil DateTime?
+  driverSuspendedUntil    DateTime?
+  driverVerification    DriverVerification?
+  vehicles              Vehicle[]
+  notification          Notification[]
+  createdRoutes         Route[]             @relation("DriverRoutes")
+  bookings              Booking[]           @relation("PassengerBookings")
+
+  reviewsGiven          Review[] @relation("Reviewer")        // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ reviewerId
+  reviewsReceived       Review[] @relation("ReviewedUser")    // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ reviewedUserId
+
+  @@index([role])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([createdAt])
+}
+
+model DriverVerification {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  licenseNumber       String             @unique
+  firstNameOnLicense  String
+  lastNameOnLicense   String
+  licenseIssueDate    DateTime
+  licenseExpiryDate   DateTime
+  licensePhotoUrl     String
+  selfiePhotoUrl      String
+  typeOnLicense       LicenseType
+  status              VerificationStatus @default(PENDING)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([licenseIssueDate])
+  @@index([licenseExpiryDate])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType @default(SYSTEM)
+  title     String
+  body      String
+  link      String?
+  metadata  Json?            @db.Json
+
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  adminReviewedAt DateTime?
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([adminReviewedAt])
+}
+
+model Vehicle {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleModel  String
+  licensePlate  String   @unique
+  vehicleType   String
+  color         String
+  seatCapacity  Int
+  amenities     String[]
+  photos        Json?    @db.Json
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  routes        Route[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([vehicleType])
+  @@index([seatCapacity])
+}
+
+model Route {
+  id              String      @id @default(cuid())
+  driverId        String
+  driver          User        @relation("DriverRoutes", fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleId       String
+  vehicle         Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  startLocation   Json        @db.Json
+  endLocation     Json        @db.Json
+  departureTime   DateTime
+  availableSeats  Int
+  pricePerSeat    Float
+  conditions      String?
+  status          RouteStatus @default(AVAILABLE)
+  cancelledAt     DateTime?
+  cancelledBy     String?     // 'DRIVER' | 'ADMIN'
+  routePolyline   String?
+  distanceMeters Int?
+  durationSeconds Int?
+  routeSummary    String?
+  distance        String?
+  duration        String?
+  waypoints       Json?        @db.Json
+  landmarks       Json?       @db.Json
+  steps           Json?       @db.Json
+  createdAt       DateTime    @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bookings        Booking[]
+  routeExtraCharge           RouteExtraCharge[]   // 26/2
+
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([departureTime])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  routeId         String
+  route           Route         @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  passengerId     String
+  passenger       User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
+  numberOfSeats   Int
+  status          BookingStatus @default(PENDING)
+  cancelledAt     DateTime?
+  cancelledBy     String?       // 'PASSENGER' | 'DRIVER' | 'ADMIN'
+  cancelReason    CancelReason?
+  pickupLocation  Json          @db.Json
+  dropoffLocation Json          @db.Json
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt // chetsada 17/2
+  completedAt     DateTime?     // suttipad 26/2 เวลาที่การเดินทางเสร็จสิ้น (ทั้งคู่กดยืนยัน)
+
+  // 12/2 ถ้า driver & passenger กดสิ้นสุดการเดินทางทั้งคู่ จะเปลี่ยน status - BookingStatus เป็น 'COMPLETED'
+  driver_confirm_arrived      Boolean   @default(false)
+  passenger_confirm_arrived   Boolean   @default(false)
+  // 27/2 21:00
+  baseTotalPrice  Float   // อาจจองหลายที่
+  extraTotalPrice Float   // รวมที่คิดเพิ่มทุกตัวใน booking
+  totalPrice      Float   // ที่ต้องจ่่ายทั้งหมด
+
+  review          Review[]   @relation("UserReviewsBooking") // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ bookingId
+  bookingExtraCharge    BookingExtraCharge[]
+}
+
+// สร้างตาราง Review
+model Review {
+  id            String    @id @default(cuid())
+  star          Int       // เก็บคะแนน
+  comment       String?   // ไม่ใส่ข้อมูลก็ได้
+  media         Json?     @db.Json // suttipad 26/2 เปลี่ยนจาก picture เป็น media เพื่อรองรับไฟล์หลายประเภท เช่น รูปภาพ วิดีโอ mp3
+  createdAt     DateTime  @default(now())
+
+  bookingId       String   
+  booking         Booking   @relation("UserReviewsBooking",fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewerId      String
+  reviewer        User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewedUserId  String
+  reviewedUser    User     @relation("ReviewedUser", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+  
+  @@unique([bookingId, reviewerId]) // paseenger แต่ละคน รีวิว booking นั้น ได้แค่ 1 ครั้ง
+  @@index([bookingId])
+  @@index([reviewedUserId])
+  @@index([reviewerId])
+}
+
+// 26/2
+model RouteExtraCharge {
+  id        String    @id @default(cuid())
+  name      String
+  unitPrice     Float
+  // maximum   Int // จำนวนสูงสุด?? (amount int)
+
+  routeId   String
+  route     Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  bookingExtraCharge  BookingExtraCharge[]
+
+  @@unique([routeId, name])
+  @@index([routeId])
+}
+
+// 26/2
+model BookingExtraCharge {
+  id            String  @id @default(cuid())
+  name          String
+  quantity      Int
+  unitPrice     Float  // มันเชื่อมกันมา แต่ถ้าเปลี่ยนใน route ต้องดูว่าจะปรับใน booking ด้วยไหม
+  totalExtraPrice    Float
+
+  bookingId     String
+  booking             Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  routeExtraChargeId  String
+  routeExtraCharge    RouteExtraCharge @relation(fields: [routeExtraChargeId], references: [id])
+
+  @@unique([bookingId, routeExtraChargeId])
+  @@index([bookingId])
+  @@index([routeExtraChargeId])
+}
+
+// Update 26 Feb 2026
