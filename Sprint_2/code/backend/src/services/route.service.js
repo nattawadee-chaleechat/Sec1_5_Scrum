@@ -1,3 +1,6 @@
+/* Contributer: Nattawadee Chaleechat
+[Description] เพิ่ม routeExtraCharge แสดงเงื่อนไขที่อยากเก็บเงินเพิ่ม */
+
 const prisma = require('../utils/prisma');
 const { Prisma } = require('@prisma/client');
 const ApiError = require('../utils/ApiError');
@@ -25,12 +28,24 @@ const baseInclude = {
   }
 };
 
-const getAllRoutes = async () => {
-  return prisma.route.findMany({
-    include: baseInclude,
-    orderBy: { createdAt: 'desc' }
+/* Contributer: Nattawadee Chaleechat
+[Description] เพิ่ม routeExtraCharge แสดงเงื่อนไขที่อยากเก็บเงินเพิ่ม
+
+[Start]Contributer: Ratchapoom Thongdaeng
+[Description] Update routeExtraCharge แสดงเงื่อนไขที่อยากเก็บเงินเพิ่ม
+*/
+const asyncHandler = require("express-async-handler");
+const routeService = require("../services/route.service");
+
+const getAllRoutes = asyncHandler(async (req, res) => {
+  const routes = await routeService.getAllRoutes();
+  res.status(200).json({
+    success: true,
+    message: "Routes retrieved successfully",
+    data: routes,
   });
-};
+});
+/*[Finish]*/
 
 const searchRoutes = async (opts) => {
   const { startNearLat, startNearLng, endNearLat, endNearLng } = opts || {};
@@ -220,12 +235,29 @@ const searchRoutesByEndpointProximity = async (opts = {}) => {
   // ดึงรายละเอียดพร้อม include ตาม id ที่คัดแล้ว
   const data = idList.length
     ? await prisma.route.findMany({
-      where: { id: { in: idList } },
-      include: {
-        driver: { select: { id: true, firstName: true, lastName: true, gender: true, profilePicture: true, isVerified: true } },
-        vehicle: { select: { vehicleModel: true, vehicleType: true, photos: true, amenities: true } },
-      },
-    })
+        where: { id: { in: idList } },
+        include: {
+          driver: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              gender: true,
+              profilePicture: true,
+              isVerified: true,
+            },
+          },
+          vehicle: {
+            select: {
+              vehicleModel: true,
+              vehicleType: true,
+              photos: true,
+              amenities: true,
+            },
+          },
+          routeExtraCharge: true, // <--- Contributer: Ratchapoom Thongdaeng [Description] เพิ่ม routeExtraCharge
+        },
+      })
     : [];
 
   // รักษา order ให้ตรงกับ idList
@@ -287,8 +319,23 @@ const getMyRoutes = async (driverId) => {
   })
 }
 
+//Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges ลง database
+//Contributer: Ratchapoom Thongdaeng
+//[Description] เพิ่ม routeExtraCharge แสดงเงื่อนไขที่อยากเก็บเงินเพิ่ม
 const createRoute = async (data) => {
-  return prisma.route.create({ data });
+  const { extraCharges, ...routeData } = data;
+  return prisma.route.create({
+    data: {
+      ...routeData,
+      routeExtraCharge: {
+        create: extraCharges?.map((c) => ({
+          name: c.name,
+          unitPrice: c.unitPrice,
+        })) || [],
+      },
+    },
+    include: baseInclude,
+  });
 };
 
 const updateRoute = async (id, data) => {

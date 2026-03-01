@@ -45,6 +45,27 @@ Contributer: Nattawadee Chaleechat Update 16 Feb 2026
 Contributer: Piyawat Sawatkul
 [Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว เพื่อที่เห็นจำนวนและรายละเอียดreview driver 
 รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
+// Contributer: suttipad rodhom
+// [26/2/2569]
+// - ปรับ padding ข้อความสถานะรอยืนยันการสิ้นสุดการเดินทาง
+//   (text-sm → px-4 py-2 text-sm)
+// - เปลี่ยนหัวข้อ Modal จาก "รีวิวผู้ขับแล้ว" → "รีวิวทั้งหมด"
+// - ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท
+//   - images
+//   - videos (รองรับกดดู fullscreen)
+//   - audio
+//   - Google Drive links
+// - เพิ่มระบบ Fullscreen Video พร้อม overlay และปุ่มปิด
+// - เพิ่ม state fullscreenVideo สำหรับควบคุมวิดีโอแบบเต็มจอ
+// - เพิ่มฟังก์ชัน openVideo() และ closeVideo()
+// - ปรับการคำนวณ completedAt ให้ใช้ Date object โดยตรง
+// - ปรับ logic canReview() ให้คำนวณเวลาจาก trip.completedAt โดยตรง
+
+// Contributer: Ratchapoom Thongdaeng
+// [27/2/2569]
+// - Update เงื่อนไขเพิ่มเติม trip จาก Chatsiri
+// - เพื่อให้แสดงเงื่อนไขเพิ่มเติม (routeExtraCharge) ในรายละเอียดเส้นทาง
 -->
 <template>
   <div>
@@ -237,6 +258,17 @@ Contributer: Piyawat Sawatkul
                       </ul>
                     </div>
                   </div>
+                                    
+                  <!--[Start][Ratchapoom] Update เงื่อนไขเพิ่มเติม trip-->
+                  <div class="mt-4 space-y-4" v-if="trip.routeExtraCharge && trip.routeExtraCharge.length">
+                    <h5 class="mb-2 font-medium text-gray-900">เงื่อนไขเพิ่มเติม (เก็บเงินเพิ่ม)</h5>
+                    <ul class="space-y-1 p-3 text-sm text-gray-700 border border-gray-300 rounded-md bg-gray-50">
+                      <li v-for="charge in trip.routeExtraCharge" :key="charge.id">
+                        {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                      </li>
+                    </ul>
+                  </div>
+                  <!--[Finish]-->
 
                   <div class="mt-4 space-y-4">
                     <div v-if="trip.conditions">
@@ -939,6 +971,10 @@ async function fetchMyTrips() {
         stopsCoords,
         carDetails,
         conditions: b.route.conditions,
+        //[Start][Ratchapoom] Update 
+        //[Description] เพิ่มข้อมูล routeExtraCharge จาก API response เพื่อแสดงใน UI
+        routeExtraCharge: b.route.routeExtraCharge || [],
+        //[Finish]
         photos: b.route.vehicle?.photos || [],
         durationText:
           (typeof b.route.duration === "string"

@@ -7,6 +7,25 @@ Contributer: Piyawat Sawatkul
 รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
 */
 
+// Contributer: suttipad rodhom
+// [26/2/2569]
+// - ปรับ UI Modal รีวิว แสดงผลจาก "รีวิวผู้ขับ" → "รีวิวทั้งหมด"
+// - เปลี่ยนหัวข้อเป็น "ความเห็นจากผู้โดยสาร"
+// - ปรับ padding ข้อความสถานะการเดินทาง (text-sm → px-4 py-2 text-sm)
+// - ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท
+//   - images
+//   - videos (กดดู fullscreen ได้)
+//   - audio
+//   - Google Drive links
+// - เพิ่มระบบ Fullscreen Video พร้อมปุ่มปิด
+// - เพิ่ม state fullscreenVideo สำหรับควบคุมวิดีโอแบบเต็มจอ
+// - เพิ่มฟังก์ชัน openVideo() และ closeVideo()
+
+// Contributer: Ratchapoom Thongdaeng
+// [27/2/2569]
+// - Update เงื่อนไขเพิ่มเติม trip จาก Chatsiri
+// - เพื่อให้แสดงเงื่อนไขเพิ่มเติม (routeExtraCharge) ในรายละเอียดเส้นทาง
+
 <template>
   <div>
     <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -159,6 +178,17 @@ Contributer: Piyawat Sawatkul
                       </ul>
                     </div>
                   </div>
+                                    
+                  <!-- [Start][Ratchapoom] Update เงื่อนไขเพิ่มเติม trip-->
+                 <div class="mt-4 space-y-4" v-if="route.routeExtraCharge && route.routeExtraCharge.length">
+                    <h5 class="mb-2 font-medium text-gray-900">เงื่อนไขเพิ่มเติม (เก็บเงินเพิ่ม)</h5>
+                    <ul class="space-y-1 p-3 text-sm text-gray-700 border border-gray-300 rounded-md bg-gray-50">
+                      <li v-for="charge in route.routeExtraCharge" :key="charge.id">
+                        {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                      </li>
+                    </ul>
+                  </div>
+                  <!-- [Finish]-->
 
                   <div class="mt-4 space-y-4">
                     <div v-if="route.conditions">
@@ -1149,6 +1179,10 @@ async function fetchMyRoutes() {
           : ["ไม่มีข้อมูลรถ"],
         photos: r.vehicle?.photos || [],
         conditions: r.conditions || "",
+        //[Start] Contributer: Ratchapoom Thongdaeng 
+        // [Description] เพิ่มข้อมูล routeExtraCharge จาก API response เพื่อแสดงใน UI
+        routeExtraCharge: r.routeExtraCharge || [],
+        //[Finish]
         passengers: confirmedBookings.map((b) => {
           const passengerSummary = passengerSummaryById.get(b?.passenger?.id);
           return {

@@ -1,10 +1,25 @@
-<!--
 Contributer: Piyawat Sawatkul
 [Description] แก้ปัญหานำข้อมูลจากbackendขึ้นfrontend ให้ถูกต้องใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
 
+// Contributer: suttipad rodhom
+// [26/2/2569]
+// - ปรับ UI Modal รีวิว แสดงผลจาก "รีวิวผู้ขับ" → "รีวิวทั้งหมด"
+// - เปลี่ยนหัวข้อเป็น "ความเห็นจากผู้โดยสาร"
+// - ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท
+//   - images
+//   - videos (กดดู fullscreen ได้)
+//   - audio
+//   - Google Drive links
+// - เพิ่มระบบ Fullscreen Video พร้อมปุ่มปิด
+
+// Contributer: Ratchapoom Thongdaeng
+// [27/2/2569]
+// - Update เงื่อนไขเพิ่มเติม trip จาก Chatsiri
+// - เพื่อให้แสดงเงื่อนไขเพิ่มเติม (routeExtraCharge) ในรายละเอียดเส้นทาง
+
 Contributer: Ratchapoom Thongdaeng
 [Description] เพิ่มรายละเอียด UI การจองและการเลือกจำนวนสัมภาระ
--->
+
 <template>
     <div>
         <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -208,6 +223,19 @@ Contributer: Ratchapoom Thongdaeng
                                             </ul>
                                         </div>
                                     </div>
+                                    
+                                    <!--[Start][Ratchapoom] Update เงื่อนไขเพิ่มเติม trip-->
+                                    <div class="mt-4 space-y-4"
+                                        v-if="selectedRoute && selectedRoute.routeExtraCharge && selectedRoute.routeExtraCharge.length">
+                                        <h5 class="mb-2 font-medium text-gray-900">เงื่อนไขเพิ่มเติม (เก็บเงินเพิ่ม)</h5>
+                                        <ul class="space-y-1 p-3 text-sm text-gray-700 border border-gray-300 rounded-md bg-gray-50">
+                                          <li v-for="charge in selectedRoute.routeExtraCharge" :key="charge.id">
+                                            {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                                          </li>
+                                        </ul>
+                                      </div>
+                                      <!--[Finish]-->
+
                                     <div class="mt-4 space-y-4">
                                         <div v-if="route.conditions">
                                             <h5 class="mb-2 font-medium text-gray-900">เงื่อนไขการเดินทาง</h5>
@@ -624,49 +652,6 @@ Contributer: Ratchapoom Thongdaeng
                                 class="flex-1 px-4 py-3 font-semibold text-gray-800 transition duration-200 bg-gray-200 rounded-md hover:bg-gray-300">
                                 ยกเลิก
                             </button>
-                            <--[Start] Ratchapoom - เพิ่ม UI สำหรับเลือกจำนวนสัมภาระที่ต้องการฝากใส่รถ
-                            // ใช้ Gemini ในการออกแบบและสร้าง UI ส่วนนี้
-                           <div class="my-6 border-t pt-4">
-                                <div class="mb-6 bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg text-left">
-                                    <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center">
-                                        <span class="mr-2"></span> เงื่อนไขเพิ่มเติม
-                                    </h4>
-
-                                    <div
-                                        class="text-sm text-gray-700 bg-white p-3 rounded border border-orange-100 shadow-sm">
-                                        <span class="font-semibold text-orange-600">-</span>
-                                        <span class="mx-1">{{ selectedRoute?.description || "ไม่มี" }}</span>
-
-                                        <span class="ml-2 mr-1">ราคาต่อชิ้น</span>
-
-                                        <span class="font-bold text-blue-600">
-                                            {{ selectedRoute?.pricePerItem ?
-                                                parseFloat(selectedRoute.pricePerItem).toLocaleString(undefined,
-                                            {minimumFractionDigits: 2}) : "0.00" }}
-                                        </span>
-
-                                        <span class="ml-1">บาท</span>
-                                    </div>
-                                </div>
-
-                                <div
-                                    class="flex flex-col items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <label class="text-sm font-bold text-gray-600 mb-3">จำนวนชิ้นที่ต้องการฝาก</label>
-                                    <div
-                                        class="flex items-center justify-between w-full max-w-[180px] bg-white rounded-xl shadow-sm p-1 border">
-                                        <button type="button" @click="bookingQuantity > 1 ? bookingQuantity-- : null"
-                                            class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 text-xl font-bold">−</button>
-                                        <div class="flex flex-col items-center">
-                                            <span class="text-xl font-black text-blue-600 leading-none">{{
-                                                bookingQuantity }}</span>
-                                            <span class="text-[9px] text-gray-400 font-bold uppercase mt-1">ชิ้น</span>
-                                        </div>
-                                        <button type="button" @click="bookingQuantity++"
-                                            class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 text-xl font-bold">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            //[Finish]
                             <button @click="confirmBooking"
                                 class="flex-1 px-4 py-3 font-semibold text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700">
                                 ยืนยันการจอง
@@ -765,11 +750,6 @@ const placePickerMapEl = ref(null)
 let placePickerMap = null
 let placePickerMarker = null
 const pickedPlace = ref({ name: '', lat: null, lng: null })
-
-//(Start) Ratchapoom - เพิ่ม const สำหรับเก็บจำนวนของที่ผู้ดยสารเลือกจอง
-//ใช้ Gemini AI ช่วยเขียนโค้ดส่วนนี้ให้
-const bookingQuantity = ref(1);
-//(Finish)
 
 const headScripts = []
 if (process.client && !window.google?.maps) {
@@ -935,6 +915,10 @@ async function handleSearch() {
                 destinationName: route.endLocation?.name || `(${route.endLocation.lat.toFixed(2)}, ${route.endLocation.lng.toFixed(2)})`,
                 originAddress: route.startLocation?.address ? cleanAddr(route.startLocation.address) : null,
                 destinationAddress: route.endLocation?.address ? cleanAddr(route.endLocation.address) : null,
+                //[Start] Contributer: Ratchapoom Thongdaeng
+                //[Description] เพิ่มข้อมูล routeExtraCharge จาก API response เพื่อแสดงใน UI
+                routeExtraCharge: route.routeExtraCharge || [],
+                //[Finish]
                driver: {
                     id: route.driver?.id,
                         name: `${route.driver?.firstName || ''} ${route.driver?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
