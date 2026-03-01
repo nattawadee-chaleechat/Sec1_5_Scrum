@@ -4,6 +4,13 @@ This file will contain all notable changes to this project.
 
 ---
 
+## [Vesion 1.0.0] - [Chetsada]
+### Update 26 February 2026
+- เพิ่มตาราง RouteExtraCharge สัมพันธ์ manny-to-one กับ Route
+- เพิ่มตาราง BookingExtraCharge สัมพันธ์ manny-to-one กับ Booking และ manny-to-one กับ RouteExtraCharge เพื่อใช้เก็บข้อมูลการสร้างตัวเลือกสำหรับเก็บเงินเพิ่มในการเดินทางนั้นๆ
+### AI Declare
+- ใช้ ChatGPT ช่วยตรวจสอบกรณีต่างๆ ของ schema ที่ออกแบบไว้
+---
 ## [Vesion 1.0.0] - [Suttipad]
 ### Update 28 February 2026
 - เพิ่ม completedAt ในตาราง Booking สำหรับเก็บเวลาที่การเดินทางเสร็จสมบูรณ์
@@ -38,4 +45,11 @@ This file will contain all notable changes to this project.
 - ใช้ ChatGPT ช่วย debug flow completedAt และการคำนวณ 7 วัน
 - ใช้ ChatGPT ช่วยจัดโครงสร้าง Multer และ multiple upload
 - ใช้ ChatGPT ช่วยออกแบบระบบ Fullscreen Video ใน Modal
+---
+## [Vesion 2.0.0] - [Chetsada]
+### Update 1 March 2026
+- สร้าง notifyArrivedOneSide สำหรับแจ้งเตือนผู้ใช้อีกฝั่งให้กด "สิ้นสุดการเดินทาง" เมื่ออีกฝั่งหนึ่งกดแล้ว ที่ backend\src\services\notification.service.js
+- เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived ใน backend\src\services\booking.service.js
+### AI Declare
+- ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
 ---

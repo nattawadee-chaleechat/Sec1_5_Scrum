@@ -4,6 +4,12 @@
 Update 17 Feb 2026
 */
 
+// Contributer: suttipad rodhom
+// update 1 March 2026
+// - สร้าง notifyArrivedOneSide สำหรับแจ้งเตือนผู้ใช้อีกฝั่งให้กด "สิ้นสุดการเดินทาง" เมื่ออีกฝั่งหนึ่งกดแล้ว
+// AI Declare
+// - ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
+
 const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 
@@ -244,14 +250,28 @@ const notifyTripCompleted = async (bookingId) => {
       },
     },
   });
-  /////// ผมแก้ ฟังก์ชันคุณหน่อย ไม่รู้ว่าคุณประกาศตรงไหน
+
+  // 17/2 ผมแก้ ฟังก์ชันคุณหน่อย ไม่รู้ว่าคุณประกาศตรงไหน
   // Passenger
   await prisma.notification.create({
     data: {
       userId: booking.passenger.id,
       type: "SYSTEM",
       title: "การเดินทางเสร็จสิ้นแล้ว",
-      body: "การเดินทางของคุณได้จบลงแล้ว",
+      body: "การเดินทางของคุณได้จบลงแล้ว ขอบคุณที่ให้บริการ",
+      metadata: {
+        kind: "TRIP_COMPLETED",
+        bookingId,
+      },
+    },
+  });
+  // แจ้งให้รีวิว
+  await prisma.notification.create({
+    data: {
+      userId: booking.passenger.id,
+      type: "SYSTEM",
+      title: "การเดินทางครั้งนี้เป็นยังไงบ้าง ?",
+      body: "คุณรู้สึกยังไงกับการเดินทางครั้งนี้ มารีวิวผู้ขับกัน",
       metadata: {
         kind: "TRIP_COMPLETED",
         bookingId,
@@ -272,16 +292,51 @@ const notifyTripCompleted = async (bookingId) => {
       },
     },
   });
-  /////// จบ
+};
 
-  // // ส่งให้ Passenger
-  // await sendNotification(booking.passenger.id, "การเดินทางเสร็จสิ้นแล้ว");
+// 1/3 chetsada  function แจ้งเตือนให้อีกฝั่งกด "สิ้นสุดการเดินทาง"
+const notifyArrivedOneSide = async (bookingId, pressby) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      passenger: true,
+      route: { include: { driver: true } },
+    },
+  });
 
-  // // ส่งให้ Driver
-  // await sendNotification(
-  //   booking.route.driver.id,
-  //   "คุณส่งผู้โดยสารเรียบร้อยแล้ว", 
-  // );
+  if (!booking) throw new ApiError(404, "Booking not found");
+
+  // driver กด แจ้ง passenger
+  if (pressby === "DRIVER") {
+    await prisma.notification.create({
+      data: {
+        userId: booking.passenger.id,
+        type: "SYSTEM",
+        title: "คนขับยืนยันการเดินทางแล้ว",
+        body: "คนขับได้ยืนยันว่าการเดินทางเสร็จแล้ว กรุณายืนยันของคุณเพื่อปิดงาน ที่ปุ่ม 'สิ้นสุดการเดินทาง'",
+        metadata: { 
+          kind: "ARRIVED_DRIVER", 
+          bookingId 
+        },
+      },
+    });
+  }
+
+  // passenger กด แจ้ง driver
+  if (pressby === "PASSENGER") {
+    await prisma.notification.create({
+      data: {
+        userId: booking.route.driver.id,
+        type: "SYSTEM",
+        title: "ผู้โดยสารยืนยันการเดินทางแล้ว",
+        body: "ผู้โดยสารได้ยืนยันว่าถึงที่หมายแล้ว กรุณายืนยันของคุณเพื่อปิดงาน ที่ปุ่ม 'สิ้นสุดการเดินทาง'",
+        metadata: { 
+          kind: "ARRIVED_PASSENGER", 
+          bookingId 
+        },
+      },
+    });
+  }
 };
 
 module.exports = {
@@ -297,4 +352,5 @@ module.exports = {
   countUnread,
   adminMarkRead,
   notifyTripCompleted,
+  notifyArrivedOneSide,
 };

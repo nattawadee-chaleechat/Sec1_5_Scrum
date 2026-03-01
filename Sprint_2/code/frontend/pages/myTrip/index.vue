@@ -918,15 +918,13 @@ async function fetchMyTrips() {
 
       return {
         id: b.id,
-        completedAt: new Date(b.completedAt),
 
+        completedAt: new Date(b.completedAt),
+        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25 // ChatGPT ช่วย
         // Contributer: Nattawadee Chaleechat
         // เพิ่มfield driver_confirm_arrived, passenger_confirm_arrived เมื่อทำการ fetchMyTrips() ดึงข้อมูลจาก backend จะได้ค่ามาด้วย
         driver_confirm_arrived: b.driver_confirm_arrived ?? false,
         passenger_confirm_arrived: b.passenger_confirm_arrived ?? false,
-
-        
-        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25 // ChatGPT ช่วย
 
         status: String(b.status || "").toLowerCase(),
         origin:
@@ -1102,7 +1100,6 @@ async function ReviewSuccess() {
   await fetchMyTrips()   
   closeReview()
 }
-// 
 // chetsada 17/2 เช็ค ว่าจบไปแล้ว 7 วันไหม
 function canReview(trip) {
   if (!trip.completedAt) return false;
@@ -1113,6 +1110,7 @@ function canReview(trip) {
 
   return differentDays <= 7;
 }
+
 async function updateMap(trip) {
   if (!trip) return;
   await waitMapReady();

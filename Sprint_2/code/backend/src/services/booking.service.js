@@ -9,11 +9,15 @@ Update 14 Feb 2026
 // [26/2/2569]
 // - เพิ่มการบันทึก completedAt เมื่อทั้ง Driver และ Passenger กดยืนยันครบ
 
+// Contributer: suttipad rodhom
+// update 1 March 2026
+// - เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived
+
 const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 const { RouteStatus, BookingStatus } = require("@prisma/client");
 const { checkAndApplyPassengerSuspension } = require("./penalty.service");
-const { notifyTripCompleted } = require("./notification.service")
+const { notifyTripCompleted, notifyArrivedOneSide } = require("./notification.service")
 
 const ACTIVE_STATUSES = [BookingStatus.PENDING, BookingStatus.CONFIRMED];
 
@@ -600,6 +604,11 @@ const markDriverArrived = async (bookingId) => {
       driver_confirm_arrived: true,
     },
   });
+
+  if (!updated.passenger_confirm_arrived){
+    await notifyArrivedOneSide(bookingId,"DRIVER") // 1/3 chetsada
+  }
+
   // suttipad 26/2 หากทั้งสองฝ่ายยืนยันครบ
   // เปลี่ยนสถานะเป็น COMPLETED และบันทึกเวลา completedAt
   if (updated.driver_confirm_arrived && updated.passenger_confirm_arrived) {
@@ -629,6 +638,11 @@ const markPassengerArrived = async (bookingId) => {
       passenger_confirm_arrived: true,
     },
   });
+
+  if (!updated.driver_confirm_arrived){
+    await notifyArrivedOneSide(bookingId,"PASSENGER") // 1/3 chetsada
+  }
+  
   // suttipad 26/2 หากทั้งสองฝ่ายยืนยันครบ
   // เปลี่ยนสถานะเป็น COMPLETED และบันทึกเวลา completedAt
   if (updated.driver_confirm_arrived && updated.passenger_confirm_arrived) {
