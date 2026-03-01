@@ -1,5 +1,4 @@
-/* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"
-ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว 
+/* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น" 
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว 
 
 Contributer: Piyawat Sawatkul

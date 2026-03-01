@@ -38,4 +38,10 @@ This file will contain all notable changes to this project.
 - ใช้ ChatGPT ช่วย debug flow completedAt และการคำนวณ 7 วัน
 - ใช้ ChatGPT ช่วยจัดโครงสร้าง Multer และ multiple upload
 - ใช้ ChatGPT ช่วยออกแบบระบบ Fullscreen Video ใน Modal
+
+## extraCharges V.01 - [Nattawadee]
+### Update 1 Mar 2026
+File includes route.controller.js route.service.js route.validation.js \createTrip\index.vue
+- เพิ่มช่อง extraCharges ในหน้าสร้างเส้นทาง และเชื่อมกับ database
+### AI Declare ใช้ chatgpt ช่วยหาจุดผิดพลาด เนื่องจากข้อมูลไม่บันทึกลง database
 ---
