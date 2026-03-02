@@ -66,6 +66,7 @@ Contributer: Chetsada
 - เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
 - เพิ่ม const filteredReviews สำหรับกรองดาว
 - เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
+- แก้การแสดงผลคะแนนรีวิว ที่ Driver Profile เพิ่ม .toFixed(1) ในส่วนตกหล่น ให้แสดงจุดทศนิยมแค่จุดเดียว
 [AI Declare]
 - ใช้ ChatGPT ออกแบบฟังก์ชัน 
 -->
@@ -184,7 +185,7 @@ Contributer: Chetsada
                     <h5 class="font-medium text-gray-900">
                       {{ trip.driver.name }}
                     </h5>
-                    <!--reviewpopup-->
+                    <!-- Driver Profile -->
                     <div class="flex items-center cursor-pointer" @click.stop="openReviewModalDriver(trip)">
                       <div class="flex text-sm text-yellow-400">
                         <span>
@@ -193,10 +194,9 @@ Contributer: Chetsada
                         </span>
                       </div>
                       <span class="ml-2 text-sm text-gray-600"
-                        >{{ trip.driver.rating }} ({{
-                          trip.driver.reviews
-                        }}
-                        รีวิว)</span
+                        >{{ (1 ?? 0).toFixed(1) }} 
+                        ({{ trip.driver.reviews ?? 0}} รีวิว)
+                        </span
                       >
                     </div>
                   </div>
@@ -515,8 +515,8 @@ Contributer: Chetsada
                   </span>
                 </div>
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ (driverInfo?.rating || 0).toFixed(1) }} 
-                  ({{ driverInfo?.reviews || 0 }} รีวิว)
+                  {{ (driverInfo?.rating ?? 0).toFixed(1) }} 
+                  ({{ driverInfo?.reviews ?? 0}} รีวิว)
                 </span>
               </div>
             </div>

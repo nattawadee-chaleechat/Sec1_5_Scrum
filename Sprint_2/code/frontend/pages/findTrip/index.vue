@@ -301,8 +301,8 @@ Contributer: Chetsada
                                     </span>
                                 </div>
                                 <span class="ml-2 text-sm text-gray-600">
-                                    {{ (driverInfo?.driver?.rating || 0).toFixed(1) }} 
-                                    ({{ driverInfo?.driver?.reviews || 0 }} รีวิว)
+                                    {{ (driverInfo?.driver?.rating ?? 0).toFixed(1) }} 
+                                    ({{ driverInfo?.driver?.reviews ?? 0 }} รีวิว)
                                 </span>
                             </div>
                         </div>
@@ -568,8 +568,10 @@ Contributer: Chetsada
                                             <span v-for="star in 5" :key="star">
                                                 {{ star <= bookingRoute.driver.rating? '★' : '☆' }}</span>
                                         </div>
-                                        <span class="ml-2 text-sm text-gray-600">{{ bookingRoute.driver.rating }} ({{
-                                            bookingRoute.driver.reviews }} รีวิว)</span>
+                                        <span class="ml-2 text-sm text-gray-600">
+                                            {{ bookingRoute.driver.rating }} 
+                                            ({{bookingRoute.driver.reviews }} รีวิว)
+                                        </span>
                                     </div>
                                 </div>
                             </div>
