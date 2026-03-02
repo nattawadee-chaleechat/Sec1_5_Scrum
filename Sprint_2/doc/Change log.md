@@ -59,3 +59,10 @@ File includes route.controller.js route.service.js route.validation.js \createTr
 - เพิ่มช่อง extraCharges ในหน้าสร้างเส้นทาง และเชื่อมกับ database
 ### AI Declare ใช้ chatgpt ช่วยหาจุดผิดพลาด เนื่องจากข้อมูลไม่บันทึกลง database
 ---
+## Add function calculateBookingTotals V.01 - [Piyawat]
+### Update 2 Mar 2026
+File includes booking.service.js
+- เพิ่มช่อง calculateBookingTotals สำหรับคำนวนราคาทั้งหมด
+### AI Declare 
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด
+---
