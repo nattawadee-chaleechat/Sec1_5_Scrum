@@ -1,3 +1,5 @@
+//Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges ลง validation
+
 const { z } = require("zod");
 const { RouteStatus } = require("@prisma/client");
 
@@ -17,17 +19,30 @@ const createRouteSchema = z.object({
   distance: z.string().optional(),
   duration: z.string().optional(),
   // waypoints: z.any().optional(),
-  waypoints: z.array(z.object({
-    lat: z.number(),
-    lng: z.number(),
-    name: z.string().optional(),
-    address: z.string().optional(),
-    placeId: z.string().optional(),
-    via: z.boolean().optional(),
-  })).optional(),
+  waypoints: z
+    .array(
+      z.object({
+        lat: z.number(),
+        lng: z.number(),
+        name: z.string().optional(),
+        address: z.string().optional(),
+        placeId: z.string().optional(),
+        via: z.boolean().optional(),
+      }),
+    )
+    .optional(),
   optimizeWaypoints: z.boolean().optional(),
   landmarks: z.any().optional(),
   steps: z.any().optional(),
+  //Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges ลง validation
+  extraCharges: z
+    .array(
+      z.object({
+        name: z.string(),
+        unitPrice: z.number(),
+      }),
+    )
+    .optional(),
 });
 
 const idParamSchema = z.object({
@@ -57,10 +72,18 @@ const listRoutesQuerySchema = z.object({
   driverId: z.string().cuid().optional(),
   vehicleId: z.string().cuid().optional(),
 
-  dateFrom: z.string().refine(v => !isNaN(Date.parse(v)), { message: "Invalid dateFrom" }).optional(),
-  dateTo: z.string().refine(v => !isNaN(Date.parse(v)), { message: "Invalid dateTo" }).optional(),
+  dateFrom: z
+    .string()
+    .refine((v) => !isNaN(Date.parse(v)), { message: "Invalid dateFrom" })
+    .optional(),
+  dateTo: z
+    .string()
+    .refine((v) => !isNaN(Date.parse(v)), { message: "Invalid dateTo" })
+    .optional(),
 
-  sortBy: z.enum(["createdAt", "departureTime", "pricePerSeat", "availableSeats"]).default("createdAt"),
+  sortBy: z
+    .enum(["createdAt", "departureTime", "pricePerSeat", "availableSeats"])
+    .default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 
   startNearLat: z.coerce.number().optional(),
@@ -73,19 +96,19 @@ const listRoutesQuerySchema = z.object({
 });
 
 const cancelReasonEnum = z.enum([
-  'CHANGE_OF_PLAN',
-  'FOUND_ALTERNATIVE',
-  'DRIVER_DELAY',
-  'PRICE_ISSUE',
-  'WRONG_LOCATION',
-  'DUPLICATE_OR_WRONG_DATE',
-  'SAFETY_CONCERN',
-  'WEATHER_OR_FORCE_MAJEURE',
-  'COMMUNICATION_ISSUE'
+  "CHANGE_OF_PLAN",
+  "FOUND_ALTERNATIVE",
+  "DRIVER_DELAY",
+  "PRICE_ISSUE",
+  "WRONG_LOCATION",
+  "DUPLICATE_OR_WRONG_DATE",
+  "SAFETY_CONCERN",
+  "WEATHER_OR_FORCE_MAJEURE",
+  "COMMUNICATION_ISSUE",
 ]);
 
 const cancelRouteSchema = z.object({
-  reason: cancelReasonEnum
+  reason: cancelReasonEnum,
 });
 
 module.exports = {
@@ -97,5 +120,5 @@ module.exports = {
   adminDriverIdParamSchema,
   listRoutesQuerySchema,
   cancelReasonEnum,
-  cancelRouteSchema
+  cancelRouteSchema,
 };

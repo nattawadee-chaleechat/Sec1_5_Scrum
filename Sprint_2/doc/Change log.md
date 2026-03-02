@@ -52,4 +52,10 @@ This file will contain all notable changes to this project.
 - เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived ใน backend\src\services\booking.service.js
 ### AI Declare
 - ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
+
+## extraCharges V.01 - [Nattawadee]
+### Update 1 Mar 2026
+File includes route.controller.js route.service.js route.validation.js \createTrip\index.vue
+- เพิ่มช่อง extraCharges ในหน้าสร้างเส้นทาง และเชื่อมกับ database
+### AI Declare ใช้ chatgpt ช่วยหาจุดผิดพลาด เนื่องจากข้อมูลไม่บันทึกลง database
 ---
