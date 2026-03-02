@@ -536,7 +536,7 @@ Contributer: Chetsada
                   : 'bg-gray-100 text-gray-700'"
                   class="px-3 py-1 text-sm rounded-full transition"
               >
-                  ทั้งหมด
+                  ทั้งหมด ({{ starCounts[0] }})
               </button>
 
               <!-- ปุ่มกรองดาว -->
@@ -804,11 +804,14 @@ const filteredReviews = computed(() => {
 })
 // นับจำนวนรีวิวในแต่ละดาว
 const starCounts = computed(() => {
-  const counts = {1:0,2:0,3:0,4:0,5:0}
-  review.value.forEach(r => {
-    const star = Number(r.review?.rating || r.star || 0)
-    if (counts[star] !== undefined) counts[star]++
-  })
+    const counts = {0:0,1:0,2:0,3:0,4:0,5:0}
+    review.value.forEach(r => {
+        const star = Number(r.review?.rating || r.star || 0)
+        if (counts[star] !== undefined) {
+            counts[star]++
+        }
+        counts[0]++    
+    })
   return counts
 })
 // จบ
@@ -1479,10 +1482,8 @@ async function openReviewModalDriver(trip) {
             return;
         }
 
-        console.log('Opening review modal for driver:', trip.driver.id);
+        // console.log('Opening review modal for driver:', trip.driver.id);
         const response = await $api(`/review/${trip.driver.id}/reviews`);
-        
-        console.log('Full API Response:', JSON.stringify(response, null, 2));
 
         // Extract reviews from various possible response structures
         let reviewsData = [];
@@ -1491,30 +1492,30 @@ async function openReviewModalDriver(trip) {
 
         // Try response.data structure first (most likely based on backend code)
         if (response?.data) {
-            console.log('Response has .data property');
+            // console.log('Response has .data property');
             reviewsData = response.data.reviews || [];
             driverProfile = response.data.driverProfile || null;
             ratingData = response.data.ratingData || null;
-            console.log('Extracted from response.data - reviews:', reviewsData.length);
+            // console.log('Extracted from response.data - reviews:', reviewsData.length);
         } 
         // Try direct reviews property
         else if (response?.reviews && Array.isArray(response.reviews)) {
             reviewsData = response.reviews;
-            console.log('Extracted from response.reviews - count:', reviewsData.length);
+            // console.log('Extracted from response.reviews - count:', reviewsData.length);
         } 
         // Try as direct array
         else if (Array.isArray(response)) {
             reviewsData = response;
-            console.log('Response is direct array - count:', reviewsData.length);
+            // console.log('Response is direct array - count:', reviewsData.length);
         } 
         // Fallback: try to find reviews in any array property
         else {
-            console.log('Response structure:', Object.keys(response || {}));
+            // console.log('Response structure:', Object.keys(response || {}));
             for (const key in response) {
                 if (Array.isArray(response[key]) && response[key].length > 0) {
                     if (key.includes('review') || response[key][0]?.reviewerName) {
                         reviewsData = response[key];
-                        console.log(`Found reviews in response.${key}:`, reviewsData.length);
+                        // console.log(`Found reviews in response.${key}:`, reviewsData.length);
                         break;
                     }
                 }
@@ -1522,7 +1523,7 @@ async function openReviewModalDriver(trip) {
         }
 
         review.value = reviewsData;
-        console.log('Final reviews array:', review.value.length, 'items');
+        // console.log('Final reviews array:', review.value.length, 'items');
 
         // Update driver info
         if (response) {
@@ -1542,16 +1543,16 @@ async function openReviewModalDriver(trip) {
                 reviews: reviewsCount
             };
             
-            console.log('Driver info updated:', {
-                name: driverInfo.value.name,
-                rating: driverInfo.value.rating,
-                reviews: driverInfo.value.reviews
-            });
+            // console.log('Driver info updated:', {
+            //     name: driverInfo.value.name,
+            //     rating: driverInfo.value.rating,
+            //     reviews: driverInfo.value.reviews
+            // });
         }
         
-        if (reviewsData.length > 0) {
-            console.log('First review structure:', JSON.stringify(reviewsData[0], null, 2));
-        }
+        // if (reviewsData.length > 0) {
+        //     console.log('First review structure:', JSON.stringify(reviewsData[0], null, 2));
+        // }
         
     }catch(error){
         console.error('Failed to load reviews - Error:', error.message);

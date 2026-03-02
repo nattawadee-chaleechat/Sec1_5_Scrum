@@ -708,7 +708,7 @@ Contributer: Chetsada
                   : 'bg-gray-100 text-gray-700'"
                   class="px-3 py-1 text-sm rounded-full transition"
               >
-                  ทั้งหมด
+                  ทั้งหมด ({{ starCounts[0] }})
               </button>
 
               <!-- ปุ่มกรองดาว -->
@@ -978,11 +978,14 @@ const filteredReviews = computed(() => {
 })
 // นับจำนวนรีวิวในแต่ละดาว
 const starCounts = computed(() => {
-  const counts = {1:0,2:0,3:0,4:0,5:0}
-  review.value.forEach(r => {
-    const star = Number(r.review?.rating || r.star || 0)
-    if (counts[star] !== undefined) counts[star]++
-  })
+    const counts = {0:0,1:0,2:0,3:0,4:0,5:0}
+    review.value.forEach(r => {
+        const star = Number(r.review?.rating || r.star || 0)
+        if (counts[star] !== undefined) {
+            counts[star]++
+        }
+        counts[0]++    
+    })
   return counts
 })
 // จบ
