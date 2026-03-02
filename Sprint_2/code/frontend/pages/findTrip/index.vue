@@ -319,6 +319,25 @@ Fullscreen Video พร้อมปุ่มปิด
                       </ul>
                     </div>
                   </div>
+                  <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                  <div
+                    v-if="route.extraCharges && route.extraCharges.length"
+                    class="mt-4"
+                  >
+                    <h5 class="mb-2 font-medium text-gray-900">
+                      เงื่อนไขเพิ่มเติมอื่น ๆ
+                    </h5>
+                    <ul
+                      class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                    >
+                      <li
+                        v-for="charge in route.extraCharges"
+                        :key="charge.id || charge.name"
+                      >
+                        • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                      </li>
+                    </ul>
+                  </div>
                   <div class="mt-4 space-y-4">
                     <div v-if="route.conditions">
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -1301,6 +1320,13 @@ async function handleSearch() {
         polyline: route.routePolyline || null,
         stops,
         stopsCoords,
+        extraCharges: Array.isArray(route.routeExtraCharge)
+          ? route.routeExtraCharge.map((item) => ({
+              id: item.id,
+              name: item.name,
+              unitPrice: item.unitPrice,
+            }))
+          : [],
       };
     });
 

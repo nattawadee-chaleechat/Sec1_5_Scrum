@@ -252,7 +252,25 @@ Contributer: Piyawat Sawatkul
                       </ul>
                     </div>
                   </div>
-
+                  <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                  <div
+                    v-if="trip.extraCharges && trip.extraCharges.length"
+                    class="mt-4"
+                  >
+                    <h5 class="mb-2 font-medium text-gray-900">
+                      เงื่อนไขเพิ่มเติมอื่น ๆ
+                    </h5>
+                    <ul
+                      class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                    >
+                      <li
+                        v-for="charge in trip.extraCharges"
+                        :key="charge.id || charge.name"
+                      >
+                        • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                      </li>
+                    </ul>
+                  </div>
                   <div class="mt-4 space-y-4">
                     <div v-if="trip.conditions">
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -940,7 +958,7 @@ async function fetchMyTrips() {
         pickupPoint: b.pickupLocation?.name || "-",
         date: dayjs(b.route.departureTime).format("D MMMM BBBB"),
         time: dayjs(b.route.departureTime).format("HH:mm น."),
-        price: (b.route.pricePerSeat || 0) * (b.numberOfSeats || 1),
+        price: b.totalPrice ?? (b.route.pricePerSeat || 0) * (b.numberOfSeats || 1),//
         seats: b.numberOfSeats || 1,
         driver: driverData,
         coords: [
@@ -951,6 +969,11 @@ async function fetchMyTrips() {
         stops,
         stopsCoords,
         carDetails,
+        extraCharges: Array.isArray(b.route?.routeExtraCharge)
+          ? b.route.routeExtraCharge
+          : Array.isArray(b.route?.extraCharges)
+            ? b.route.extraCharges
+            : [],
         conditions: b.route.conditions,
         photos: b.route.vehicle?.photos || [],
         durationText:

@@ -6,7 +6,6 @@ Update 16 Feb 2026
 */
 const asynchandler = require("express-async-handler");
 const reviewDriverProfileService = require("../services/reviewdriverprofile.service");
-const ApiError = require('../utils/ApiError');
 
 //ดีงมาจากservice :getDriverProfile,getAverageRating,getDriverReview
 const getDriverProfile = asynchandler(async (req, res) => {

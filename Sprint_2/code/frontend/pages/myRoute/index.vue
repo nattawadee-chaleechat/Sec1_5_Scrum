@@ -172,7 +172,26 @@ Contributer: Piyawat Sawatkul
                       </ul>
                     </div>
                   </div>
-
+                  <!--เงื่อนไขเพิ่มเติม route-->
+                  <div
+                    v-if="route.extraCharges && route.extraCharges.length"
+                    class="mt-4 space-y-4"
+                  >
+                    <h5 class="mb-2 font-medium text-gray-900">
+                      เงื่อนไขเพิ่มเติมอื่น ๆ
+                    </h5>
+                    <ul
+                      class="space-y-1 p-3 text-sm text-gray-700 border border-gray-300 rounded-md bg-gray-50"
+                    >
+                      <li
+                        v-for="(extra, index) in route.extraCharges"
+                        :key="`${route.id}-extra-${extra.id || index}`"
+                      >
+                        • {{ extra.name }} ราคาต่อชิ้น
+                        {{ Number(extra.unitPrice || 0).toLocaleString("th-TH") }} บาท
+                      </li>
+                    </ul>
+                  </div>
                   <div class="mt-4 space-y-4">
                     <div v-if="route.conditions">
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -514,6 +533,26 @@ Contributer: Piyawat Sawatkul
                         </li>
                       </ul>
                     </div>
+                  </div>
+                  <!--เงื่อนไขเพิ่มเติม route-->
+                  <div
+                    v-if="trip.extraCharges && trip.extraCharges.length"
+                    class="mt-4 space-y-4"
+                  >
+                    <h5 class="mb-2 font-medium text-gray-900">
+                      เงื่อนไขเพิ่มเติมอื่น ๆ
+                    </h5>
+                    <ul
+                      class="space-y-1 p-3 text-sm text-gray-700 border border-gray-300 rounded-md bg-gray-50"
+                    >
+                      <li
+                        v-for="(extra, index) in trip.extraCharges"
+                        :key="`${trip.id}-extra-${extra.id || index}`"
+                      >
+                        • {{ extra.name }} ราคาต่อชิ้น
+                        {{ Number(extra.unitPrice || 0).toLocaleString("th-TH") }} บาท
+                      </li>
+                    </ul>
                   </div>
                   <div class="mt-4 space-y-4">
                     <div v-if="trip.conditions">
@@ -1063,6 +1102,16 @@ async function fetchMyRoutes() {
         )
         .filter(Boolean);
 
+      const extraCharges = Array.isArray(r.routeExtraCharge)
+        ? r.routeExtraCharge
+            .map((item) => ({
+              id: item.id,
+              name: String(item.name || "").trim(),
+              unitPrice: Number(item.unitPrice) || 0,
+            }))
+            .filter((item) => item.name)
+        : [];
+
       // แปลงเป็น "คำขอจอง" ต่อ booking
       for (const b of r.bookings || []) {
         const passengerSummary = passengerSummaryById.get(b?.passenger?.id);
@@ -1125,6 +1174,7 @@ async function fetchMyRoutes() {
             (r.distanceMeters
               ? `${(r.distanceMeters / 1000).toFixed(1)} กม.`
               : "-"),
+          extraCharges,
         });
       }
 
@@ -1160,6 +1210,7 @@ async function fetchMyRoutes() {
               ...(r.vehicle.amenities || []),
             ]
           : ["ไม่มีข้อมูลรถ"],
+        extraCharges,
         photos: r.vehicle?.photos || [],
         conditions: r.conditions || "",
         passengers: confirmedBookings.map((b) => {
