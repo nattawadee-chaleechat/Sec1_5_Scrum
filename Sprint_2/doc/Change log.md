@@ -66,3 +66,17 @@ File includes booking.service.js
 ### AI Declare 
 - ใช้ chatgpt สำหรับcheck ความผิดพลาด
 ---
+## extraCharges V.02 - [Nattawadee]
+### Update 3 Mar 2026
+File includes booking.service.js booking.controller.js booking.validation.js findTrip\index.vue myRoute\index.vue
+- เพิ่มเงื่อนไขที่คิดเงิน ให้ผู้โดยสารเลือก และกรอกจำนวน และคิดเงินอัตโนมัติ
+- เพิ่มการคำนวณราคา ตอน booking create
+- เพิ่มเงื่อนไขที่ผู้โดยสารเลือก และจำนวน ลง payload
+- แก้ไขให้ price ตรงกับ booking total price
+- เพิ่ม selectedCharges chargeQuantities เพื่อไม่ให้โดน validation กันออกตอนส่งข้อมูล
+### Changes from version 1.
+- เพิ่มเงื่อนไขและราคา ในหน้าการจอง ให้ผู้โดยสารเลือกเงื่อนไข และจำนวนได้
+- คำนวณราคารวมทั้งหมด
+- แสดงผลราคารวมที่ถูกต้อง
+### AI Declare ใช้ chatgpt ช่วยหาจุดผิดพลาด เนื่องจากข้อมูลที่ต้องการดึงมาแสดงไม่ขึ้น
+---

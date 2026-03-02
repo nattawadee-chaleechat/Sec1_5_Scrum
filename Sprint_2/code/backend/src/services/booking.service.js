@@ -15,13 +15,22 @@ Update 14 Feb 2026
 
 // Contributer: suttipad rodhom
 // [2/3/2569]
-// - เพิ้่มฟังก์ชัน calculateBookingTotals สำหรับคำนวณราคาทั้งหมดของการจอง (รวมราคาที่นั่ง + เงื่อนไขอื่นๆ) 
+// - เพิ้่มฟังก์ชัน calculateBookingTotals สำหรับคำนวณราคาทั้งหมดของการจอง (รวมราคาที่นั่ง + เงื่อนไขอื่นๆ)
+
+/* Contributer: Nattawadee Chaleechat 
+[Description] 
+เพิ่มการคำนวณราคา ตอน booking create
+Update 3 Mar 2026
+*/
 
 const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 const { RouteStatus, BookingStatus } = require("@prisma/client");
 const { checkAndApplyPassengerSuspension } = require("./penalty.service");
-const { notifyTripCompleted, notifyArrivedOneSide } = require("./notification.service")
+const {
+  notifyTripCompleted,
+  notifyArrivedOneSide,
+} = require("./notification.service");
 
 const ACTIVE_STATUSES = [BookingStatus.PENDING, BookingStatus.CONFIRMED];
 
@@ -295,9 +304,13 @@ const adminUpdateBooking = async (id, patch) => {
 };
 
 const createBooking = async (data, passengerId) => {
+  //console.log("DATA IN SERVICE:", data);
   return prisma.$transaction(async (tx) => {
     const route = await tx.route.findUnique({
       where: { id: data.routeId },
+      include: {
+        routeExtraCharge: true,
+      },
     });
 
     if (!route) {
@@ -315,6 +328,52 @@ const createBooking = async (data, passengerId) => {
       throw new ApiError(400, "Not enough seats available on this route.");
     }
 
+    //Contributer: Nattawadee Chaleechat
+    //คำนวณราคาที่นั่ง
+    const baseTotalPrice = route.pricePerSeat * data.numberOfSeats;
+
+    // เตรียมข้อมูล extra
+    const selectedCharges = data.selectedCharges || [];
+    const chargeQuantities = data.chargeQuantities || {};
+
+    let extraTotalPrice = 0;
+    const bookingExtraData = [];
+
+    //console.log("route.routeExtraCharge:", route.routeExtraCharge);
+
+    for (const id of selectedCharges) {
+      const extra = route.routeExtraCharge.find((e) => e.id === id);
+
+      if (!extra) {
+        throw new ApiError(400, "Invalid extra charge selected.");
+      }
+
+      const qty = Number(chargeQuantities[id] || 0);
+
+      if (qty <= 0) continue;
+
+      const itemTotal = extra.unitPrice * qty;
+
+      extraTotalPrice += itemTotal;
+
+      bookingExtraData.push({
+        routeExtraChargeId: extra.id,
+        name: extra.name,
+        quantity: qty,
+        unitPrice: extra.unitPrice,
+        totalExtraPrice: itemTotal,
+      });
+    }
+
+    //คำนวณราคาสุดท้าย
+    const totalPrice = baseTotalPrice + extraTotalPrice;
+
+    //console.log("baseTotalPrice:", baseTotalPrice);
+    //console.log("extraTotalPrice:", extraTotalPrice);
+    //console.log("totalPrice:", totalPrice);
+    //console.log("bookingExtraData:", bookingExtraData);
+
+    //booking create
     const booking = await tx.booking.create({
       data: {
         routeId: data.routeId,
@@ -322,6 +381,18 @@ const createBooking = async (data, passengerId) => {
         numberOfSeats: data.numberOfSeats,
         pickupLocation: data.pickupLocation,
         dropoffLocation: data.dropoffLocation,
+
+        baseTotalPrice,
+        extraTotalPrice,
+        totalPrice,
+
+        bookingExtraCharge: {
+          create: bookingExtraData,
+        },
+      },
+      include: {
+        route: true,
+        bookingExtraCharge: true,
       },
     });
 
@@ -658,8 +729,8 @@ const markDriverArrived = async (bookingId) => {
     },
   });
 
-  if (!updated.passenger_confirm_arrived){
-    await notifyArrivedOneSide(bookingId,"DRIVER") // 1/3 chetsada
+  if (!updated.passenger_confirm_arrived) {
+    await notifyArrivedOneSide(bookingId, "DRIVER"); // 1/3 chetsada
   }
 
   // suttipad 26/2 หากทั้งสองฝ่ายยืนยันครบ
@@ -692,10 +763,10 @@ const markPassengerArrived = async (bookingId) => {
     },
   });
 
-  if (!updated.driver_confirm_arrived){
-    await notifyArrivedOneSide(bookingId,"PASSENGER") // 1/3 chetsada
+  if (!updated.driver_confirm_arrived) {
+    await notifyArrivedOneSide(bookingId, "PASSENGER"); // 1/3 chetsada
   }
-  
+
   // suttipad 26/2 หากทั้งสองฝ่ายยืนยันครบ
   // เปลี่ยนสถานะเป็น COMPLETED และบันทึกเวลา completedAt
   if (updated.driver_confirm_arrived && updated.passenger_confirm_arrived) {
@@ -716,15 +787,17 @@ const markPassengerArrived = async (bookingId) => {
 const toMoney = (value) => Math.round((Number(value) || 0) * 100) / 100;
 
 const calculateBookingTotals = ({
-pricePerSeat,
-numberOfSeats,
-extraTotalPrice = 0,
+  pricePerSeat,
+  numberOfSeats,
+  extraTotalPrice = 0,
 }) => {
-const baseTotalPrice = toMoney((Number(pricePerSeat) || 0) * (Number(numberOfSeats) || 0));
-const normalizedExtraTotalPrice = toMoney(extraTotalPrice);
-const totalPrice = toMoney(baseTotalPrice + normalizedExtraTotalPrice);
+  const baseTotalPrice = toMoney(
+    (Number(pricePerSeat) || 0) * (Number(numberOfSeats) || 0),
+  );
+  const normalizedExtraTotalPrice = toMoney(extraTotalPrice);
+  const totalPrice = toMoney(baseTotalPrice + normalizedExtraTotalPrice);
 
-return {
+  return {
     baseTotalPrice,
     extraTotalPrice: normalizedExtraTotalPrice,
     totalPrice,
