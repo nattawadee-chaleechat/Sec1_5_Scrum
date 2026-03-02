@@ -1,4 +1,4 @@
-/* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"
+<!-- /* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว 
 ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว 
 
@@ -20,6 +20,15 @@ Contributer: Piyawat Sawatkul
 // - เพิ่มระบบ Fullscreen Video พร้อมปุ่มปิด
 // - เพิ่ม state fullscreenVideo สำหรับควบคุมวิดีโอแบบเต็มจอ
 // - เพิ่มฟังก์ชัน openVideo() และ closeVideo()
+
+Contributer: Chetsada
+[3/3/2569]
+- เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
+- เพิ่ม const filteredReviews สำหรับกรองดาว
+- เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
+[AI Declare]
+- ใช้ ChatGPT ออกแบบฟังก์ชัน 
+-->
 
 <template>
   <div>
@@ -453,6 +462,8 @@ Contributer: Piyawat Sawatkul
                         รีวิว)
                       </span>
                     </div>
+
+
                   </div>
                   <div class="text-right">
                     <div class="text-lg font-bold text-blue-600">
@@ -687,13 +698,45 @@ Contributer: Piyawat Sawatkul
             <h2 class="text-xl font-semibold text-gray-900">ความเห็นจากผู้โดยสาร</h2>
           </div>
 
-          <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
-            ยังไม่มีรีวิว
+          <!-- chetsada 3/3 เพื่อส่วนฟิวเตอร์รีวิวตามดาว -->
+          <div class="flex justify-center gap-2 px-6 py-4 border-b border-gray-300">
+              <!-- ปุ่มดาวทั้งหมด -->
+              <button
+                  @click="selectedStarFilter = 0"
+                  :class="selectedStarFilter === 0 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-700'"
+                  class="px-3 py-1 text-sm rounded-full transition"
+              >
+                  ทั้งหมด
+              </button>
+
+              <!-- ปุ่มกรองดาว -->
+              <button
+                  v-for="star in [5,4,3,2,1]"
+                  :key="star"
+                  @click="selectedStarFilter = star"
+                  :class="selectedStarFilter === star 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-700'"
+                  class="px-3 py-1 text-sm rounded-full transition"
+              >
+                  {{ star }} ★ ({{ starCounts[star] }})
+              </button>
           </div>
+
+          <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
+              ยังไม่มีรีวิว
+          </div>
+
+          <div v-else-if="filteredReviews.length === 0"class="p-6 text-center text-gray-500">
+              ไม่มีรีวิวตามตัวกรองนี้
+          </div>
+          <!-- จบ -->
 
           <!-- Reviews List -->
           <div v-else>
-            <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
+            <div v-for="item in filteredReviews" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
               <div class="flex items-center justify-between">
                 <div class="font-medium text-gray-900">
                   {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
@@ -851,6 +894,7 @@ const myRoutes = ref([]);
 // --- Review Modal State ---
 const showreview = ref(false);
 const review = ref([]);
+const selectedStarFilter = ref(0) // chetsada 3/3 state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
 const driverInfo = ref(null);
 const fullscreenVideo = ref(null);
 
@@ -922,6 +966,26 @@ const selectedLabel = computed(() => {
   const t = allTrips.value.find((x) => x.id === selectedTripId.value);
   return t ? `${t.origin} → ${t.destination}` : null;
 });
+
+// chetsada 3/3 กรองรีวิว
+const filteredReviews = computed(() => {
+  if (selectedStarFilter.value === 0) {
+    return review.value
+  }
+  return review.value.filter(r => 
+    Number(r.review?.rating || r.star || 0) === selectedStarFilter.value,
+  )
+})
+// นับจำนวนรีวิวในแต่ละดาว
+const starCounts = computed(() => {
+  const counts = {1:0,2:0,3:0,4:0,5:0}
+  review.value.forEach(r => {
+    const star = Number(r.review?.rating || r.star || 0)
+    if (counts[star] !== undefined) counts[star]++
+  })
+  return counts
+})
+// จบ
 
 // --- Passenger Rating Cache and Functions ---
 const passengerRatingCache = new Map();

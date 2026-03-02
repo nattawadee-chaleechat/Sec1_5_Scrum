@@ -46,10 +46,21 @@ This file will contain all notable changes to this project.
 - ใช้ ChatGPT ช่วยจัดโครงสร้าง Multer และ multiple upload
 - ใช้ ChatGPT ช่วยออกแบบระบบ Fullscreen Video ใน Modal
 ---
-## [Vesion 2.0.0] - [Chetsada]
+## [Vesion 1.0.0] - [Chetsada]
 ### Update 1 March 2026
 - สร้าง notifyArrivedOneSide สำหรับแจ้งเตือนผู้ใช้อีกฝั่งให้กด "สิ้นสุดการเดินทาง" เมื่ออีกฝั่งหนึ่งกดแล้ว ที่ backend\src\services\notification.service.js
 - เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived ใน backend\src\services\booking.service.js
 ### AI Declare
 - ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
+---
+## [Vesion 1.0.0] - [Chetsada]
+### Update 3 March 2026
+- ที่ ..frontend\pages\myTrip\index.vue
+    ..frontend\pages\myRoute\index.vue
+    ..frontend\pages\findTrip\index.vue
+      - เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
+      - เพิ่ม const filteredReviews สำหรับกรองดาว
+      - เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
+### AI Declare
+- ใช้ ChatGPT ออกแบบฟังก์ชัน และเขียน vue แสดงฟิลเตอร์ดาว
 ---
