@@ -1,29 +1,18 @@
-// Contributor: Suttipad Rodhom
-// [01/03/2569]
-// - เพิ่มช่องแนบ Google Drive link (ตรวจสอบเฉพาะ drive.google.com / docs.google.com)
-// - เพิ่มระบบอัปโหลด media สูงสุด 3 ไฟล์ (image / video / audio)
-// - จำกัดขนาดไฟล์ไม่เกิน 20MB ต่อไฟล์
-// - เพิ่ม preview media แบบ dynamic ตามประเภทไฟล์
-// - เพิ่ม validation:
-//   - จำกัดประเภทไฟล์
-//   - จำกัดจำนวนไฟล์
-//   - ตรวจสอบความถูกต้องของ Google Drive link
-// - เพิ่มการ disabled ปุ่มส่งรีวิว
-
-// Contributor: Chetsada
-// [01/03/2569]
-- เพิ่ม 'submitting' emitเข็คว่ากดรีวิวแล้ว เพื่อป้องกันการกดซ้ำ ใน review card
+// Contributor: Suttipad Rodhom // [01/03/2569] // - เพิ่มช่องแนบ Google Drive
+link (ตรวจสอบเฉพาะ drive.google.com / docs.google.com) // - เพิ่มระบบอัปโหลด
+media สูงสุด 3 ไฟล์ (image / video / audio) // - จำกัดขนาดไฟล์ไม่เกิน 20MB
+ต่อไฟล์ // - เพิ่ม preview media แบบ dynamic ตามประเภทไฟล์ // - เพิ่ม
+validation: // - จำกัดประเภทไฟล์ // - จำกัดจำนวนไฟล์ // - ตรวจสอบความถูกต้องของ
+Google Drive link // - เพิ่มการ disabled ปุ่มส่งรีวิว // Contributor: Chetsada
+// [01/03/2569] - เพิ่ม 'submitting' emitเข็คว่ากดรีวิวแล้ว เพื่อป้องกันการกดซ้ำ
+ใน review card
 
 <template>
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-    @click="$emit('close')"  
+    @click="$emit('close')"
   >
-    <div
-      class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl"
-      @click.stop              
-    >
-
+    <div class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl" @click.stop>
       <div class="flex justify-center mb-4">
         <img
           :src="driverImage"
@@ -32,7 +21,7 @@
       </div>
 
       <h2 class="text-xl font-bold text-center text-gray-800">
-        {{ trip?.driver?.name || 'คนขับ' }}
+        {{ trip?.driver?.name || "คนขับ" }}
       </h2>
 
       <p class="mt-1 text-sm text-center text-gray-600">
@@ -49,7 +38,11 @@
           @mouseover="hoverRating = star"
           @mouseleave="hoverRating = 0"
           class="cursor-pointer transition"
-          :class="(hoverRating || rating) >= star ? 'text-yellow-400' : 'text-gray-300'"
+          :class="
+            (hoverRating || rating) >= star
+              ? 'text-yellow-400'
+              : 'text-gray-300'
+          "
         >
           ★
         </span>
@@ -140,164 +133,162 @@
           @click="submitReview"
           :disabled="isSubmitting"
           class="px-5 py-2 text-white rounded-lg transition"
-          :class="isSubmitting 
-            ? 'bg-green-400 cursor-not-allowed' 
-            : 'bg-green-600 hover:bg-green-700'"
+          :class="
+            isSubmitting
+              ? 'bg-green-400 cursor-not-allowed'
+              : 'bg-green-600 hover:bg-green-700'
+          "
         >
           <span v-if="isSubmitting">กำลังส่ง...</span>
           <span v-else>ส่งรีวิว</span>
         </button>
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useToast } from '~/composables/useToast'
+import { ref, computed } from "vue";
+import { useAuth } from "~/composables/useAuth";
+import { useToast } from "~/composables/useToast";
 
-const { toast } = useToast()
-const { token } = useAuth()
+const { toast } = useToast();
+const { token } = useAuth();
 
 const props = defineProps({
   trip: Object,
-  submitting: Boolean
-})
+  submitting: Boolean,
+});
 
-const emit = defineEmits(['close', 'reviewed', 'submitting'])
+const emit = defineEmits(["close", "reviewed", "submitting"]);
 
-const rating = ref(0)
-const hoverRating = ref(0)
-const comment = ref('')
-const link = ref('')
-const mediaFiles = ref([])
-const previewMedia = ref([])
-const fileInput = ref(null)
-const isSubmitting = ref(false)
+const rating = ref(0);
+const hoverRating = ref(0);
+const comment = ref("");
+const link = ref("");
+const mediaFiles = ref([]);
+const previewMedia = ref([]);
+const fileInput = ref(null);
+const isSubmitting = ref(false);
 
 const driverImage = computed(() => {
-  const profile = props.trip?.driver?.image
-  if (profile && profile.startsWith('http')) return profile
-  if (profile) return `http://localhost:5000/uploads/${profile}`
+  const profile = props.trip?.driver?.image;
+  if (profile && profile.startsWith("http")) return profile;
+  if (profile) return `http://localhost:5000/uploads/${profile}`;
 
-  const name =
-    props.trip?.driver?.firstName ||
-    props.trip?.driver?.name ||
-    'U'
+  const name = props.trip?.driver?.firstName || props.trip?.driver?.name || "U";
 
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`
-})
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`;
+});
 
 function triggerFileInput() {
-  fileInput.value.click()
+  fileInput.value.click();
 }
 
 function handleFiles(event) {
-  const files = Array.from(event.target.files)
-  if (!files.length) return
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
 
-  const total = [...mediaFiles.value, ...files]
+  const total = [...mediaFiles.value, ...files];
   if (total.length > 3) {
-    toast.error('อัปโหลดได้สูงสุด 3 ไฟล์')
-    return
+    toast.error("อัปโหลดได้สูงสุด 3 ไฟล์");
+    return;
   }
 
   for (const file of files) {
     if (
-      !file.type.startsWith('image/') &&
-      !file.type.startsWith('video/') &&
-      !file.type.startsWith('audio/')
+      !file.type.startsWith("image/") &&
+      !file.type.startsWith("video/") &&
+      !file.type.startsWith("audio/")
     ) {
-      toast.error('อนุญาตเฉพาะรูป วิดีโอ หรือเสียง')
-      return
+      toast.error("อนุญาตเฉพาะรูป วิดีโอ หรือเสียง");
+      return;
     }
 
     if (file.size > 20 * 1024 * 1024) {
-      toast.error('ไฟล์ต้องไม่เกิน 20MB')
-      return
+      toast.error("ไฟล์ต้องไม่เกิน 20MB");
+      return;
     }
 
-    mediaFiles.value.push(file)
+    mediaFiles.value.push(file);
 
-    let type = 'image'
-    if (file.type.startsWith('video/')) type = 'video'
-    else if (file.type.startsWith('audio/')) type = 'audio'
+    let type = "image";
+    if (file.type.startsWith("video/")) type = "video";
+    else if (file.type.startsWith("audio/")) type = "audio";
 
     previewMedia.value.push({
       type,
-      url: URL.createObjectURL(file)
-    })
+      url: URL.createObjectURL(file),
+    });
   }
 }
 
 function isGoogleDriveLink(url) {
   try {
-    const parsed = new URL(url)
+    const parsed = new URL(url);
     return (
       parsed.hostname === "drive.google.com" ||
       parsed.hostname === "docs.google.com"
-    )
+    );
   } catch {
-    return false
+    return false;
   }
 }
 
 function removeFile(index) {
-  mediaFiles.value.splice(index, 1)
-  previewMedia.value.splice(index, 1)
+  mediaFiles.value.splice(index, 1);
+  previewMedia.value.splice(index, 1);
 }
 
 async function submitReview() {
-
-  if (isSubmitting.value) return
+  if (isSubmitting.value) return;
 
   if (!rating.value) {
-    toast.warning('กรุณาให้คะแนนก่อนส่งรีวิว')
-    return
+    toast.warning("กรุณาให้คะแนนก่อนส่งรีวิว");
+    return;
   }
 
-  if (link.value && link.value.trim() !== '') {
+  if (link.value && link.value.trim() !== "") {
     if (!isGoogleDriveLink(link.value.trim())) {
-      toast.error('แนบลิงก์ได้เฉพาะ Google Drive เท่านั้น')
-      return
+      toast.error("แนบลิงก์ได้เฉพาะ Google Drive เท่านั้น");
+      return;
     }
   }
 
   try {
-    isSubmitting.value = true
-    emit('submitting', true)
+    isSubmitting.value = true;
+    emit("submitting", true);
 
-    const formData = new FormData()
-    formData.append('bookingId', props.trip.id)
-    formData.append('star', rating.value)
-    formData.append('comment', comment.value || '')
-    formData.append('driverId', props.trip.driver.id)
+    const formData = new FormData();
+    formData.append("bookingId", props.trip.id);
+    formData.append("star", rating.value);
+    formData.append("comment", comment.value || "");
+    formData.append("driverId", props.trip.driver.id);
 
-    if (link.value && link.value.trim() !== '') {
-      formData.append('link', link.value.trim())
+    if (link.value && link.value.trim() !== "") {
+      formData.append("link", link.value.trim());
     }
 
-    mediaFiles.value.forEach(file => {
-      formData.append('media', file)
-    })
+    mediaFiles.value.forEach((file) => {
+      formData.append("media", file);
+    });
 
-    await $fetch('http://localhost:3000/api/reviews', {
-      method: 'POST',
+    const apiBase =
+      useRuntimeConfig().public.apiBase || "http://localhost:3000/api";
+    await $fetch(`${apiBase}/reviews`, {
+      method: "POST",
       headers: { Authorization: `Bearer ${token.value}` },
-      body: formData
-    })
+      body: formData,
+    });
 
-    toast.success('ส่งรีวิวสำเร็จ')
-    emit('reviewed')
-    emit('close')
-
+    toast.success("ส่งรีวิวสำเร็จ");
+    emit("reviewed");
+    emit("close");
   } catch (error) {
-    toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่')
+    toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่");
   } finally {
-    isSubmitting.value = false
-    emit('submitting', false)
+    isSubmitting.value = false;
+    emit("submitting", false);
   }
 }
 </script>
