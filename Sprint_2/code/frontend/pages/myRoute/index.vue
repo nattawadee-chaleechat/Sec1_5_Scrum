@@ -1,15 +1,3 @@
-/* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"
-ในเมนู Tab เพื่อสามารถดูการเดินทางที่จบไปแล้ว Contributer: Piyawat Sawatkul
-[Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว
-เพื่อที่เห็นจำนวนและรายละเอียดreview driver รวมถึงเชื่อมข้อมูลรีวิวกับ driver
-ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI */ //
-Contributer: suttipad rodhom // [26/2/2569] // - ปรับ UI Modal รีวิว แสดงผลจาก
-"รีวิวผู้ขับ" → "รีวิวทั้งหมด" // - เปลี่ยนหัวข้อเป็น "ความเห็นจากผู้โดยสาร" //
-- ปรับ padding ข้อความสถานะการเดินทาง (text-sm → px-4 py-2 text-sm) // -
-ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท // - images // - videos
-(กดดู fullscreen ได้) // - audio // - Google Drive links // - เพิ่มระบบ
-Fullscreen Video พร้อมปุ่มปิด // - เพิ่ม state fullscreenVideo
-สำหรับควบคุมวิดีโอแบบเต็มจอ // - เพิ่มฟังก์ชัน openVideo() และ closeVideo() /*
 Contributer: Nattawadee Chaleechat [Description] แก้ไขให้ price ตรงกับ booking
 total price*/
 <!-- /* Contributer: Nattawadee Chaleechat [Description] เพิ่ม "การเดินทางเสร็จสิ้น"

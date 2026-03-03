@@ -1,13 +1,3 @@
-Contributer: Piyawat Sawatkul [Description]
-แก้ปัญหานำข้อมูลจากbackendขึ้นfrontend ให้ถูกต้องใช้AI
-ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI // Contributer: suttipad
-rodhom // [26/2/2569] // - ปรับ UI Modal รีวิว แสดงผลจาก "รีวิวผู้ขับ" →
-"รีวิวทั้งหมด" // - เปลี่ยนหัวข้อเป็น "ความเห็นจากผู้โดยสาร" // -
-ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท // - images // - videos
-(กดดู fullscreen ได้) // - audio // - Google Drive links // - เพิ่มระบบ
-Fullscreen Video พร้อมปุ่มปิด // Contributer: Nattawadee Chaleechat
-[Description] เพิ่มเงื่อนไขที่คิดเงิน ให้ผู้โดยสารเลือก และกรอกจำนวน
-และคิดเงินอัตโนมัติ
 <!-- Contributer: Piyawat Sawatkul
 [Description] แก้ปัญหานำข้อมูลจากbackendขึ้นfrontend ให้ถูกต้องใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
 
@@ -1395,7 +1385,11 @@ async function confirmBooking() {
         routeId: bookingRoute.value.id,
         numberOfSeats: bookingSeats.value,
         pickupLocation: pickupData.value,
-        dropoffLocation: dropoffData.value
+        dropoffLocation: dropoffData.value,
+
+        //Contributer: Nattawadee Chaleechat [Description] เพิ่มเงื่อนไขที่เลือก กับจำนวน ลง payload
+        selectedCharges: [...selectedCharges.value],
+        chargeQuantities: { ...chargeQuantities.value },
     };
 
     try {
