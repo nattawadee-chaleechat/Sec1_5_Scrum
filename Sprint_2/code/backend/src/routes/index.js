@@ -23,9 +23,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/api/maps', mapRoutes);
 router.use('/review', reviewDriverProfileRoutes);
 router.use('/reviews', reviewRoutes); // chetsada 15/2
-if (process.env.NODE_ENV === "test") {
-  router.use("/test", require("./test.routes"));
-}
 router.use("/test", testRoutes);
 
 module.exports = router;

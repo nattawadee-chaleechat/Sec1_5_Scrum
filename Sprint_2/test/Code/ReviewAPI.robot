@@ -9,7 +9,7 @@ Suite Teardown    Delete All Sessions
 
 
 *** Variables ***
-${BASE_URL}          http://localhost:3000
+${BASE_URL}          https://painamnae.onrender.com/
 ${LOGIN_ENDPOINT}    /api/auth/login
 ${CREATE_ENDPOINT}   /api/reviews
 ${MY_REVIEW}         /api/reviews/me

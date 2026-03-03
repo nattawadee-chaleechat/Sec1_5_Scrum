@@ -115,6 +115,7 @@ Contributer: Nattawadee Chaleechat
 
 const driverArrived = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.sub;
 
   const booking = await bookingService.markDriverArrived(id, userId);
   
@@ -123,6 +124,7 @@ const driverArrived = async (req, res) => {
 
 const passengerArrived = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.sub;
 
   const booking = await bookingService.markPassengerArrived(id, userId);
 

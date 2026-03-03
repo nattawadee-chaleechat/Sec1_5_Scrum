@@ -5,6 +5,20 @@ const prisma = require("../utils/prisma");
 // Reset booking state (for testing)
 router.post("/reset-bookings", async (req, res) => {
   try {
+    const passenger = await prisma.user.findUnique({
+      where: { username: "somsee123" },
+    });
+
+    if (!passenger) {
+      return res.status(404).json({ message: "Passenger not found" });
+    }
+
+    await prisma.review.deleteMany({
+      where: {
+        reviewerId: passenger.id,
+      },
+    });
+
     await prisma.booking.updateMany({
       data: {
         status: "CONFIRMED",
@@ -14,7 +28,9 @@ router.post("/reset-bookings", async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: "Bookings reset success" });
+    res.status(200).json({
+      message: "Bookings reset + passenger reviews deleted",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Reset failed" });
