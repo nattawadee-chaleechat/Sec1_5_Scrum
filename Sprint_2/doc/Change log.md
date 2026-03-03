@@ -39,3 +39,26 @@ This file will contain all notable changes to this project.
 - ใช้ ChatGPT ช่วยจัดโครงสร้าง Multer และ multiple upload
 - ใช้ ChatGPT ช่วยออกแบบระบบ Fullscreen Video ใน Modal
 ---
+
+## [Vesion 1.0.1] - [Suttipad]
+### Update 3 March 2026
+- Review Modal (UAT)
+  - จัดทำ Test Design, Test Data และ Test Report สำหรับ Review Modal
+  - เพิ่ม Test Scenario:
+    - รีวิวสำเร็จ
+    - รีวิวไม่สำเร็จ
+    - ดูรีวิวและกรอง 5★–1★
+  - เพิ่มเงื่อนไข completedAt และการจำกัดเวลารีวิว 7 วัน
+  - เพิ่มกรณีทดสอบไฟล์เกิน 20MB และลิงก์ที่ไม่ใช่ Google Drive
+  - ทดสอบสิทธิ์การดูรีวิว (Guest / Passenger / Driver / Admin)
+  - ผลการทดสอบ: Pass ทั้งหมด
+- Review API (UAT)
+  - จัดทำ Functional, Validation และ Performance Test
+  - ทดสอบการสร้างรีวิว, ดึงรีวิว, ตรวจสอบ Token และ bookingId
+  - ทดสอบ Response Time < 2 วินาที
+  - ผลการทดสอบ: Pass ทั้งหมด
+- AI Declare
+  - ใช้ ChatGPT ช่วยจัดโครงสร้าง Test Case
+  - ช่วยออกแบบ Test Data (Positive / Negative / Boundary)
+  - ช่วยสรุป Test Repor
+---
