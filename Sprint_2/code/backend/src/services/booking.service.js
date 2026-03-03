@@ -23,6 +23,10 @@ Update 14 Feb 2026
 Update 3 Mar 2026
 */
 
+// Contributer: Piyawat Sawatkul
+// [3/3/2569]
+// - เพิ้่มแสดงจำนวนของที่เอามา 
+
 const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 const { RouteStatus, BookingStatus } = require("@prisma/client");
@@ -439,7 +443,12 @@ const getMyBookings = async (passengerId) => {
       review: true,
       bookingExtraCharge: {
         select: {
+          id: true,
+          name: true,
+          quantity: true,
+          unitPrice: true,
           totalExtraPrice: true,
+          routeExtraChargeId: true,
         },
       },
       route: {
@@ -460,6 +469,13 @@ const getMyBookings = async (passengerId) => {
               vehicleType: true,
               photos: true,
               amenities: true,
+            },
+          },
+          routeExtraCharge: {
+            select: {
+              id: true,
+              name: true,
+              unitPrice: true,
             },
           },
         },

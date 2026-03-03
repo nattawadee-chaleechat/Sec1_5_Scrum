@@ -61,6 +61,11 @@ Contributer: Piyawat Sawatkul
 // - ปรับการคำนวณ completedAt ให้ใช้ Date object โดยตรง
 // - ปรับ logic canReview() ให้คำนวณเวลาจาก trip.completedAt โดยตรง
 
+Contributer: Piyawat Sawatkul
+[3/3/2569]
+[Description] แสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง เช่น กระเป๋า ราคาต่อชิ้น 80 บาท (จำนวน 2)
+
+
 <template>
   <div>
     <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -268,6 +273,7 @@ Contributer: Piyawat Sawatkul
                         :key="charge.id || charge.name"
                       >
                         • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                        <span v-if="charge.quantity"> (จำนวน {{ charge.quantity }})</span>
                       </li>
                     </ul>
                   </div>
@@ -934,6 +940,16 @@ async function fetchMyTrips() {
         )
         .filter(Boolean);
 
+      const selectedExtraCharges = Array.isArray(b.bookingExtraCharge)
+        ? b.bookingExtraCharge.map((item) => ({
+            id: item.routeExtraChargeId || item.id,
+            name: item.name,
+            unitPrice: item.unitPrice,
+            quantity: item.quantity,
+            totalExtraPrice: item.totalExtraPrice,
+          }))
+        : [];
+
       return {
         id: b.id,
 
@@ -969,11 +985,7 @@ async function fetchMyTrips() {
         stops,
         stopsCoords,
         carDetails,
-        extraCharges: Array.isArray(b.route?.routeExtraCharge)
-          ? b.route.routeExtraCharge
-          : Array.isArray(b.route?.extraCharges)
-            ? b.route.extraCharges
-            : [],
+        extraCharges: selectedExtraCharges,
         conditions: b.route.conditions,
         photos: b.route.vehicle?.photos || [],
         durationText:

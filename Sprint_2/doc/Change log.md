@@ -65,6 +65,11 @@ File includes booking.service.js
 - เพิ่มช่อง calculateBookingTotals สำหรับคำนวนราคาทั้งหมด
 ### AI Declare 
 - ใช้ chatgpt สำหรับcheck ความผิดพลาด
+### Update 3 Mar 2026
+File includes booking.service.js , myTrip\index.vue
+- เพิ่มแสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง รวมถึงแสดงจำนวนสิ่งของ
+### AI Declare 
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด เนื่องจากหน้า เงื่อนไขเพิ่มเติม ไม่แสดง
 ---
 ## extraCharges V.02 - [Nattawadee]
 ### Update 3 Mar 2026
