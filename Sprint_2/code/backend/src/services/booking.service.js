@@ -442,7 +442,7 @@ const getMyBookings = async (passengerId) => {
     include: {
      review: {
         where: { reviewerId : passengerId },
-      }
+      },
       bookingExtraCharge: {
         select: {
           id: true,
