@@ -5,7 +5,9 @@ rodhom // [26/2/2569] // - ปรับ UI Modal รีวิว แสดงผ
 "รีวิวทั้งหมด" // - เปลี่ยนหัวข้อเป็น "ความเห็นจากผู้โดยสาร" // -
 ปรับการแสดงผลจาก image เดี่ยว → รองรับ media หลายประเภท // - images // - videos
 (กดดู fullscreen ได้) // - audio // - Google Drive links // - เพิ่มระบบ
-Fullscreen Video พร้อมปุ่มปิด
+Fullscreen Video พร้อมปุ่มปิด // Contributer: Nattawadee Chaleechat
+[Description] เพิ่มเงื่อนไขที่คิดเงิน ให้ผู้โดยสารเลือก และกรอกจำนวน
+และคิดเงินอัตโนมัติ
 
 <template>
   <div>
@@ -319,25 +321,7 @@ Fullscreen Video พร้อมปุ่มปิด
                       </ul>
                     </div>
                   </div>
-                  <!-- เงื่อนไขเก็บเงินเพิ่ม -->
-                  <div
-                    v-if="route.extraCharges && route.extraCharges.length"
-                    class="mt-4"
-                  >
-                    <h5 class="mb-2 font-medium text-gray-900">
-                      เงื่อนไขเพิ่มเติมอื่น ๆ
-                    </h5>
-                    <ul
-                      class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
-                    >
-                      <li
-                        v-for="charge in route.extraCharges"
-                        :key="charge.id || charge.name"
-                      >
-                        • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
-                      </li>
-                    </ul>
-                  </div>
+
                   <div class="mt-4 space-y-4">
                     <div v-if="route.conditions">
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -348,6 +332,27 @@ Fullscreen Video พร้อมปุ่มปิด
                       >
                         {{ route.conditions }}
                       </p>
+                    </div>
+
+                    <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                    <div
+                      v-if="route.extraCharges && route.extraCharges.length"
+                      class="mt-4"
+                    >
+                      <h5 class="mb-2 font-medium text-gray-900">
+                        เงื่อนไขเพิ่มเติมอื่น ๆ
+                      </h5>
+                      <ul
+                        class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                      >
+                        <li
+                          v-for="charge in route.extraCharges"
+                          :key="charge.id || charge.name"
+                        >
+                          • {{ charge.name }} ราคาต่อชิ้น
+                          {{ charge.unitPrice }} บาท
+                        </li>
+                      </ul>
                     </div>
 
                     <div v-if="route.photos && route.photos.length > 0">
@@ -914,6 +919,37 @@ Fullscreen Video พร้อมปุ่มปิด
                 </div>
               </div>
             </div>
+
+            <!-- Contributer: Nattawadee Chaleechat 
+            [Description] เพิ่มเงื่อนไขที่คิดเงิน ให้ผู้โดยสารเลือก และกรอกจำนวน -->
+            <div v-if="selectedRoute?.extraCharges?.length" class="mt-4">
+              <h5 class="mb-2 font-medium">เงื่อนไขเพิ่มเติม</h5>
+
+              <div
+                v-for="charge in selectedRoute.extraCharges"
+                :key="charge.id"
+                class="flex justify-between items-center mb-2"
+              >
+                <label class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    :value="charge.id"
+                    v-model="selectedCharges"
+                    @change="handleChargeToggle(charge.id)"
+                  />
+                  {{ charge.name }} ({{ charge.unitPrice }} บาท)
+                </label>
+
+                <input
+                  v-if="selectedCharges.includes(charge.id)"
+                  type="number"
+                  min="1"
+                  class="w-20 border p-1"
+                  v-model.number="chargeQuantities[charge.id]"
+                />
+              </div>
+            </div>
+
             <div class="p-4 mb-6 rounded-lg bg-blue-50">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-gray-700">ราคาต่อที่นั่ง</span>
@@ -1149,7 +1185,7 @@ const dropoffPoint = ref("");
 
 const bookingTotalPrice = computed(() => {
   if (!bookingRoute.value) return 0;
-  return bookingSeats.value * bookingRoute.value.price;
+  return bookingSeats.value * bookingRoute.value.price + extraTotalPrice.value;
 });
 
 function cleanAddr(a) {
@@ -1741,7 +1777,13 @@ async function confirmBooking() {
     numberOfSeats: bookingSeats.value,
     pickupLocation: pickupData.value,
     dropoffLocation: dropoffData.value,
+
+    //Contributer: Nattawadee Chaleechat [Description] เพิ่มเงื่อนไขที่เลือก กับจำนวน ลง payload
+    selectedCharges: [...selectedCharges.value],
+    chargeQuantities: { ...chargeQuantities.value },
   };
+
+  //console.log("payload :", JSON.stringify(payload, null, 2));
 
   try {
     await $api("/bookings", { method: "POST", body: payload });
@@ -2282,6 +2324,36 @@ async function openReviewModal(route) {
     review.value = [];
   }
 }
+
+//Contributer: Nattawadee Chaleechat [Description] เก็บสถานะของแต่ละ extra charge
+const selectedCharges = ref([]);
+const chargeQuantities = ref({});
+
+function handleChargeToggle(id) {
+  if (selectedCharges.value.includes(id)) {
+    chargeQuantities.value[id] = 1;
+  } else {
+    delete chargeQuantities.value[id];
+  }
+}
+
+//Contributer: Nattawadee Chaleechat [Description] คำนวณราคาอัตโนมัติ
+const extraTotalPrice = computed(() => {
+  let total = 0;
+
+  if (!selectedRoute.value?.extraCharges) return 0;
+
+  for (const charge of selectedRoute.value.extraCharges) {
+    if (!selectedCharges.value.includes(charge.id)) continue;
+
+    const qty = Number(chargeQuantities.value[charge.id] || 0);
+    if (qty <= 0) continue;
+
+    total += charge.unitPrice * qty;
+  }
+
+  return total;
+});
 </script>
 
 <style scoped>
