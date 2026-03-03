@@ -440,7 +440,9 @@ const getMyBookings = async (passengerId) => {
   const bookings = await prisma.booking.findMany({
     where: { passengerId },
     include: {
-      review: true,
+     review: {
+        where: { reviewerId : passengerId },
+      }
       bookingExtraCharge: {
         select: {
           id: true,

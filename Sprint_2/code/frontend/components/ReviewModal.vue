@@ -10,6 +10,10 @@
 //   - ตรวจสอบความถูกต้องของ Google Drive link
 // - เพิ่มการ disabled ปุ่มส่งรีวิว
 
+// Contributor: Chetsada
+// [01/03/2569]
+- เพิ่ม 'submitting' emitเข็คว่ากดรีวิวแล้ว เพื่อป้องกันการกดซ้ำ ใน review card
+
 <template>
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -158,10 +162,11 @@ const { toast } = useToast()
 const { token } = useAuth()
 
 const props = defineProps({
-  trip: Object
+  trip: Object,
+  submitting: Boolean
 })
 
-const emit = defineEmits(['close', 'reviewed'])
+const emit = defineEmits(['close', 'reviewed', 'submitting'])
 
 const rating = ref(0)
 const hoverRating = ref(0)
@@ -262,6 +267,7 @@ async function submitReview() {
 
   try {
     isSubmitting.value = true
+    emit('submitting', true)
 
     const formData = new FormData()
     formData.append('bookingId', props.trip.id)
@@ -291,6 +297,7 @@ async function submitReview() {
     toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่')
   } finally {
     isSubmitting.value = false
+    emit('submitting', false)
   }
 }
 </script>
