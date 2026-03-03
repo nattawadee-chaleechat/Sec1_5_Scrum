@@ -596,6 +596,10 @@ const markDriverArrived = async (bookingId) => {
   });
   if (!booking) throw new ApiError(404, "Booking not found");
 
+  if (booking.route.driverId !== userId) {
+    throw new ApiError(403, "Forbidden");
+  }
+
   const updated = await prisma.booking.update({
     where: { id: bookingId },
     data: {
