@@ -46,10 +46,30 @@ This file will contain all notable changes to this project.
 - ใช้ ChatGPT ช่วยจัดโครงสร้าง Multer และ multiple upload
 - ใช้ ChatGPT ช่วยออกแบบระบบ Fullscreen Video ใน Modal
 ---
-## [Vesion 2.0.0] - [Chetsada]
+## [Vesion 1.0.0] - [Chetsada]
 ### Update 1 March 2026
 - สร้าง notifyArrivedOneSide สำหรับแจ้งเตือนผู้ใช้อีกฝั่งให้กด "สิ้นสุดการเดินทาง" เมื่ออีกฝั่งหนึ่งกดแล้ว ที่ backend\src\services\notification.service.js
 - เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived ใน backend\src\services\booking.service.js
 ### AI Declare
 - ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
+---
+## [Vesion 1.0.0] - [Chetsada]
+### Update 3 March 2026
+- ที่ ..frontend\pages\myTrip\index.vue
+    ..frontend\pages\myRoute\index.vue
+    ..frontend\pages\findTrip\index.vue
+      - เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
+      - เพิ่ม const filteredReviews สำหรับกรองดาว
+      - เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
+- ที่ ..frontend\pages\myTrip\index.vue and \myRoute\index.vue
+      - แก้การแสดงผลคะแนนรีวิว ที่ Driver Profile เพิ่ม .toFixed(1) ในส่วนตกหล่น ให้แสดงจุดทศนิยมแค่จุดเดียว
+    ..frontend\pages\myTrip\index.vue
+      - เพิ่ม isReviewSubmitting กรณีกำลังส่งรีวิวในหน้า reviewpopup แล้วปุ่มในหน้า review card ต้องกดไม่ได้ เหมือนกัน
+      - แก้การตอบสนองของปุ่ม "รีวิวการเดินทาง"
+      - แก้ชื่อตัวแปรที่ส่งไป reviewModal
+    ..frontend\components\ReviewModal.vue
+      - เพิ่ม 'submitting' emit เข็คว่ากดรีวิวแล้ว เพื่อป้องกันการกดซ้ำ ใน review card
+### AI Declare
+- ใช้ ChatGPT ออกแบบฟังก์ชัน และเขียน vue แสดงฟิลเตอร์ดาว
+- ใช้ ChatGPT แนะนำการจัดการปุ่มใน review card หลังจากกด ส่งรีวิว
 ---
