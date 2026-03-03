@@ -1,16 +1,19 @@
 *** Settings ***
 Library    SeleniumLibrary
 Library    DatabaseLibrary
+Library    RequestsLibrary
 
 Suite Setup       Set Selenium Speed    0.2s
+Suite Setup       Create API Session
 Test Setup        Open Fresh Browser
 Test Teardown     Close Browser
 
 
 *** Variables ***
 ${TEST_URL}    http://localhost:3001
+${API_URL}     http://localhost:3000/api
 ${BROWSER}     edge
-${TIMEOUT}     10s
+${TIMEOUT}     15s
 
 ${DNAME}       admin123
 ${DPASS}       123456789
@@ -164,7 +167,6 @@ Filter Review (5-1)
     Click First Review Button
     Review Popup Should Appear
     Review Modal Should Show Reviews
-
     Validate Filter    5
     Validate Filter    4
     Validate Filter    3
@@ -174,27 +176,73 @@ Filter Review (5-1)
 
 *** Keywords ***
 
+Create API Session
+    Create Session    api    ${API_URL}
+
+Reset Booking State
+    Create Session    reset    ${API_URL}
+    ${res}=    POST On Session    reset    /test/reset-bookings
+    Should Be Equal As Integers    ${res.status_code}    200
+
+Set Booking Completed 8 Days Ago
+    Create Session    reset    ${API_URL}
+    ${res}=    POST On Session    reset    /test/set-completed-8-days
+    Should Be Equal As Integers    ${res.status_code}    200
+
 Open Fresh Browser
     Open Browser    ${TEST_URL}    ${BROWSER}
     Maximize Browser Window
     Set Selenium Timeout    ${TIMEOUT}
 
 
-# ================= DATABASE =================
+Wait For Page Stable
+    Wait Until Page Contains Element    //body    10s
 
-Reset Booking State
-    Connect To Database    psycopg2    ${DBNAME}    ${DBUSER}    ${DBPASS}    ${DBHOST}    ${DBPORT}
 
-    Execute Sql String    DELETE FROM "Review" WHERE "reviewerId" = (SELECT id FROM "User" WHERE username='somsee123');
-    Execute Sql String    UPDATE "Booking" SET status='CONFIRMED', driver_confirm_arrived=false, passenger_confirm_arrived=false, "completedAt"=NULL, "updatedAt"=NOW() WHERE "passengerId" = ( SELECT id FROM "User" WHERE username='somsee123');
-    Disconnect From Database
+Login
+    [Arguments]    ${USER}    ${PASS}
+    Go To    ${TEST_URL}/login
+    Wait Until Element Is Visible    id=identifier    15s
+    Input Text    id=identifier    ${USER}
+    Input Text    id=password      ${PASS}
+    Click Element    css=button[type="submit"]
+    Wait Until Page Does Not Contain Element    css=a[href="/login"]    10s
 
-Set Booking Completed 8 Days Ago
-    Connect To Database    psycopg2    ${DBNAME}    ${DBUSER}    ${DBPASS}    ${DBHOST}    ${DBPORT}
-    Execute Sql String    UPDATE "Booking" SET "completedAt" = NOW() - INTERVAL '8 days', "updatedAt" = NOW() WHERE "passengerId" = (SELECT id FROM "User" WHERE username='somsee123');
-    Disconnect From Database
 
-# ================= CREATE REVIEW =================
+Logout
+    Mouse Over    xpath=//div[contains(@class,'hover:bg-blue-50')]
+    Wait Until Element Is Visible    xpath=//button[contains(.,'Logout')]    10s
+    Click Element    xpath=//button[contains(.,'Logout')]
+
+
+Give Score
+    [Arguments]    ${index}
+    Wait Until Element Is Visible    css=.cursor-pointer    10s
+    Click Element    xpath=(//span[contains(@class,'cursor-pointer')])[${index}]
+
+# ================= FINISH TRIP =================
+
+Passenger Finish Trip
+    Login    ${PNAME}    ${PPASS}
+    Go To    ${TEST_URL}/myTrip
+    Wait Until Element Is Visible    xpath=//button[contains(.,'ยืนยันแล้ว')]    15s
+    Click Element    xpath=//button[contains(.,'ยืนยันแล้ว')]
+    Wait Until Element Is Visible    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]    10s
+    Click Element    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]
+    Wait Until Element Is Visible    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]    10s
+    Click Element    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]
+    Logout
+
+Driver Finish Trip
+    Login    ${DNAME}    ${DPASS}
+    Go To    ${TEST_URL}/myRoute
+    Wait Until Element Is Visible    xpath=//button[contains(.,'ยืนยันแล้ว')]    15s
+    Click Element    xpath=//button[contains(.,'ยืนยันแล้ว')]
+    Wait Until Element Is Visible    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]    10s
+    Click Element    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]
+    Wait Until Element Is Visible    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]    10s
+    Click Element    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]
+    Logout
 
 Open Review Page
     Login    ${PNAME}    ${PPASS}
@@ -228,60 +276,12 @@ Click Submit Expect Invalid Link
     Wait Until Page Contains    แนบลิงก์ได้เฉพาะ Google Drive เท่านั้น    10s
 
 
-Give Score
-    [Arguments]    ${index}
-    Wait Until Element Is Visible    css=.cursor-pointer    10s
-    Click Element    xpath=(//span[contains(@class,'cursor-pointer')])[${index}]
-
-
-Login
-    [Arguments]    ${USER}    ${PASS}
-    Go To    ${TEST_URL}/login
-    Wait Until Element Is Visible    id=identifier    15s
-    Input Text    id=identifier    ${USER}
-    Input Text    id=password      ${PASS}
-    Click Element    css=button[type="submit"]
-    Wait Until Page Does Not Contain Element    css=a[href="/login"]    10s
-
-
-Logout
-    Mouse Over    xpath=//div[contains(@class,'hover:bg-blue-50')]
-    Wait Until Element Is Visible    xpath=//button[contains(.,'Logout')]    10s
-    Click Element    xpath=//button[contains(.,'Logout')]
-
-# ================= FINISH TRIP =================
-
-Driver Finish Trip
-    Login    ${DNAME}    ${DPASS}
-    Go To    ${TEST_URL}/myRoute
-    Wait Until Element Is Visible    xpath=//button[contains(.,'ยืนยันแล้ว')]    15s
-    Click Element    xpath=//button[contains(.,'ยืนยันแล้ว')]
-    Wait Until Element Is Visible    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]    10s
-    Click Element    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]
-    Wait Until Element Is Visible    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]    10s
-    Click Element    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]
-    Logout
-
-
-Passenger Finish Trip
-    Login    ${PNAME}    ${PPASS}
-    Go To    ${TEST_URL}/myTrip
-    Wait Until Element Is Visible    xpath=//button[contains(.,'ยืนยันแล้ว')]    15s
-    Click Element    xpath=//button[contains(.,'ยืนยันแล้ว')]
-    Wait Until Element Is Visible    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]    10s
-    Click Element    xpath=//button[contains(.,'สิ้นสุดการเดินทาง')]
-    Wait Until Element Is Visible    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]    10s
-    Click Element    xpath=//button[contains(.,'ใช่! สิ้นสุดการเดินทาง')]
-    Logout
-
-
 # ================= VIEW REVIEW =================
 
 Go To Find Trip Page
     Go To    ${TEST_URL}/findTrip
     Wait Until Element Is Visible
     ...    xpath=(//div[contains(@class,'flex text-yellow-400')])[1]    15s
-
 
 Click First Review Button
     Wait Until Element Is Visible
@@ -291,10 +291,8 @@ Click First Review Button
     Execute Javascript
     ...    document.evaluate("(//div[contains(@class,'flex text-yellow-400')])[1]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
 
-
 Review Popup Should Appear
     Wait Until Page Contains    รีวิวทั้งหมด    15s
-
 
 Review Modal Should Show Reviews
     ${has_no_review}=    Run Keyword And Return Status
@@ -319,7 +317,6 @@ Click Star Filter
     Scroll Element Into View         ${locator}
     Click Element                    ${locator}
 
-    Sleep    0.5s
 
 Validate Filter 
     [Arguments]    ${star}
