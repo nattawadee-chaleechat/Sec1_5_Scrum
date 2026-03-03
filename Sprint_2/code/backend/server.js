@@ -46,6 +46,13 @@ app.use(express.json());
 //Metrics Middleware
 app.use(metricsMiddleware);
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "PaiNamNae API is running 🚀",
+  });
+});
+
 // --- Routes ---
 // Health Check Route
 app.get("/health", async (req, res) => {
