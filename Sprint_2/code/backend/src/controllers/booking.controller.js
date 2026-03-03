@@ -116,15 +116,15 @@ Contributer: Nattawadee Chaleechat
 const driverArrived = async (req, res) => {
   const { id } = req.params;
 
-  const booking = await bookingService.markDriverArrived(id);
-
+  const booking = await bookingService.markDriverArrived(id, userId);
+  
   res.status(200).json({ success: true, data: booking });
 };
 
 const passengerArrived = async (req, res) => {
   const { id } = req.params;
 
-  const booking = await bookingService.markPassengerArrived(id);
+  const booking = await bookingService.markPassengerArrived(id, userId);
 
   res.status(200).json({ success: true, data: booking });
 };
