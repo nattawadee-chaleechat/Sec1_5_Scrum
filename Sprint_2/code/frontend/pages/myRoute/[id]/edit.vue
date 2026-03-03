@@ -1,3 +1,5 @@
+// Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges
+//ในหน้าสร้างเส้นทาง และเชื่อมกับ database
 <template>
     <div>
         <div class="max-w-4xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
@@ -189,7 +191,47 @@
                             placeholder="ระบุเงื่อนไข เช่น ไม่สูบบุหรี่, ไม่นำสัตว์เลี้ยง, ชำระเงินล่วงหน้า 50%"
                             class="w-full px-4 py-3 border border-gray-300 rounded-md resize-none focus:ring-blue-500"></textarea>
                     </div>
-
+                    <!--  Contributer: Nattawadee Chaleechat [Description]
+                    เพิ่มเงื่อนไขที่อยากเก็บเงินเพิ่ม -->
+                    <div>
+                        <h3
+                        class="pb-2 mb-6 text-xl font-semibold text-gray-900 border-b border-gray-300"
+                        >
+                        เงื่อนไขเพิ่มเติม (กรณีต้องการเก็บเงินเพิ่ม)
+                        </h3>
+                        <div
+                        v-for="(charge, index) in extraCharges"
+                        :key="index"
+                        class="flex items-center gap-3 mb-2"
+                        >
+                        <input
+                            v-model="charge.name"
+                            placeholder="เงื่อนไข เช่น ค่าขนของ เพิ่มกระเป๋าเดินทาง"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500"
+                        />
+                        <input
+                            v-model.number="charge.unitPrice"
+                            type="number"
+                            min="0"
+                            placeholder="ราคา/หน่วย"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500"
+                        />
+                        <button
+                            type="button"
+                            @click="removeExtraCharge(index)"
+                            class="px-6 py-3 text-gray-700 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            ลบ
+                        </button>
+                        </div>
+                        <button
+                        type="button"
+                        @click="addExtraCharge()"
+                        class="bg-[#2563EB] hover:bg-blue-600 text-white text-sm md:text-[16px] px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                        >
+                        เพิ่มเงื่อนไข
+                        </button>
+                    </div>
                     <!-- ปุ่ม -->
                     <div class="flex justify-end gap-4 pt-6">
                         <button type="button"
@@ -367,6 +409,17 @@ async function loadRoute() {
         address: w?.address || null,
         placeId: w?.placeId || null
     }))
+
+    const savedExtraCharges = Array.isArray(r.extraCharges)
+        ? r.extraCharges
+        : Array.isArray(r.routeExtraCharge)
+            ? r.routeExtraCharge
+            : []
+
+    extraCharges.value = savedExtraCharges.map(item => ({
+        name: item?.name || '',
+        unitPrice: item?.unitPrice != null ? Number(item.unitPrice) : null
+    }))
 }
 
 // ====== ดึงรถผู้ใช้ ======
@@ -402,6 +455,20 @@ function removeWaypoint(idx) {
     waypointAutocompletes.splice(idx, 1)
     waypointInputs.value.splice(idx, 1)
 }
+
+/* Contributer: Nattawadee Chaleechat
+[Description] เพิ่ม addExtraCharge สำหรับเพิ่มเงื่อนไขที่อยากเก็บเงินเพิ่ม */
+const extraCharges = ref([]);
+const addExtraCharge = () => {
+  extraCharges.value.push({
+    name: "",
+    unitPrice: null,
+  });
+};
+
+const removeExtraCharge = (index) => {
+    extraCharges.value.splice(index, 1);
+};
 
 function initWaypointAutocomplete(idx) {
     if (!window.google?.maps?.places) return
@@ -633,7 +700,14 @@ const handleSubmit = async () => {
         departureTime,
         availableSeats: form.availableSeats != null ? Number(form.availableSeats) : (original.value?.availableSeats ?? null),
         pricePerSeat: form.pricePerSeat != null ? Number(form.pricePerSeat) : (original.value?.pricePerSeat ?? null),
-        conditions: (form.conditions || original.value?.conditions || '')
+        conditions: (form.conditions || original.value?.conditions || ''),
+        // Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges ลง playload
+        extraCharges: Array.isArray(extraCharges.value)
+            ? extraCharges.value.map((item) => ({
+            name: item.name,
+            unitPrice: Number(item.unitPrice),
+        }))
+      : [],
     }
 
     try {

@@ -185,7 +185,7 @@ Contributer: Chetsada
                       </ul>
                     </div>
                   </div>
-
+                  
                   <div class="mt-4 space-y-4">
                     <div v-if="route.conditions">
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -197,7 +197,25 @@ Contributer: Chetsada
                         {{ route.conditions }}
                       </p>
                     </div>
-
+                      <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                  <div
+                    v-if="route.extraCharges && route.extraCharges.length"
+                    class="mt-4"
+                  >
+                    <h5 class="mb-2 font-medium text-gray-900">
+                      เงื่อนไขเพิ่มเติมอื่น ๆ
+                    </h5>
+                    <ul
+                      class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                    >
+                      <li
+                        v-for="charge in route.extraCharges"
+                        :key="charge.id || charge.name"
+                      >
+                        • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                      </li>
+                    </ul>
+                  </div>
                     <div v-if="route.photos && route.photos.length > 0">
                       <h5 class="mb-2 font-medium text-gray-900">
                         รูปภาพรถยนต์
@@ -540,6 +558,26 @@ Contributer: Chetsada
                       >
                         {{ trip.conditions }}
                       </p>
+                    </div>
+
+                    <div
+                      v-if="trip.selectedExtraCharges && trip.selectedExtraCharges.length"
+                      class="mt-4"
+                    >
+                      <h5 class="mb-2 font-medium text-gray-900">
+                        เงื่อนไขที่ผู้โดยสารเลือกเพิ่มเติม
+                      </h5>
+                      <ul
+                        class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                      >
+                        <li
+                          v-for="charge in trip.selectedExtraCharges"
+                          :key="charge.id || charge.name"
+                        >
+                          • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
+                          <span v-if="charge.quantity"> (จำนวน {{ charge.quantity }})</span>
+                        </li>
+                      </ul>
                     </div>
 
                     <div v-if="trip.photos && trip.photos.length > 0">
@@ -1189,6 +1227,16 @@ async function fetchMyRoutes() {
 
       // แปลงเป็น "คำขอจอง" ต่อ booking
       for (const b of r.bookings || []) {
+        const selectedExtraCharges = Array.isArray(b.bookingExtraCharge)
+          ? b.bookingExtraCharge.map((item) => ({
+              id: item.routeExtraChargeId || item.id,
+              name: item.name,
+              unitPrice: item.unitPrice,
+              quantity: item.quantity,
+              totalExtraPrice: item.totalExtraPrice,
+            }))
+          : [];
+
         const passengerSummary = passengerSummaryById.get(b?.passenger?.id);
         formatted.push({
           id: b.id,
@@ -1250,7 +1298,7 @@ async function fetchMyRoutes() {
             (r.distanceMeters
               ? `${(r.distanceMeters / 1000).toFixed(1)} กม.`
               : "-"),
-          extraCharges,
+          selectedExtraCharges,
         });
       }
 

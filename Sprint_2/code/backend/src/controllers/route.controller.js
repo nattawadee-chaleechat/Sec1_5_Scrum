@@ -1,5 +1,7 @@
 //Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges ลง req.body
 
+//Contributer: Piyawat Sawatkul [Description] เพิ่ม extraCharges ลงในupdateRoute 
+
 const asyncHandler = require("express-async-handler");
 const routeService = require("../services/route.service");
 const vehicleService = require("../services/vehicle.service");
@@ -154,7 +156,8 @@ const createRoute = asyncHandler(async (req, res) => {
 const updateRoute = asyncHandler(async (req, res) => {
   const driverId = req.user.sub;
   const { id } = req.params;
-  const { vehicleId, optimizeWaypoints, ...routeFields } = req.body;
+  const { vehicleId, optimizeWaypoints, extraCharges, ...routeFields } =
+    req.body;
 
   const existing = await routeService.getRouteById(id);
   if (!existing) throw new ApiError(404, "Route not found");
@@ -196,6 +199,7 @@ const updateRoute = asyncHandler(async (req, res) => {
   const payload = {
     ...routeFields,
     vehicleId: newVehicleId,
+    ...(extraCharges !== undefined && { extraCharges }),
     ...(routeFields.departureTime && {
       departureTime: new Date(routeFields.departureTime),
     }),
@@ -414,7 +418,8 @@ const adminCreateRoute = asyncHandler(async (req, res) => {
 
 const adminUpdateRoute = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { driverId, vehicleId, optimizeWaypoints, ...routeFields } = req.body;
+  const { driverId, vehicleId, optimizeWaypoints, extraCharges, ...routeFields } =
+    req.body;
 
   const existing = await routeService.getRouteById(id);
   if (!existing) throw new ApiError(404, "Route not found");
@@ -443,6 +448,7 @@ const adminUpdateRoute = asyncHandler(async (req, res) => {
     ...routeFields,
     driverId: newDriverId,
     vehicleId: newVehicleId,
+    ...(extraCharges !== undefined && { extraCharges }),
     ...(routeFields.departureTime && {
       departureTime: new Date(routeFields.departureTime),
     }),

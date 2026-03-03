@@ -273,7 +273,7 @@ Contributer: Chetsada
                     class="mt-4"
                   >
                     <h5 class="mb-2 font-medium text-gray-900">
-                      เงื่อนไขเพิ่มเติมอื่น ๆ
+                      เงื่อนไขที่ผู้โดยสารเลือกเพิ่มเติม
                     </h5>
                     <ul
                       class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"

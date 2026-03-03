@@ -282,6 +282,7 @@ const getRouteById = async (id) => {
     include: {
       bookings: {
         include: {
+          bookingExtraCharge: true,
           passenger: {
             select: {
               id: true,
@@ -305,6 +306,7 @@ const getMyRoutes = async (driverId) => {
     include: {
       bookings: {
         include: {
+          bookingExtraCharge: true,
           passenger: {
             select: {
               id: true,
@@ -343,11 +345,89 @@ const createRoute = async (data) => {
     },
   });
 };
-
+//Piyawat Sawatkul 
+// [Description] แก้ไข updateRoute ให้สามารถเพิ่ม/แก้ไข/ลบ routeExtraCharge ได้ โดยเช็คเงื่อนไขก่อนลบว่ามีการใช้งานอยู่หรือไม่ ถ้ามีจะไม่อนุญาตให้ลบและแจ้งชื่อค่าใช้จ่ายที่ไม่สามารถลบได้กลับไป 
 const updateRoute = async (id, data) => {
-  return prisma.route.update({
-    where: { id },
-    data,
+  const { extraCharges, ...routeData } = data;
+
+  return prisma.$transaction(async (tx) => {
+    await tx.route.update({
+      where: { id },
+      data: routeData,
+    });
+
+    if (Array.isArray(extraCharges)) {
+      const normalized = extraCharges.map((item) => ({
+        name: item.name,
+        unitPrice: item.unitPrice,
+      }));
+
+      const incomingNames = new Set(normalized.map((item) => item.name));
+
+      const existingCharges = await tx.routeExtraCharge.findMany({
+        where: { routeId: id },
+        select: { id: true, name: true },
+      });
+
+      const existingByName = new Map(
+        existingCharges.map((charge) => [charge.name, charge.id]),
+      );
+
+      for (const charge of normalized) {
+        const existingId = existingByName.get(charge.name);
+
+        if (existingId) {
+          await tx.routeExtraCharge.update({
+            where: { id: existingId },
+            data: { unitPrice: charge.unitPrice },
+          });
+        } else {
+          await tx.routeExtraCharge.create({
+            data: {
+              routeId: id,
+              name: charge.name,
+              unitPrice: charge.unitPrice,
+            },
+          });
+        }
+      }
+
+      const toDelete = existingCharges.filter(
+        (charge) => !incomingNames.has(charge.name),
+      );
+
+      if (toDelete.length) {
+        const deleteIds = toDelete.map((charge) => charge.id);
+
+        const inUse = await tx.bookingExtraCharge.groupBy({
+          by: ["routeExtraChargeId"],
+          where: { routeExtraChargeId: { in: deleteIds } },
+          _count: { _all: true },
+        });
+
+        if (inUse.length) {
+          const inUseIdSet = new Set(inUse.map((item) => item.routeExtraChargeId));
+          const blockedNames = toDelete
+            .filter((charge) => inUseIdSet.has(charge.id))
+            .map((charge) => charge.name)
+            .join(", ");
+
+          throw new ApiError(
+            400,
+            `ไม่สามารถลบค่าใช้จ่ายเพิ่มเติมได้ เนื่องจากมีการใช้งานแล้ว: ${blockedNames}`,
+          );
+        }
+
+        await tx.routeExtraCharge.deleteMany({
+          where: { id: { in: deleteIds } },
+        });
+      }
+    }
+
+    return tx.route.findUnique({
+      where: { id },
+      include: baseInclude,
+    });
   });
 };
 
