@@ -61,9 +61,15 @@ This file will contain all notable changes to this project.
       - เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
       - เพิ่ม const filteredReviews สำหรับกรองดาว
       - เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
-- ที่ ..frontend\pages\myTrip\index.vue
-    ..frontend\pages\myRoute\index.vue
+- ที่ ..frontend\pages\myTrip\index.vue and \myRoute\index.vue
       - แก้การแสดงผลคะแนนรีวิว ที่ Driver Profile เพิ่ม .toFixed(1) ในส่วนตกหล่น ให้แสดงจุดทศนิยมแค่จุดเดียว
+    ..frontend\pages\myTrip\index.vue
+      - เพิ่ม isReviewSubmitting กรณีกำลังส่งรีวิวในหน้า reviewpopup แล้วปุ่มในหน้า review card ต้องกดไม่ได้ เหมือนกัน
+      - แก้การตอบสนองของปุ่ม "รีวิวการเดินทาง"
+      - แก้ชื่อตัวแปรที่ส่งไป reviewModal
+    ..frontend\components\ReviewModal.vue
+      - เพิ่ม 'submitting' emit เข็คว่ากดรีวิวแล้ว เพื่อป้องกันการกดซ้ำ ใน review card
 ### AI Declare
 - ใช้ ChatGPT ออกแบบฟังก์ชัน และเขียน vue แสดงฟิลเตอร์ดาว
+- ใช้ ChatGPT แนะนำการจัดการปุ่มใน review card หลังจากกด ส่งรีวิว
 ---

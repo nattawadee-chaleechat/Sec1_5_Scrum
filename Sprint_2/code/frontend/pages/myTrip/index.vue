@@ -67,6 +67,8 @@ Contributer: Chetsada
 - เพิ่ม const filteredReviews สำหรับกรองดาว
 - เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
 - แก้การแสดงผลคะแนนรีวิว ที่ Driver Profile เพิ่ม .toFixed(1) ในส่วนตกหล่น ให้แสดงจุดทศนิยมแค่จุดเดียว
+- เพิ่ม isReviewSubmitting กรณีกำลังส่งรีวิวแล้วปุ่มในหน้า review card ต้องกดไม่ได้ เหมือนกับ reviewpopup
+- แก้ชื่อตัวแปรที่ส่งไป reviewModal
 [AI Declare]
 - ใช้ ChatGPT ออกแบบฟังก์ชัน 
 -->
@@ -194,7 +196,7 @@ Contributer: Chetsada
                         </span>
                       </div>
                       <span class="ml-2 text-sm text-gray-600"
-                        >{{ (1 ?? 0).toFixed(1) }} 
+                        >{{ (trip.driver.rating ?? 0).toFixed(1) }}
                         ({{ trip.driver.reviews ?? 0}} รีวิว)
                         </span
                       >
@@ -361,22 +363,33 @@ Contributer: Chetsada
 
                   <!--(Start) 
                     Contributer:Chetsada 
-                    [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
-                    ใช้ ChetGPT
                     [23:52|15/2/2569]
+                    [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
+                    ใช้ ChatGPT
+
+                    [23:52|15/2/2569]
+                    [Description] เพิ่ม isReviewSubmitting
+                    ใช้ ChatGPT
                   -->
                   <ReviewModal
-                    v-if="showReview"
-                    :trip="reviewTrip"
+                    v-if="showReviewModal"
+                    :trip="reviewTripModal"
+                    :submitting="isReviewSubmitting" 
                     @close="closeReview"
                     @reviewed="ReviewSuccess()"
+                    @submitting="isReviewSubmitting = $event" 
                   />
                   <button
-                    v-if="trip.status === 'completed' && !trip.reviewed && canReview(trip)"        "
-                    @click.stop="openReviewModal(trip)" 
-                    class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition"
+                    v-if="trip.status === 'completed' && !trip.reviewed && canReview(trip)"
+                    @click.stop="openReviewModal(trip)"
+                      :disabled="isReviewSubmitting"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md transition"
+                      :class="isReviewSubmitting 
+                          ? 'opacity-40 cursor-not-allowed' 
+                          : 'hover:bg-blue-700'"
                   >
-                    รีวิวการเดินทาง
+                      <span v-if="isReviewSubmitting">กำลังส่งรีวิว...</span>
+                      <span v-else>รีวิวการเดินทาง</span>
                   </button>
                   <!-- Contributer:Chetsada 
                     [Description] เพิ่มส่วนของปุ่ม รีวิวแล้ว
@@ -395,7 +408,7 @@ Contributer: Chetsada
                   <button
                     v-else-if="trip.status === 'completed' && !trip.reviewed && !canReview(trip)"
                     disabled
-                    class="px-4 py-2 bg-yellow-100 text-gray-600 rounded-md"
+                    class="px-4 py-2 bg-blue-100 text-gray-600 rounded-md"
                   >
                     หมดเวลารีวิวแล้ว (เกิน 7 วัน)
                   </button>
@@ -719,12 +732,14 @@ const isLoading = ref(false);
 const mapContainer = ref(null);
 
 // --- Review Modal State ---
-// chetsada 15/2 23:54 ให้รีวิวขึ้น
-const showReview = ref(false);
-const reviewTrip = ref(null); 
 const showreview = ref(false);
 const review = ref([]);
-const selectedStarFilter = ref(0) // chetsada 3/3 state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
+// chetsada ให้รีวิวขึ้น
+const showReviewModal = ref(false);
+const reviewTripModal = ref(null); 
+const isReviewSubmitting = ref(false) // รอส่งรีวิวแล้วกดออกหน้าป๊อปอัพ
+const selectedStarFilter = ref(0) // state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
+
 
 const driverInfo = ref(null);
 const fullscreenVideo = ref(null);
@@ -871,15 +886,15 @@ function cleanAddr(a) {
 
 // chetsada 15/2 23:56
 function openReviewModal(trip) {
-  reviewTrip.value = trip;
-  showReview.value = true;
+  reviewTripModal.value = trip;
+  showReviewModal.value = true;
   selectedStarFilter.value = 0;
 }
 
 // chetsada 16/2 2:56
 function closeReview() {
-  showReview.value = false;
-  reviewTrip.value = null;
+  showReviewModal.value = false;
+  reviewTripModal.value = null;
 }
 //
 
