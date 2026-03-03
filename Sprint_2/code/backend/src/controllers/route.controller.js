@@ -1,6 +1,6 @@
 //Contributer: Nattawadee Chaleechat [Description] เพิ่ม extraCharges ลง req.body
 
-//Contributer: Piyawat Sawatkul [Description] เพิ่ม extraCharges ลงในupdateRoute 
+//Contributer: Piyawat Sawatkul [Description] เพิ่ม extraCharges ลงในupdateRoute
 
 const asyncHandler = require("express-async-handler");
 const routeService = require("../services/route.service");
@@ -74,7 +74,7 @@ const createRoute = asyncHandler(async (req, res) => {
   const { vehicleId, optimizeWaypoints, extraCharges, ...routeFields } =
     req.body;
 
-  console.log("req.body =", req.body);
+  //console.log("req.body =", req.body);
 
   await vehicleService.getVehicleById(vehicleId, driverId);
 
@@ -418,8 +418,13 @@ const adminCreateRoute = asyncHandler(async (req, res) => {
 
 const adminUpdateRoute = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { driverId, vehicleId, optimizeWaypoints, extraCharges, ...routeFields } =
-    req.body;
+  const {
+    driverId,
+    vehicleId,
+    optimizeWaypoints,
+    extraCharges,
+    ...routeFields
+  } = req.body;
 
   const existing = await routeService.getRouteById(id);
   if (!existing) throw new ApiError(404, "Route not found");
