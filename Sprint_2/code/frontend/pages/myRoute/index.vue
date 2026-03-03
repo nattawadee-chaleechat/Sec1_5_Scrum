@@ -185,7 +185,7 @@ Contributer: Chetsada
                       </ul>
                     </div>
                   </div>
-                  
+
                   <div class="mt-4 space-y-4">
                     <div v-if="route.conditions">
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -197,25 +197,26 @@ Contributer: Chetsada
                         {{ route.conditions }}
                       </p>
                     </div>
-                      <!-- เงื่อนไขเก็บเงินเพิ่ม -->
-                  <div
-                    v-if="route.extraCharges && route.extraCharges.length"
-                    class="mt-4"
-                  >
-                    <h5 class="mb-2 font-medium text-gray-900">
-                      เงื่อนไขเพิ่มเติมอื่น ๆ
-                    </h5>
-                    <ul
-                      class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                    <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                    <div
+                      v-if="route.extraCharges && route.extraCharges.length"
+                      class="mt-4"
                     >
-                      <li
-                        v-for="charge in route.extraCharges"
-                        :key="charge.id || charge.name"
+                      <h5 class="mb-2 font-medium text-gray-900">
+                        เงื่อนไขเพิ่มเติมอื่น ๆ
+                      </h5>
+                      <ul
+                        class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
                       >
-                        • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
-                      </li>
-                    </ul>
-                  </div>
+                        <li
+                          v-for="charge in route.extraCharges"
+                          :key="charge.id || charge.name"
+                        >
+                          • {{ charge.name }} ราคาต่อชิ้น
+                          {{ charge.unitPrice }} บาท
+                        </li>
+                      </ul>
+                    </div>
                     <div v-if="route.photos && route.photos.length > 0">
                       <h5 class="mb-2 font-medium text-gray-900">
                         รูปภาพรถยนต์
@@ -467,7 +468,10 @@ Contributer: Chetsada
                     </div>
 
                     <!-- Driver Profile -->
-                    <div class="flex items-center mt-1 cursor-pointer" @click.stop="openReviewModal(trip)">
+                    <div
+                      class="flex items-center mt-1 cursor-pointer"
+                      @click.stop="openReviewModal(trip)"
+                    >
                       <div class="flex text-sm text-yellow-400">
                         <span>
                           {{ "★".repeat(Math.round(trip.passenger.rating))
@@ -477,12 +481,10 @@ Contributer: Chetsada
                         </span>
                       </div>
                       <span class="ml-2 text-sm text-gray-600">
-                        {{ (trip.passenger.rating ?? 0).toFixed(1)  }} 
-                        ({{ trip.passenger.reviews ?? 0}} รีวิว)
+                        {{ (trip.passenger.rating ?? 0).toFixed(1) }}
+                        ({{ trip.passenger.reviews ?? 0 }} รีวิว)
                       </span>
                     </div>
-
-
                   </div>
 
                   <div class="text-right">
@@ -561,7 +563,10 @@ Contributer: Chetsada
                     </div>
 
                     <div
-                      v-if="trip.selectedExtraCharges && trip.selectedExtraCharges.length"
+                      v-if="
+                        trip.selectedExtraCharges &&
+                        trip.selectedExtraCharges.length
+                      "
                       class="mt-4"
                     >
                       <h5 class="mb-2 font-medium text-gray-900">
@@ -574,8 +579,11 @@ Contributer: Chetsada
                           v-for="charge in trip.selectedExtraCharges"
                           :key="charge.id || charge.name"
                         >
-                          • {{ charge.name }} ราคาต่อชิ้น {{ charge.unitPrice }} บาท
-                          <span v-if="charge.quantity"> (จำนวน {{ charge.quantity }})</span>
+                          • {{ charge.name }} ราคาต่อชิ้น
+                          {{ charge.unitPrice }} บาท
+                          <span v-if="charge.quantity">
+                            (จำนวน {{ charge.quantity }} ชิ้น)</span
+                          >
                         </li>
                       </ul>
                     </div>
@@ -750,7 +758,7 @@ Contributer: Chetsada
                   </span>
                 </div>
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ (driverInfo?.rating ?? 0).toFixed(1) }} 
+                  {{ (driverInfo?.rating ?? 0).toFixed(1) }}
                   ({{ driverInfo?.reviews ?? 0 }} รีวิว)
                 </span>
               </div>
@@ -766,47 +774,63 @@ Contributer: Chetsada
           </div>
 
           <!-- chetsada 3/3 เพื่อส่วนฟิวเตอร์รีวิวตามดาว -->
-          <div class="flex justify-center gap-2 px-6 py-4 border-b border-gray-300">
-              <!-- ปุ่มดาวทั้งหมด -->
-              <button
-                  @click="selectedStarFilter = 0"
-                  :class="selectedStarFilter === 0 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700'"
-                  class="px-3 py-1 text-sm rounded-full transition"
-              >
-                  ทั้งหมด ({{ starCounts[0] }})
-              </button>
+          <div
+            class="flex justify-center gap-2 px-6 py-4 border-b border-gray-300"
+          >
+            <!-- ปุ่มดาวทั้งหมด -->
+            <button
+              @click="selectedStarFilter = 0"
+              :class="
+                selectedStarFilter === 0
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700'
+              "
+              class="px-3 py-1 text-sm rounded-full transition"
+            >
+              ทั้งหมด ({{ starCounts[0] }})
+            </button>
 
-              <!-- ปุ่มกรองดาว -->
-              <button
-                  v-for="star in [5,4,3,2,1]"
-                  :key="star"
-                  @click="selectedStarFilter = star"
-                  :class="selectedStarFilter === star 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700'"
-                  class="px-3 py-1 text-sm rounded-full transition"
-              >
-                  {{ star }} ★ ({{ starCounts[star] }})
-              </button>
+            <!-- ปุ่มกรองดาว -->
+            <button
+              v-for="star in [5, 4, 3, 2, 1]"
+              :key="star"
+              @click="selectedStarFilter = star"
+              :class="
+                selectedStarFilter === star
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700'
+              "
+              class="px-3 py-1 text-sm rounded-full transition"
+            >
+              {{ star }} ★ ({{ starCounts[star] }})
+            </button>
           </div>
 
-          <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
-              ยังไม่มีรีวิว
+          <div
+            v-if="!review || review.length === 0"
+            class="p-6 text-center text-gray-500"
+          >
+            ยังไม่มีรีวิว
           </div>
 
-          <div v-else-if="filteredReviews.length === 0"class="p-6 text-center text-gray-500">
-              ไม่มีรีวิวตามตัวกรองนี้
+          <div
+            v-else-if="filteredReviews.length === 0"
+            class="p-6 text-center text-gray-500"
+          >
+            ไม่มีรีวิวตามตัวกรองนี้
           </div>
           <!-- จบ -->
 
           <!-- Reviews List -->
           <div v-else>
-            <div v-for="item in filteredReviews" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
+            <div
+              v-for="item in filteredReviews"
+              :key="item.id"
+              class="p-3 mx-3 border-b border-gray-300"
+            >
               <div class="flex items-center justify-between">
                 <div class="font-medium text-gray-900">
-                  {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
+                  {{ item.reviewerName || "ผู้ใช้ไม่ระบุชื่อ" }}
                 </div>
                 <div class="flex items-center">
                   <div class="flex text-sm text-yellow-400">
@@ -978,7 +1002,7 @@ const myRoutes = ref([]);
 // --- Review Modal State ---
 const showreview = ref(false);
 const review = ref([]);
-const selectedStarFilter = ref(0) // chetsada 3/3 state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
+const selectedStarFilter = ref(0); // chetsada 3/3 state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
 const driverInfo = ref(null);
 const fullscreenVideo = ref(null);
 
@@ -1054,24 +1078,24 @@ const selectedLabel = computed(() => {
 // chetsada 3/3 กรองรีวิว
 const filteredReviews = computed(() => {
   if (selectedStarFilter.value === 0) {
-    return review.value
+    return review.value;
   }
-  return review.value.filter(r => 
-    Number(r.review?.rating || r.star || 0) === selectedStarFilter.value,
-  )
-})
+  return review.value.filter(
+    (r) => Number(r.review?.rating || r.star || 0) === selectedStarFilter.value,
+  );
+});
 // นับจำนวนรีวิวในแต่ละดาว
 const starCounts = computed(() => {
-    const counts = {0:0,1:0,2:0,3:0,4:0,5:0}
-    review.value.forEach(r => {
-        const star = Number(r.review?.rating || r.star || 0)
-        if (counts[star] !== undefined) {
-            counts[star]++
-        }
-        counts[0]++    
-    })
-  return counts
-})
+  const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  review.value.forEach((r) => {
+    const star = Number(r.review?.rating || r.star || 0);
+    if (counts[star] !== undefined) {
+      counts[star]++;
+    }
+    counts[0]++;
+  });
+  return counts;
+});
 // จบ
 
 // --- Passenger Rating Cache and Functions ---
