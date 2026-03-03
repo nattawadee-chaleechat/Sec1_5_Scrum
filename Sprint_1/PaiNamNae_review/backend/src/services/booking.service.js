@@ -9,6 +9,7 @@ const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 const { RouteStatus, BookingStatus } = require("@prisma/client");
 const { checkAndApplyPassengerSuspension } = require("./penalty.service");
+const { notifyTripCompleted } = require("./notification.service")
 
 const ACTIVE_STATUSES = [BookingStatus.PENDING, BookingStatus.CONFIRMED];
 
@@ -352,7 +353,7 @@ const getMyBookings = async (passengerId) => {
   return prisma.booking.findMany({
     where: { passengerId },
     include: {
-      review :true,
+      review: true,
       route: {
         include: {
           driver: {

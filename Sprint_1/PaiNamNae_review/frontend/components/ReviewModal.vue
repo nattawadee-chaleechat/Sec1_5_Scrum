@@ -10,9 +10,8 @@ Contributer: chetsada kongsak
 
 <template>
   <!-- overlay ดำครอบทั้งหน้า เพื่อให้เป็นลักษณะ modal -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
     <div class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl">
-
       <!-- แสดงรูปโปรไฟล์คนขับ -->
       <div class="flex justify-center mb-4">
         <img
@@ -23,7 +22,7 @@ Contributer: chetsada kongsak
 
       <!-- แสดงชื่อคนขับ -->
       <h2 class="text-xl font-bold text-center text-gray-800">
-        {{ trip?.driver?.name || 'คนขับ' }}
+        {{ trip?.driver?.name || "คนขับ" }}
       </h2>
 
       <!-- ข้อความอธิบาย -->
@@ -47,7 +46,11 @@ Contributer: chetsada kongsak
           @mouseover="hoverRating = star"
           @mouseleave="hoverRating = 0"
           class="cursor-pointer transition"
-          :class="(hoverRating || rating) >= star ? 'text-yellow-400' : 'text-gray-300'"
+          :class="
+            (hoverRating || rating) >= star
+              ? 'text-yellow-400'
+              : 'text-gray-300'
+          "
         >
           ★
         </span>
@@ -105,134 +108,129 @@ Contributer: chetsada kongsak
           ส่งรีวิว
         </button>
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useToast } from '~/composables/useToast'
+import { ref, computed } from "vue";
+import { useAuth } from "~/composables/useAuth";
+import { useToast } from "~/composables/useToast";
 
 // ใช้ toast สำหรับแสดง popup แจ้งเตือน
-const { toast } = useToast()
+const { toast } = useToast();
 
 const props = defineProps({
-  trip: Object
-})
+  trip: Object,
+});
 
-const emit = defineEmits(['close'],['reviewd'])   // chetsada 17/2 เพิ่ม reviewed เอาไว้ fetch หน้าใน mytrip index
+const emit = defineEmits(["close", "reviewd"]); // chetsada 17/2 เพิ่ม reviewed เอาไว้ fetch หน้าใน mytrip index
 
 // ตัวแปรเก็บค่าคะแนน และค่าที่ hover
-const rating = ref(0)
-const hoverRating = ref(0)
+const rating = ref(0);
+const hoverRating = ref(0);
 
 // เก็บข้อความรีวิว
-const comment = ref('')
+const comment = ref("");
 
 // เก็บไฟล์รูป และรูป preview
-const imageFile = ref(null)
-const previewImage = ref(null)
-const fileInput = ref(null)
+const imageFile = ref(null);
+const previewImage = ref(null);
+const fileInput = ref(null);
 
 // คำนวณรูปโปรไฟล์คนขับ
 // ถ้ามี URL เต็มใช้เลย
 // ถ้าเป็นชื่อไฟล์ จะไปดึงจาก backend
 // ถ้าไม่มีเลย ใช้ ui-avatars แทน
 const driverImage = computed(() => {
-  const profile = props.trip?.driver?.image // เปลี่ยนตัวแปรจาก profilePicture -> image [20:55|15/2/2569]
+  const profile = props.trip?.driver?.image; // เปลี่ยนตัวแปรจาก profilePicture -> image [20:55|15/2/2569]
 
-  if (profile && profile.startsWith('http')) {
-    return profile
+  if (profile && profile.startsWith("http")) {
+    return profile;
   }
 
   if (profile) {
-    return `http://localhost:5000/uploads/${profile}`
+    return `http://localhost:5000/uploads/${profile}`;
   }
 
-  const name =
-    props.trip?.driver?.firstName ||
-    props.trip?.driver?.name ||
-    'U'
+  const name = props.trip?.driver?.firstName || props.trip?.driver?.name || "U";
 
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=64`
-})
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=64`;
+});
 
 // กดพื้นที่ upload แล้ว trigger input file
 function triggerFileInput() {
-  fileInput.value.click()
+  fileInput.value.click();
 }
 
 // จัดการไฟล์ที่เลือก
 function handleFile(event) {
-  const file = event.target.files[0]
-  if (!file) return
+  const file = event.target.files[0];
+  if (!file) return;
 
   // จำกัดขนาดไม่เกิน 10MB
   if (file.size > 10 * 1024 * 1024) {
-    toast.error('อัปโหลดไม่สำเร็จ', 'ไฟล์ต้องไม่เกิน 10MB')
-    return
+    toast.error("อัปโหลดไม่สำเร็จ", "ไฟล์ต้องไม่เกิน 10MB");
+    return;
   }
 
-  imageFile.value = file
-  previewImage.value = URL.createObjectURL(file)
+  imageFile.value = file;
+  previewImage.value = URL.createObjectURL(file);
 
-  toast.success('อัปโหลดสำเร็จ', 'เพิ่มรูปภาพเรียบร้อย')
+  toast.success("อัปโหลดสำเร็จ", "เพิ่มรูปภาพเรียบร้อย");
 }
 
-const { token } = useAuth()
+const { token } = useAuth();
 
 // ฟังก์ชันส่งรีวิวไป backend
 async function submitReview() {
   try {
     // เช็คว่ามีการให้คะแนนก่อน
     if (!rating.value) {
-      toast.warning('ยังไม่ได้ให้คะแนน', 'กรุณาให้คะแนนก่อนส่งรีวิว')
-      return
+      toast.warning("ยังไม่ได้ให้คะแนน", "กรุณาให้คะแนนก่อนส่งรีวิว");
+      return;
     }
 
     if (!token.value) {
-      toast.error('ไม่ได้เข้าสู่ระบบ', 'กรุณาเข้าสู่ระบบก่อน')
-      return
+      toast.error("ไม่ได้เข้าสู่ระบบ", "กรุณาเข้าสู่ระบบก่อน");
+      return;
     }
 
-    const formData = new FormData()
-    
-    formData.append('bookingId', props.trip.id)
-    formData.append('star', rating.value) // chetsada 16/2 0:24 ชื่อตัวแปรตรงกับ database
-    formData.append('comment', comment.value || '')
-    formData.append('driverId', props.trip.driver.id)
+    const formData = new FormData();
+
+    formData.append("bookingId", props.trip.id);
+    formData.append("star", rating.value); // chetsada 16/2 0:24 ชื่อตัวแปรตรงกับ database
+    formData.append("comment", comment.value || "");
+    formData.append("driverId", props.trip.driver.id);
 
     // แนบรูปถ้ามี
     if (imageFile.value) {
-      formData.append('picture', imageFile.value) // chetsada 16/2 0:24 ชื่อตัวแปรตรงกับ database
+      formData.append("picture", imageFile.value); // chetsada 16/2 0:24 ชื่อตัวแปรตรงกับ database
     }
 
-    await $fetch('http://localhost:3000/api/reviews', {
-      method: 'POST',
+    await $fetch(`${config.public.apiBase}reviews`, {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${token.value}`
+        Authorization: `Bearer ${token.value}`,
       },
-      body: formData
-    })
+      body: formData,
+    });
 
-    toast.success('ส่งรีวิวสำเร็จ', 'ขอบคุณสำหรับความคิดเห็นของคุณ')
+    toast.success("ส่งรีวิวสำเร็จ", "ขอบคุณสำหรับความคิดเห็นของคุณ");
 
-    emit('reviewed') // chetsada 17/2 เพิ่มเอาไว้ fetch หน้าใน mytrip index
+    emit("reviewed"); // chetsada 17/2 เพิ่มเอาไว้ fetch หน้าใน mytrip index
 
     // หน่วงเวลานิดนึงก่อนปิด popup
     setTimeout(() => {
-      emit('close')
-    }, 800)
-
+      emit("close");
+    }, 400);
   } catch (error) {
-    console.error(error?.data || error)
+    console.error(error?.data || error);
 
     toast.error(
-      'ส่งรีวิวไม่สำเร็จ',
-      error?.data?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
-    )
+      "ส่งรีวิวไม่สำเร็จ",
+      error?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+    );
   }
 }
 </script>

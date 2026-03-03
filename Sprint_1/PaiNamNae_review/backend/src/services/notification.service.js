@@ -244,15 +244,44 @@ const notifyTripCompleted = async (bookingId) => {
       },
     },
   });
+  /////// ผมแก้ ฟังก์ชันคุณหน่อย ไม่รู้ว่าคุณประกาศตรงไหน
+  // Passenger
+  await prisma.notification.create({
+    data: {
+      userId: booking.passenger.id,
+      type: "SYSTEM",
+      title: "การเดินทางเสร็จสิ้นแล้ว",
+      body: "การเดินทางของคุณได้จบลงแล้ว",
+      metadata: {
+        kind: "TRIP_COMPLETED",
+        bookingId,
+      },
+    },
+  });
 
-  // ส่งให้ Passenger
-  await sendNotification(booking.passenger.id, "การเดินทางเสร็จสิ้นแล้ว");
+  // Driver
+  await prisma.notification.create({
+    data: {
+      userId: booking.route.driver.id,
+      type: "SYSTEM",
+      title: "คุณส่งผู้โดยสารเรียบร้อยแล้ว",
+      body: "การเดินทางเสร็จสิ้น ขอบคุณที่ให้บริการ",
+      metadata: {
+        kind: "TRIP_COMPLETED",
+        bookingId,
+      },
+    },
+  });
+  /////// จบ
 
-  // ส่งให้ Driver
-  await sendNotification(
-    booking.route.driver.id,
-    "คุณส่งผู้โดยสารเรียบร้อยแล้ว",
-  );
+  // // ส่งให้ Passenger
+  // await sendNotification(booking.passenger.id, "การเดินทางเสร็จสิ้นแล้ว");
+
+  // // ส่งให้ Driver
+  // await sendNotification(
+  //   booking.route.driver.id,
+  //   "คุณส่งผู้โดยสารเรียบร้อยแล้ว", 
+  // );
 };
 
 module.exports = {
