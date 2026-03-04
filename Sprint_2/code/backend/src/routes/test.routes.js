@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../utils/prisma");
 
-// Reset booking state (for testing)
 router.post("/reset-bookings", async (req, res) => {
   try {
     const passenger = await prisma.user.findUnique({
@@ -20,6 +19,9 @@ router.post("/reset-bookings", async (req, res) => {
     });
 
     await prisma.booking.updateMany({
+      where: {
+        passengerId: passenger.id,
+      },
       data: {
         status: "CONFIRMED",
         completedAt: null,
@@ -29,7 +31,7 @@ router.post("/reset-bookings", async (req, res) => {
     });
 
     res.status(200).json({
-      message: "Bookings reset + passenger reviews deleted",
+      message: "Reset success for somsee123 only",
     });
   } catch (error) {
     console.error(error);
@@ -37,14 +39,22 @@ router.post("/reset-bookings", async (req, res) => {
   }
 });
 
-// Set completed 8 days ago (for expired review test)
 router.post("/set-completed-8-days", async (req, res) => {
   try {
+    const passenger = await prisma.user.findUnique({
+      where: { username: "somsee123" },
+    });
+
+    if (!passenger) {
+      return res.status(404).json({ message: "Passenger not found" });
+    }
+
     const eightDaysAgo = new Date();
     eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
 
     await prisma.booking.updateMany({
       where: {
+        passengerId: passenger.id,
         status: "COMPLETED",
       },
       data: {
@@ -52,7 +62,9 @@ router.post("/set-completed-8-days", async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: "Booking updated to 8 days ago" });
+    res.status(200).json({
+      message: "Completed date updated for somsee123",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Update failed" });
