@@ -2,16 +2,13 @@
 Library    SeleniumLibrary
 Library    RequestsLibrary
 
-Suite Setup       Set Selenium Speed    0.2s
-Suite Setup       Create API Session
+Suite Setup       My Suite Setup
 Test Setup        Open Fresh Browser
 Test Teardown     Close Browser
 
-
-
 *** Variables ***
-${TEST_URL}    http://localhost:3001
-${API_URL}     http://localhost:3000/api
+${TEST_URL}    https://csse1569.cpkku.com/
+${API_URL}     https://painamnae.onrender.com/api
 ${BROWSER}     edge
 ${TIMEOUT}     15s
 
@@ -326,3 +323,7 @@ Validate Filter
     ...    xpath=//div[@class='modal-content']//div[contains(@class,'p-3') and .//div[contains(@class,'text-yellow-400')]]
 
     Should Be Equal As Integers    ${actual}    ${expected}
+
+My Suite Setup
+    Create API Session    
+    Set Selenium Speed    0.2s
