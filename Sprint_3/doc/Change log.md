@@ -11,4 +11,16 @@ Contributer: chetsada kongsak
 - ที่ตาราง User เพิ่ม  attribute สำหรับ 
    - เก็บเวลาเปลี่ยน/หมดอายุของรหัส 
    - เก็บคำนวนครั้งที่ใส่ผิด และเวลาล็อคไม่ให้ล็อกอิน
+
+## password matched NCSC V.01 - [Nattawadee]
+### Update 14 Mar 2026
+File includes auth.validation.js passwordValidator.js user.validation.js
+[Description]
+- เพิ่มเงื่อนไขต้องมีอย่างน้อย 8 ตัว
+- ห้ามมี spaces
+- มีคำอย่างน้อย 3 คำ เช็คคำาม Dictionary  จาก an-array-of-english-words ซึ่งมี ~275,000 English words
+[AI Declare]
+- ให้ claude.ai ช่วยหา Dictionary เพื่อนำมาใช้ในการตรวจคำ และช่วยคิดกรณีที่ต้องแยกคำติดกัน
+- ช่วยเขียนโค้ด passwordValidator.js
+
 ---
