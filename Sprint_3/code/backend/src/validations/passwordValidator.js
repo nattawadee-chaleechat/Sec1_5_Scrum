@@ -13,11 +13,18 @@ const wordSet = new Set(allWords.filter((w) => w.length >= 3));
  */
 const isThreeRealWords = (val) => {
   const parts = val
-    .replace(/([a-z])([A-Z])/g, "$1 $2") // CamelCase → separate
-    .split(/[\-_]+/) // แยกด้วย - , _
+    // lowercase→UPPER: "appleM" → "apple M"
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    // UPPER→Upper: "MAngo" → "M Ango" (ป้องกัน ALL CAPS ติดกัน)
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+    .split(/[\s\-_]+/) // แยกด้วย - , _
     .filter((w) => /[a-zA-Z]/.test(w)); // กรองตัวเลขล้วนออก
 
+  console.log("parts:", parts);
+
   const realWords = parts.filter((w) => wordSet.has(w.toLowerCase()));
+  console.log("realWords:", realWords);
+
   return realWords.length >= 3;
 };
 

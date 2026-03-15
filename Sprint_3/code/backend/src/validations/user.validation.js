@@ -2,7 +2,7 @@ const { z } = require("zod");
 const { Role } = require("@prisma/client");
 
 //Contributer: Nattawadee Chaleechat [Description] แก้ไข password validation เพิ่มเงื่อนไขต้องมีอย่างน้อย 8 ตัว ห้ามมี spaces และมีคำอย่างน้อย 3 คำ
-const { isThreeRealWords } = require("../helpers/passwordValidator");
+const { isThreeRealWords } = require("../validations/passwordValidator");
 
 const passwordRules = z
   .string()
