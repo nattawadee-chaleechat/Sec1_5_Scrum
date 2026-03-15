@@ -32,4 +32,13 @@ File includes auth.validation.js passwordValidator.js user.validation.js auth.co
 [AI Declare]
 - ให้ claude.ai ช่วยแก้โค้ด กรณีเช็ค word กับ backend
 
+## Password notification V.01 - [Nattawadee]
+### Update 16 Mar 2026
+File includes login.vue auth.controller.js
+[Description]
+- แจ้งเตือน เมื่อรหัสไม่ตรงตาม NCSC UK's guidelines ตอนที่ login
+[AI Declare]
+- ให้ claude.ai ช่วยหาข้อผิดพลาด ตอนที่แจ้งเตือนไม่ขึ้น
+- ให้ claude.ai ช่วยไกด์การเขียนโค้ด
+
 ---

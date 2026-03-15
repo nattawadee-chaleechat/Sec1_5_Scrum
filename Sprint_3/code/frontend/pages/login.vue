@@ -52,6 +52,35 @@
         <div v-if="errorMessage" style="color: red">{{ errorMessage }}</div>
       </form>
 
+      <!-- Contributer: Nattawadee Chaleechat [Description] เพิ่มการแจ้งเตือนว่ารหัสไม่ปลอดภัย เพื่อให้เป็นไปตาม NCSC UK's guidelines -->
+      <!-- Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด -->
+      <div
+        v-if="showPasswordWarning"
+        class="mt-4 p-4 bg-yellow-50 border border-yellow-400 rounded-md"
+      >
+        <p class="text-yellow-800 text-sm font-medium mb-2">
+          ⚠️ รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ
+        </p>
+        <p class="text-yellow-700 text-sm mb-3">
+          กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น
+          <span class="font-mono font-bold">apple-mango-banana</span>
+        </p>
+        <div class="flex gap-2">
+          <button
+            @click="goToChangePassword"
+            class="flex-1 py-2 bg-yellow-500 text-white rounded-md text-sm font-medium hover:bg-yellow-600 transition duration-200"
+          >
+            เปลี่ยนรหัสผ่านตอนนี้
+          </button>
+          <button
+            @click="dismissWarning"
+            class="flex-1 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition duration-200"
+          >
+            ข้ามไปก่อน
+          </button>
+        </div>
+      </div>
+
       <!-- ลิงก์สมัครสมาชิก -->
       <p class="mt-6 text-center text-gray-600 text-sm">
         ยังไม่มีบัญชี?
@@ -74,15 +103,37 @@ const errorMessage = ref("");
 const router = useRouter();
 const { login } = useAuth();
 
+const showPasswordWarning = ref(false);
+
 const submit = async () => {
   errorMessage.value = "";
+
+  // Contributer: Nattawadee Chaleechat [Description] เพิ่มการแจ้งเตือนว่ารหัสไม่ปลอดภัย เพื่อให้เป็นไปตาม NCSC UK's guidelines
+  // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
+
+  showPasswordWarning.value = false;
+
   try {
-    await login(identifier.value, password.value);
-    router.push("/");
+    const res = await login(identifier.value, password.value);
+    console.log("res:", JSON.stringify(res));
+
+    if (res?.requirePasswordChange) {
+      showPasswordWarning.value = true; // แสดง banner ไม่ redirect ทันที
+    } else {
+      router.push("/");
+    }
   } catch (e) {
     console.error(e);
     errorMessage.value = e?.data?.message || "เข้าสู่ระบบไม่สำเร็จ";
   }
+};
+
+const goToChangePassword = () => {
+  router.push("/profile");
+};
+
+const dismissWarning = () => {
+  router.push("/");
 };
 </script>
 

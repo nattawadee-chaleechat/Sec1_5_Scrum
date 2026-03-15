@@ -27,6 +27,9 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid credentials");
   }
 
+  // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
+  const isCompliant = isThreeRealWords(password);
+
   const token = signToken({ sub: user.id, role: user.role });
   const {
     password: _,
@@ -50,7 +53,16 @@ const login = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Login successful",
-    data: { token, user: safeUser },
+    data: {
+      token,
+      user: safeUser,
+      // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
+      requirePasswordChange: !isCompliant,
+      ...(!isCompliant && {
+        passwordChangeMessage:
+          "รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ กรุณาเปลี่ยนให้มีอย่างน้อย 3 คำ เช่น apple-mango-banana",
+      }),
+    },
   });
 });
 
