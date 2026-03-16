@@ -113,7 +113,9 @@ const login = asyncHandler(async (req, res) => {
 
   // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
   const isCompliant = isThreeRealWords(password);
-
+  // Contributer: Piyawat Sawatkul [Description] เช็ครหัสผ่านหมดอายุหรือยัง (90 วัน)
+  const isPasswordExpired =
+    user.passwordExpiresAt && new Date() > new Date(user.passwordExpiresAt);
   const token = signToken({ sub: user.id, role: user.role });
   const {
     password: _,
@@ -141,10 +143,14 @@ const login = asyncHandler(async (req, res) => {
       token,
       user: safeUser,
       // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
-      requirePasswordChange: !isCompliant,
+      requirePasswordChange: !isCompliant || isPasswordExpired,
       ...(!isCompliant && {
         passwordChangeMessage:
           "รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ กรุณาเปลี่ยนให้มีอย่างน้อย 3 คำ เช่น apple-mango-banana",
+      }),
+      ...(isPasswordExpired && {
+        passwordChangeMessage:
+          "รหัสผ่านของคุณหมดอายุแล้ว กรุณาเปลี่ยนรหัสผ่านใหม่",
       }),
     },
   });
@@ -162,10 +168,16 @@ const changePassword = asyncHandler(async (req, res) => {
     currentPassword,
     newPassword,
   );
-
-  if (!result.success) {
+//Contributer: Piyawat Sawatkul [Description] เพิ่มกรณีที่รหัสผ่านใหม่ซ้ำกับ 5 รหัสผ่านล่าสุด และกรณีที่รหัสผ่านปัจจุบันไม่ถูกต้อง
+if (!result.success) {
     if (result.error === "INCORRECT_PASSWORD") {
       throw new ApiError(401, "Incorrect current password.");
+    }
+    if (result.error === "PASSWORD_REUSED") {
+      throw new ApiError(
+        400,
+        "รหัสผ่านใหม่ต้องไม่ซ้ำกับ 5 รหัสผ่านที่เคยใช้ล่าสุด",
+      );
     }
     throw new ApiError(500, "Could not update password.");
   }

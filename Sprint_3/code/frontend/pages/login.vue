@@ -80,11 +80,10 @@
         class="mt-4 p-4 bg-yellow-50 border border-yellow-400 rounded-md"
       >
         <p class="text-yellow-800 text-sm font-medium mb-2">
-          ⚠️ รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ
+          {{ passwordWarningTitle }}
         </p>
         <p class="text-yellow-700 text-sm mb-3">
-          กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น
-          <span class="font-mono font-bold">apple-mango-banana</span>
+          {{ passwordWarningMessage }}
         </p>
         <div class="flex gap-2">
           <button
@@ -162,6 +161,11 @@ const showPasswordWarning = ref(false);
 const showBlockedPopup = ref(false);
 const failedAttempts = ref(0);
 const MAX_ATTEMPTS = 3;
+const passwordWarningTitle = ref("⚠️ รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ");
+const passwordWarningMessage = ref(
+  "กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น apple-mango-banana",
+);
+
 
 const submit = async () => {
   errorMessage.value = "";
@@ -169,15 +173,26 @@ const submit = async () => {
   // Contributer: Nattawadee Chaleechat [Description] เพิ่มการแจ้งเตือนว่ารหัสไม่ปลอดภัย เพื่อให้เป็นไปตาม NCSC UK's guidelines
   // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
 
+  // Contributer: Piyawat Sawatkul [Description] เพิ่มกรณีที่รหัสผ่านหมดอายุ เพื่อให้ผู้ใช้เปลี่ยนรหัสผ่านใหม่(ไม่บังคับเปลี่ยนทันที แต่แสดง banner แจ้งเตือนว่ารหัสผ่านหมดอายุแล้ว และให้ไปเปลี่ยนในหน้า profile)
+  // Ai declare : ให้ chatgpt ช่วยไกด์การเขียนโค้ด
   showPasswordWarning.value = false;
   showBlockedPopup.value = false;
-
+  passwordWarningTitle.value = "⚠️ รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ";
+  passwordWarningMessage.value =
+    "กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น apple-mango-banana";
   try {
     const res = await login(identifier.value, password.value);
     console.log("res:", JSON.stringify(res));
 
     failedAttempts.value = 0;
     if (res?.requirePasswordChange) {
+      const warningMessage = res?.passwordChangeMessage;
+      if (warningMessage?.includes("หมดอายุ")) {
+        passwordWarningTitle.value = "รหัสผ่านของคุณหมดอายุแล้ว";
+        passwordWarningMessage.value = warningMessage;
+      } else if (warningMessage) {
+        passwordWarningMessage.value = warningMessage;
+      }
       showPasswordWarning.value = true; // แสดง banner ไม่ redirect ทันที
     } else {
       router.push("/");
@@ -186,8 +201,8 @@ const submit = async () => {
     console.error(e);
     //errorMessage.value = e?.data?.message || "เข้าสู่ระบบไม่สำเร็จ";
 
-    console.log("statusCode:", e?.statusCode);
-    console.log("status:", e?.status);
+    //console.log("statusCode:", e?.statusCode);
+    //console.log("status:", e?.status);
 
     //Contributer: Nattawadee Chaleechat [Description] ถ้า account ถูก block แสดง popup แทน error ปกติ
     // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด

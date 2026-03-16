@@ -589,6 +589,7 @@ const clearErrors = () => {
   Object.keys(errors).forEach((key) => delete errors[key]);
 };
 // Piyawat Sawatkul เพิ่มฟังก์ชันนี้เพื่อแปลงข้อความ error จาก backend ให้เป็นข้อความที่เหมาะสมกับผู้ใช้
+//เพิ่มรหัสผ่านแนะนำจาก an-array-of-english-words random 3 คำมาต่อกัน
 const normalizePasswordValidationMessage = (message) => {
   if (!message) return "รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้";
 

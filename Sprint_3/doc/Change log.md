@@ -77,3 +77,13 @@ file include ADAPT_Blueprint
 - ไม่ได้ใช้
 
 ---
+## PasswordValidation V.02 - [Piyawat]
+### Update 16 Mar 2026
+File includes auth.controller.js user.service.js auth.validation.js passwordValidator.js user.validation.js profile\index.vue register\index.vue login.vue
+
+[Description]
+- เพิ่มเงื่อนไขต่างๆในการสร้างpassword ได้แก่ password ต้องไม่ซ้ำกับของเดิม เพิ่มรหัสผ่านแนะนำจาก an-array-of-english-words random 3 คำมาต่อกัน
+- เมื่อครบ90วัน รหัสผ่านจะหมดอายุ ทำให้ผู้ใช้ต้องเปลี่ยนรหัสผ่านใหม่
+
+[AI Declare]
+- ให้ chatgpt ช่วยหาข้อผิดพลาด และ ช่วยไกด์การเขียนโค้ด

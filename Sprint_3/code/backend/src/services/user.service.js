@@ -1,3 +1,6 @@
+//contributer: Piyawat Sawatkul [Description] มีเงื่อนไขว่ารหัสผ่านใหม่ต้องไม่ซ้ำกับ 5 รหัสผ่านล่าสุด และต้องไม่เหมือนกับรหัสปัจจุบัน โดยเก็ยบประวัติรหัสผ่านในตาราง PasswordHistory และตรวจสอบเมื่อมีการเปลี่ยนรหัสผ่าน
+//และให้รหัสผ่านมีอายุการใช้งาน 90 วัน หลังจากนั้นจะหมดอายุและต้องเปลี่ยนรหัสผ่านใหม่
+// Ai declare : ให้ chatgpt ช่วยอธิบายหลักการของโค้ดโดยรวมและช่วยไกด์การเขียนโค้ด
 const prisma = require("../utils/prisma");
 const ApiError = require('../utils/ApiError');
 const bcrypt = require("bcrypt");
@@ -170,25 +173,52 @@ const createUser = async (data) => {
     return safeUser;
 }
 
+const PASSWORD_HISTORY_LIMIT = 5;
+const PASSWORD_EXPIRES_DAYS = 90;
+
 const updatePassword = async (userId, currentPassword, newPassword) => {
-    const userWithPassword = await prisma.user.findUnique({ where: { id: userId } });
+    const userWithPassword = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { oldPassword: { orderBy: { storedAt: 'desc' }, take: PASSWORD_HISTORY_LIMIT } },
+    });
 
     if (!userWithPassword) {
         return { success: false, error: 'USER_NOT_FOUND' };
     }
 
     const isPasswordCorrect = await bcrypt.compare(currentPassword, userWithPassword.password);
-
     if (!isPasswordCorrect) {
         return { success: false, error: 'INCORRECT_PASSWORD' };
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    // ตรวจว่ารหัสใหม่ซ้ำกับประวัติ 5 รหัสล่าสุดหรือไม่
+    for (const history of userWithPassword.oldPassword) {
+        const isReused = await bcrypt.compare(newPassword, history.passwordHash);
+        if (isReused) {
+            return { success: false, error: 'PASSWORD_REUSED' };
+        }
+    }
 
-    await prisma.user.update({
-        where: { id: userId },
-        data: { password: hashedNewPassword },
-    });
+    const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setDate(expiresAt.getDate() + PASSWORD_EXPIRES_DAYS);
+
+    await prisma.$transaction([
+        // บันทึกรหัสเก่าลง PasswordHistory
+        prisma.passwordHistory.create({
+            data: { userId, passwordHash: userWithPassword.password },
+        }),
+        // อัปเดตรหัสใหม่ + เวลา
+        prisma.user.update({
+            where: { id: userId },
+            data: {
+                password: hashedNewPassword,
+                passwordChangedAt: now,
+                passwordExpiresAt: expiresAt,
+            },
+        }),
+    ]);
 
     return { success: true };
 };
