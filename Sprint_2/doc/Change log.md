@@ -52,7 +52,7 @@ This file will contain all notable changes to this project.
 - เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived ใน backend\src\services\booking.service.js
 ### AI Declare
 - ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
-
+--- 
 ## extraCharges V.01 - [Nattawadee]
 ### Update 1 Mar 2026
 File includes route.controller.js route.service.js route.validation.js \createTrip\index.vue
@@ -69,7 +69,13 @@ File includes booking.service.js
 File includes booking.service.js , myTrip\index.vue
 - เพิ่มแสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง รวมถึงแสดงจำนวนสิ่งของ
 ### AI Declare 
-- ใช้ chatgpt สำหรับcheck ความผิดพลาด เนื่องจากหน้า เงื่อนไขเพิ่มเติม ไม่แสดง
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด เนื่องจากหน้า เงื่อนไขเพิ่มเติม ที่ไม่แสดง
+### Update 3 Mar 2026
+File includes booking.service.js ,route.service.js, myTrip\index.vue ,myRoute\index.vue,findTrip\index.vue,myRoute\index.vue
+- เพิ่มแสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง รวมถึงแสดงจำนวนสิ่งของ
+- เพิ่มการแก้ไขของ ในเงื่อนไขเพิ่มเติม ในแก้ไขเส้นทาง
+### AI Declare 
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด เนื่องจากหน้า เงื่อนไขเพิ่มเติม ที่ไม่แสดง รวมถึงการแก้ไขที่ไม่สามรถแก้ไขได้
 ---
 ## extraCharges V.02 - [Nattawadee]
 ### Update 3 Mar 2026

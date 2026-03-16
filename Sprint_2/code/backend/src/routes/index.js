@@ -9,6 +9,7 @@ const notificationRoutes = require("./notification.routes");
 const mapRoutes = require("./maps.routes");
 const reviewDriverProfileRoutes = require("./reviewdriverprofile.routes"); // ดึงข้อมูล reviewDriverProfile routes
 const reviewRoutes = require("./review.routes"); // chetsada 15/2
+const testRoutes = require("./test.routes");
 
 const router = express.Router();
 //เพิ่ม router driversเพื่อlink กับURL ในน้าreview driver profile
@@ -22,5 +23,6 @@ router.use("/notifications", notificationRoutes);
 router.use("/api/maps", mapRoutes);
 router.use("/review", reviewDriverProfileRoutes);
 router.use("/reviews", reviewRoutes); // chetsada 15/2
+router.use("/test", testRoutes);
 
 module.exports = router;

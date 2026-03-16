@@ -734,11 +734,17 @@ Contributer: Nattawadee Chaleechat
 ใช้ chatgpt ช่วยเขียน
 */
 
-const markDriverArrived = async (bookingId) => {
+const markDriverArrived = async (bookingId, userId) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
+    include: { route: true },
   });
+
   if (!booking) throw new ApiError(404, "Booking not found");
+
+  if (booking.route.driverId !== userId) {
+    throw new ApiError(403, "Forbidden");
+  }
 
   const updated = await prisma.booking.update({
     where: { id: bookingId },
@@ -757,22 +763,29 @@ const markDriverArrived = async (bookingId) => {
     const completed = await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        status: "COMPLETED",
-        completedAt: new Date(), // บันทึกเวลาสิ้นสุดการเดินทาง
+        status: BookingStatus.COMPLETED,
+        completedAt: new Date(),
       },
     });
+
     await notifyTripCompleted(bookingId);
     return completed;
   }
+
   return updated;
 };
 
-const markPassengerArrived = async (bookingId) => {
+const markPassengerArrived = async (bookingId, userId) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
+    include: { route: true },
   });
 
   if (!booking) throw new ApiError(404, "Booking not found");
+
+  if (booking.passengerId !== userId) {
+    throw new ApiError(403, "Forbidden");
+  }
 
   const updated = await prisma.booking.update({
     where: { id: bookingId },
@@ -791,13 +804,15 @@ const markPassengerArrived = async (bookingId) => {
     const completed = await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        status: "COMPLETED",
-        completedAt: new Date(), // บันทึกเวลาสิ้นสุดการเดินทาง
+        status: BookingStatus.COMPLETED,
+        completedAt: new Date(),
       },
     });
+
     await notifyTripCompleted(bookingId);
     return completed;
   }
+
   return updated;
 };
 
