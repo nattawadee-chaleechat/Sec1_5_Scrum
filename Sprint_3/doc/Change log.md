@@ -23,3 +23,7 @@ This file will contain all notable changes to this project.
 #### AI Declare
 - ใช้ ChatGPT ตรวจสอบความเรียบร้อย
 ---
+## [Vesion 1.0.0] - [Ratchapoom]
+### Update 17 March 2026
+- เพิ่ม user manual
+---
