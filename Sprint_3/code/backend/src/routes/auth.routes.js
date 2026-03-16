@@ -22,5 +22,6 @@ router.put(
 
 // Contributer: Nattawadee Chaleechat [Description] แก้ password ให้เป็นไปตาม NCSC UK's guidelines
 router.post("/validate-password", authController.validatePassword);
+router.get("/password-suggestion", authController.getPasswordSuggestion);
 
 module.exports = router;

@@ -418,13 +418,8 @@ const adminCreateRoute = asyncHandler(async (req, res) => {
 
 const adminUpdateRoute = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const {
-    driverId,
-    vehicleId,
-    optimizeWaypoints,
-    extraCharges,
-    ...routeFields
-  } = req.body;
+  const { driverId, vehicleId, optimizeWaypoints, extraCharges, ...routeFields } =
+    req.body;
 
   const existing = await routeService.getRouteById(id);
   if (!existing) throw new ApiError(404, "Route not found");

@@ -1,12 +1,18 @@
 const { z } = require("zod");
 
 //Contributer: Nattawadee Chaleechat [Description] แก้ไข password validation เพิ่มเงื่อนไขต้องมีอย่างน้อย 8 ตัว ห้ามมี spaces และมีคำอย่างน้อย 3 คำ
-const { isThreeRealWords } = require("../validations/passwordValidator");
+const {
+  isThreeRealWords,
+  isBlacklistedPassword,
+} = require("../validations/passwordValidator");;
 
 const passwordRules = z
   .string()
   .min(8, "Password must be at least 8 characters")
   .regex(/^\S+$/, "Password must not contain spaces")
+  .refine((val) => !isBlacklistedPassword(val), {
+    message: "Password is too common and not allowed",
+  })
   .refine(isThreeRealWords, {
     message:
       "Password must contain at least 3 real words (e.g. apple-mango-banana)",

@@ -42,3 +42,13 @@ File includes login.vue auth.controller.js
 - ให้ claude.ai ช่วยไกด์การเขียนโค้ด
 
 ---
+
+## PasswordValidation V.01 - [Piyawat]
+### Update 16 Mar 2026
+File includes auth.controller.js auth.validation.js passwordValidator.js user.validation.js profile\index.vue register\index.vue
+[Description]
+- เพิ่มเงื่อนไขต่างๆในการสร้างpassword ได้แก่ blacklist password รหัสผ่านต้องไม่มีชื่อผู้ใช้ อีเมล ชื่อจริง หรือนามสกุล
+[AI Declare]
+- ให้ chatgpt ช่วยหาข้อผิดพลาด และ ช่วยไกด์การเขียนโค้ด
+
+---

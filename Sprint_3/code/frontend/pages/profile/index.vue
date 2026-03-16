@@ -110,14 +110,17 @@
                                     <div>
                                         <label for="newPassword"
                                             class="block mb-2 text-sm font-medium text-gray-700">รหัสผ่านใหม่</label>
-                                        <input type="password" id="newPassword" minlength="6" v-model="form.newPassword"
-                                            placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
+                                        <input type="password" id="newPassword" minlength="8" v-model="form.newPassword"
+                                            placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                        <p class="mt-2 text-xs text-gray-500">
+                                            รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ ห้ามมีช่องว่าง และต้องไม่มีชื่อผู้ใช้ อีเมล ชื่อจริง หรือนามสกุล
+                                        </p>
                                     </div>
                                     <div>
                                         <label for="confirmNewPassword"
                                             class="block mb-2 text-sm font-medium text-gray-700">ยืนยันรหัสผ่านใหม่</label>
-                                        <input type="password" id="confirmNewPassword" minlength="6"
+                                        <input type="password" id="confirmNewPassword" minlength="8"
                                             v-model="form.confirmNewPassword" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                     </div>
@@ -216,6 +219,60 @@ const formatDate = (dateString) => {
     if (!dateString) return '';
     return dayjs(dateString).format('D MMMM YYYY HH:mm');
 }
+//piyawat Sawatkul : เพิ่มฟังก์ชัน normalizePasswordValidationMessage เพื่อcheck ข้อความ error จาก API
+const normalizePasswordValidationMessage = (message) => {
+    if (!message) return 'รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้';
+
+    const blacklistPatterns = ['Password is too common and not allowed'];
+    const threeWordPatterns = ['Password must contain at least 3 real words'];
+    const minLengthPatterns = ['Password must be at least 8 characters'];
+    const noSpacePatterns = ['Password must not contain spaces'];
+
+    if (blacklistPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้';
+    }
+
+    if (threeWordPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ คั่นด้วย - หรือ _ เช่น apple-mango-banana หรือ CamelCase เช่น AppleMangoBanana';
+    }
+
+    if (minLengthPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร';
+    }
+
+    if (noSpacePatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านใหม่ต้องไม่มีช่องว่าง';
+    }
+
+    return message;
+}
+
+const validateNewPassword = async () => {
+    if (form.newPassword.length < 8) {
+        throw new Error('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
+    }
+
+    if (/\s/.test(form.newPassword)) {
+        throw new Error('รหัสผ่านใหม่ต้องไม่มีช่องว่าง');
+    }
+
+    const res = await fetch(`${useRuntimeConfig().public.apiBase || 'http://localhost:3000/api'}/auth/validate-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            password: form.newPassword,
+            username: originalUserData?.username,
+            email: form.email,
+            firstName: form.firstName,
+            lastName: form.lastName,
+        }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(normalizePasswordValidationMessage(data?.message));
+    }
+}
 
 onMounted(() => {
     fetchUserData();
@@ -259,9 +316,8 @@ async function handleProfileUpdate() {
             if (form.newPassword !== form.confirmNewPassword) {
                 throw new Error("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน");
             }
-            if (form.newPassword.length < 6) {
-                throw new Error("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร");
-            }
+
+            await validateNewPassword();
 
             await $api('/auth/change-password', {
                 method: 'PUT',

@@ -95,6 +95,31 @@
               รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ คั่นด้วย - หรือ _ เช่น
               apple-mango-banana หรือ CamelCase เช่น AppleMangoBanana
             </p>
+            <div class="p-3 mt-3 border border-blue-200 rounded-md bg-blue-50">
+              <div class="flex items-center justify-between gap-2">
+                <p class="text-xs font-medium text-blue-800">รหัสผ่านแนะนำ</p>
+                <button
+                  type="button"
+                  @click="fetchPasswordSuggestion"
+                  :disabled="isSuggestionLoading"
+                  class="text-xs font-medium text-blue-700 hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {{ isSuggestionLoading ? "กำลังสุ่ม..." : "สุ่มใหม่" }}
+                </button>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2">
+                <p class="text-sm font-semibold text-blue-900 break-all">
+                  {{ suggestedPassword }}
+                </p>
+                <button
+                  type="button"
+                  @click="applySuggestedPassword"
+                  class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                >
+                  ใช้รหัสนี้
+                </button>
+              </div>
+            </div>
           </div>
           <div class="mb-6">
             <label
@@ -466,7 +491,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick } from "vue";
+import { ref, reactive, computed, nextTick, onMounted } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useToast } from "~/composables/useToast";
 import { useRouter } from "#app";
@@ -499,6 +524,8 @@ const idCardPreview = ref(null);
 const selfiePreview = ref(null);
 
 const isLoading = ref(false);
+const suggestedPassword = ref("apple-mango-banana");
+const isSuggestionLoading = ref(false);
 
 // onMounted(() => {
 //   const faScript = document.createElement('script');
@@ -560,6 +587,18 @@ const getLabelClass = (step) => {
 const clearErrors = () => {
   Object.keys(errors).forEach((key) => delete errors[key]);
 };
+// Piyawat Sawatkul เพิ่มฟังก์ชันนี้เพื่อแปลงข้อความ error จาก backend ให้เป็นข้อความที่เหมาะสมกับผู้ใช้
+const normalizePasswordValidationMessage = (message) => {
+  if (!message) return "รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้";
+
+  const blacklistPatterns = ["Password is too common and not allowed"];
+
+  if (blacklistPatterns.some((pattern) => message.includes(pattern))) {
+    return "รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้";
+  }
+
+  return message;
+};
 
 const validationFunctions = [
   async () => {
@@ -592,11 +631,15 @@ const validationFunctions = [
       const res = await fetch(`${apiBase}/auth/validate-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: formData.password }),
+        body: JSON.stringify({
+          password: formData.password,
+          username: formData.username,
+          email: formData.email,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
-        errors.password = data?.message || "รหัสผ่านไม่ผ่านเกณฑ์ความปลอดภัย";
+        errors.password = normalizePasswordValidationMessage(data?.message);
         return false;
       }
     } catch {
@@ -652,6 +695,28 @@ const prevStep = () => {
 // ===== Helpers (same behavior as admin create) =====
 const apiBase =
   useRuntimeConfig().public.apiBase || "http://localhost:3000/api";
+
+const fetchPasswordSuggestion = async () => {
+  isSuggestionLoading.value = true;
+  try {
+    const res = await fetch(`${apiBase}/auth/password-suggestion`);
+    const data = await res.json();
+    suggestedPassword.value =
+      data?.data?.suggestion || data?.suggestion || "apple-mango-banana";
+  } catch {
+    suggestedPassword.value = "apple-mango-banana";
+  } finally {
+    isSuggestionLoading.value = false;
+  }
+};
+
+const applySuggestedPassword = () => {
+  formData.password = suggestedPassword.value;
+};
+
+onMounted(() => {
+  fetchPasswordSuggestion();
+});
 
 async function postForm(url, formData, token = "") {
   const res = await fetch(url, {
