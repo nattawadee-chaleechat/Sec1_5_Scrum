@@ -51,4 +51,13 @@ File includes auth.controller.js auth.validation.js passwordValidator.js user.va
 [AI Declare]
 - ให้ chatgpt ช่วยหาข้อผิดพลาด และ ช่วยไกด์การเขียนโค้ด
 
+## password matched NCSC V.02.02 - [Nattawadee]
+### Update 16 Mar 2026
+File includes auth.controller.js profile\index.vue register\index.vue
+[Description]
+- แก้ไขข้อความ เพื่อให้คลอบคลุมกรณีที่กำหนดไว้มากขึ้น user อ่านจะได้เข้าใจ ไม่หงุดหงิดตอนกรอกรหัสแล้วไม่ผ่าน
+[AI Declare]
+- ไม่ได้ใช้
+
+
 ---
