@@ -36,6 +36,8 @@ const validatePasswordAgainstUserInfo = (password, userInfo) => {
 
 const login = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
+  // Contributer: Nattawadee Chaleechat [Description] เช็คการใส่รหัสผิดเกิน 3 ครั้ง
+  const MAX_ATTEMPTS = 3;
 
   let user;
   if (email) {
@@ -45,15 +47,69 @@ const login = asyncHandler(async (req, res) => {
   }
 
   if (user && !user.isActive) {
+    // Contributer: Nattawadee Chaleechat [Description] เพิ่ม throw new ApiError 403
+    if (user.accountLockedUntil) {
+      throw new ApiError(
+        403,
+        "บัญชีของคุณถูกระงับ เนื่องจากกรอกรหัสผ่านผิดเกิน 3 ครั้ง กรุณาติดต่อแอดมิน",
+      );
+    }
     throw new ApiError(401, "Your account has been deactivated.");
   }
 
-  const passwordIsValid = user
+  //Contributer: Nattawadee Chaleechat [Description] เช็คว่า account ถูก lock อยู่มั้ย
+  //[AI Declare] : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
+
+  if (
+    user.accountLockedUntil &&
+    new Date() < new Date(user.accountLockedUntil)
+  ) {
+    throw new ApiError(403, "บัญชีของคุณถูกระงับชั่วคราว กรุณาติดต่อแอดมิน");
+  }
+
+  /*const passwordIsValid = user
     ? await userService.comparePassword(user, password)
     : false;
   if (!user || !passwordIsValid) {
     throw new ApiError(401, "Invalid credentials");
+  }*/
+
+  const passwordIsValid = await userService.comparePassword(user, password);
+
+  // ถ้ากรอกรหัสผิด
+  if (!passwordIsValid) {
+    const newFailedAttempts = (user.failedLoginAttempts || 0) + 1;
+
+    if (newFailedAttempts >= MAX_ATTEMPTS) {
+      // lock account
+      await userService.updateUserProfile(user.id, {
+        failedLoginAttempts: newFailedAttempts,
+        accountLockedUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // lock ไปก่อน ค่อยให้ admin ปลดเอง
+        isActive: false,
+      });
+      throw new ApiError(
+        403,
+        "บัญชีของคุณถูกระงับ เนื่องจากกรอกรหัสผ่านผิดเกิน 3 ครั้ง กรุณาติดต่อแอดมิน",
+      );
+    }
+
+    // ยังไม่ครบ 3 ครั้ง อัปเดต counter
+    await userService.updateUserProfile(user.id, {
+      failedLoginAttempts: newFailedAttempts,
+    });
+
+    throw new ApiError(
+      401,
+      `Invalid credentials (สามารถกรอกได้อีก ${MAX_ATTEMPTS - newFailedAttempts} ครั้ง)`,
+    );
   }
+
+  // login สำเร็จ reset counter
+  await userService.updateUserProfile(user.id, {
+    failedLoginAttempts: 0,
+    accountLockedUntil: null,
+    lastLogin: new Date(),
+  });
 
   // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
   const isCompliant = isThreeRealWords(password);
@@ -126,7 +182,7 @@ const changePassword = asyncHandler(async (req, res) => {
 //Contributer: Piyawat Sawatkul [Description] แก้ password และเพิ่มblacklist ให้เป็นไปตาม NCSC UK's guidelines
 // Ai declare : ให้ chatgpt ช่วยไกด์การเขียนโค้ด
 const validatePassword = asyncHandler(async (req, res) => {
-  console.log("validatePassword called", req.body);
+  //console.log("validatePassword called", req.body);
 
   const { password, username, email, firstName, lastName } = req.body;
 

@@ -25,10 +25,10 @@ const isThreeRealWords = (val) => {
     .split(/[\s\-_]+/) // แยกด้วย - , _
     .filter((w) => /[a-zA-Z]/.test(w)); // กรองตัวเลขล้วนออก
 
-  console.log("parts:", parts);
+  //console.log("parts:", parts);
 
   const realWords = parts.filter((w) => wordSet.has(w.toLowerCase()));
-  console.log("realWords:", realWords);
+  //console.log("realWords:", realWords);
 
   return realWords.length >= 3;
 };

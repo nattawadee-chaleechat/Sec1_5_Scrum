@@ -41,8 +41,6 @@ File includes login.vue auth.controller.js
 - ให้ claude.ai ช่วยหาข้อผิดพลาด ตอนที่แจ้งเตือนไม่ขึ้น
 - ให้ claude.ai ช่วยไกด์การเขียนโค้ด
 
----
-
 ## PasswordValidation V.01 - [Piyawat]
 ### Update 16 Mar 2026
 File includes auth.controller.js auth.validation.js passwordValidator.js user.validation.js profile\index.vue register\index.vue
@@ -52,12 +50,19 @@ File includes auth.controller.js auth.validation.js passwordValidator.js user.va
 - ให้ chatgpt ช่วยหาข้อผิดพลาด และ ช่วยไกด์การเขียนโค้ด
 
 ## password matched NCSC V.02.02 - [Nattawadee]
-### Update 16 Mar 2026
+### Update 17 Mar 2026
 File includes auth.controller.js profile\index.vue register\index.vue
 [Description]
 - แก้ไขข้อความ เพื่อให้คลอบคลุมกรณีที่กำหนดไว้มากขึ้น user อ่านจะได้เข้าใจ ไม่หงุดหงิดตอนกรอกรหัสแล้วไม่ผ่าน
 [AI Declare]
 - ไม่ได้ใช้
 
+## lock account V.01 - [Nattawadee]
+### Update 17 Mar 2026
+File includes auth.controller.js user.controller.js pages\login.vue 
+[Description]
+- เมื่อกรอกรหัสผิดเกิน 3 ครั้ง จะทำการ lock account
+[AI Declare]
+- ให้ claude.ai ช่วยไกด์การเขียนโค้ด
 
 ---

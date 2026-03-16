@@ -49,7 +49,28 @@
         >
           เข้าสู่ระบบ
         </button>
-        <div v-if="errorMessage" style="color: red">{{ errorMessage }}</div>
+        <!-- <div v-if="errorMessage" style="color: red">{{ errorMessage }}</div> -->
+
+        <!-- Contributer: Nattawadee Chaleechat [Description] เพิ่มการแจ้งเตือนกรอกรหัสผิด -->
+        <div
+          v-if="errorMessage"
+          class="mt-3 p-3 rounded-md"
+          :class="
+            failedAttempts > 0
+              ? 'bg-orange-50 border border-orange-400'
+              : 'bg-red-50 border border-red-400'
+          "
+        >
+          <p
+            class="text-sm font-medium"
+            :class="failedAttempts > 0 ? 'text-orange-700' : 'text-red-600'"
+          >
+            {{ errorMessage }}
+          </p>
+          <p v-if="failedAttempts > 0" class="text-orange-600 text-xs mt-1">
+            ⚠️ หากกรอกผิดครบ 3 ครั้ง บัญชีของคุณจะถูกระงับและต้องติดต่อแอดมิน
+          </p>
+        </div>
       </form>
 
       <!-- Contributer: Nattawadee Chaleechat [Description] เพิ่มการแจ้งเตือนว่ารหัสไม่ปลอดภัย เพื่อให้เป็นไปตาม NCSC UK's guidelines -->
@@ -81,6 +102,39 @@
         </div>
       </div>
 
+      <!-- Contributer: Nattawadee Chaleechat [Description] เพิ่ม Popup account blocked หากใส่รหัสผิดเกิน 3 ครั้ง -->
+      <!-- Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด -->
+      <!-- Popup account blocked -->
+      <div
+        v-if="showBlockedPopup"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+          <div class="text-center mb-4">
+            <p class="text-4xl mb-2">🔒</p>
+            <h2 class="text-xl font-bold text-red-600">บัญชีถูกระงับ</h2>
+          </div>
+          <p class="text-gray-700 text-sm text-center mb-4">
+            บัญชีของคุณถูกระงับชั่วคราว เนื่องจากกรอกผิดเกิน 3 ครั้ง
+            กรุณาติดต่อแอดมินเพื่อปลดล็อคบัญชี Email : admin@painamnae.com
+          </p>
+          <div class="flex gap-2">
+            <button
+              @click="contactAdmin"
+              class="flex-1 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+            >
+              ติดต่อแอดมิน
+            </button>
+            <button
+              @click="showBlockedPopup = false"
+              class="flex-1 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300"
+            >
+              ปิด
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- ลิงก์สมัครสมาชิก -->
       <p class="mt-6 text-center text-gray-600 text-sm">
         ยังไม่มีบัญชี?
@@ -103,7 +157,11 @@ const errorMessage = ref("");
 const router = useRouter();
 const { login } = useAuth();
 
+// Contributer: Nattawadee Chaleechat
 const showPasswordWarning = ref(false);
+const showBlockedPopup = ref(false);
+const failedAttempts = ref(0);
+const MAX_ATTEMPTS = 3;
 
 const submit = async () => {
   errorMessage.value = "";
@@ -112,11 +170,13 @@ const submit = async () => {
   // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
 
   showPasswordWarning.value = false;
+  showBlockedPopup.value = false;
 
   try {
     const res = await login(identifier.value, password.value);
     console.log("res:", JSON.stringify(res));
 
+    failedAttempts.value = 0;
     if (res?.requirePasswordChange) {
       showPasswordWarning.value = true; // แสดง banner ไม่ redirect ทันที
     } else {
@@ -124,7 +184,32 @@ const submit = async () => {
     }
   } catch (e) {
     console.error(e);
-    errorMessage.value = e?.data?.message || "เข้าสู่ระบบไม่สำเร็จ";
+    //errorMessage.value = e?.data?.message || "เข้าสู่ระบบไม่สำเร็จ";
+
+    console.log("statusCode:", e?.statusCode);
+    console.log("status:", e?.status);
+
+    //Contributer: Nattawadee Chaleechat [Description] ถ้า account ถูก block แสดง popup แทน error ปกติ
+    // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
+
+    // เช็ค statusCode จาก backend
+    if (e?.statusCode === 403) {
+      // account ถูก lock แล้ว
+      showBlockedPopup.value = true;
+      failedAttempts.value = 0;
+      return;
+    }
+
+    // รหัสผิดปกติ นับ frontend attempts
+    failedAttempts.value++;
+    const remaining = MAX_ATTEMPTS - failedAttempts.value;
+
+    if (remaining <= 0) {
+      showBlockedPopup.value = true;
+      failedAttempts.value = 0;
+    } else {
+      errorMessage.value = `เข้าสู่ระบบไม่สำเร็จ (สามารถกรอกได้อีก ${remaining} ครั้ง)`;
+    }
   }
 };
 
@@ -134,6 +219,10 @@ const goToChangePassword = () => {
 
 const dismissWarning = () => {
   router.push("/");
+};
+
+const contactAdmin = () => {
+  window.open("mailto: admin@painamnae.com", "_blank");
 };
 </script>
 
