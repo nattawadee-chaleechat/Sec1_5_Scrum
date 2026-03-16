@@ -92,8 +92,9 @@
               {{ errors.password }}
             </p>
             <p v-else class="mt-1 text-xs text-gray-500">
-              รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ คั่นด้วย - หรือ _ เช่น
-              apple-mango-banana หรือ CamelCase เช่น AppleMangoBanana
+              รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ (คำอังกฤษ 3 ตัวอักษรขึ้นไป)
+              คั่นด้วย - หรือ _ เช่น apple-mango-banana หรือ CamelCase เช่น
+              AppleMangoBanana และต้องไม่มีชื่อผู้ใช้ อีเมล ชื่อจริง หรือนามสกุล
             </p>
             <div class="p-3 mt-3 border border-blue-200 rounded-md bg-blue-50">
               <div class="flex items-center justify-between gap-2">

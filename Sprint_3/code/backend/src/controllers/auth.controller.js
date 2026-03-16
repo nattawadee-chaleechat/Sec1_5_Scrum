@@ -9,7 +9,7 @@ const {
   isBlacklistedPassword,
   generatePasswordSuggestion,
 } = require("../validations/passwordValidator");
-// Contributer: Piyawat Sawatkul [Description] แก้ password และเพิ่มblacklist และชื่อที่เหมือนกับข้อมูลผู้ใช้ 
+// Contributer: Piyawat Sawatkul [Description] แก้ password และเพิ่มblacklist และชื่อที่เหมือนกับข้อมูลผู้ใช้
 
 const getUserTokens = ({ username, email, firstName, lastName }) =>
   [
@@ -54,7 +54,7 @@ const login = asyncHandler(async (req, res) => {
   if (!user || !passwordIsValid) {
     throw new ApiError(401, "Invalid credentials");
   }
-  
+
   // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
   const isCompliant = isThreeRealWords(password);
 
@@ -144,17 +144,14 @@ const validatePassword = asyncHandler(async (req, res) => {
 
   const isBlacklisted = isBlacklistedPassword(password);
   if (isBlacklisted) {
-    throw new ApiError(
-      400,
-      "Password is too common and not allowed",
-    );
+    throw new ApiError(400, "Password is too common and not allowed");
   }
 
   const hasThreeRealWords = isThreeRealWords(password);
   if (!hasThreeRealWords) {
     throw new ApiError(
       400,
-      "รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ คั่นด้วย - หรือ _ เช่น apple-mango-banana หรือ CamelCase เช่น AppleMangoBanana",
+      "รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ (คำอังกฤษ 3 ตัวอักษรขึ้นไป) คั่นด้วย - หรือ _ เช่น apple-mango-banana หรือ CamelCase เช่น AppleMangoBanana และต้องไม่มีชื่อผู้ใช้ อีเมล ชื่อจริง หรือนามสกุล",
     );
   }
 
