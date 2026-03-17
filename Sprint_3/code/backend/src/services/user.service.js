@@ -154,11 +154,14 @@ const createUser = async (data) => {
         throw new ApiError(409, "This username is already taken.");
     }
     const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
+    const { now, expiresAt } = getPasswordLifecycleDates();
 
     const createData = {
         email: data.email,
         username: data.username,
         password: hashedPassword,
+        passwordChangedAt: now,
+        passwordExpiresAt: expiresAt,
         firstName: data.firstName,
         lastName: data.lastName,
         phoneNumber: data.phoneNumber,
