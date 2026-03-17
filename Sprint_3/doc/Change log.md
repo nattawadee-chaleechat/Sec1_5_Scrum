@@ -6,14 +6,24 @@ This file will contain all notable changes to this project.
 
 ## [Vesion 1.0.0] - [Chetsada]
 ### Update 12 March 2026
-File includes schema.prisma
-[Description]
+#### Description
+- แก้ function fetchBookings() ให้ใช้ apiBase 
+#### File includes
+- code\frontend\pages\admin\bookings\index.vue
+#### AI Declare
+- ใช้ ChatGPT ช่วยปรับตรงส่วนดึง bookingsAll.value
+
+## [Vesion 1.0.0] - [Chetsada]
+### Update 13 March 2026
+#### Description
 - เพิ่มตาราง PasswordHistory เก็บ password ที่เคยใช้แล้ว
 - ที่ตาราง User เพิ่ม  attribute สำหรับ 
    - เก็บเวลาเปลี่ยน/หมดอายุของรหัส 
    - เก็บคำนวนครั้งที่ใส่ผิด และเวลาล็อคไม่ให้ล็อกอิน
-[AI Declare]
-- ให้ chatgpt ตรวจสอบความเรียบร้อย
+#### File includes
+- code\backend\prisma\schema.prisma
+#### AI Declare
+- ใช้ ChatGPT ตรวจสอบความเรียบร้อย
 
 ## password matched NCSC V.01 - [Nattawadee]
 ### Update 14 Mar 2026

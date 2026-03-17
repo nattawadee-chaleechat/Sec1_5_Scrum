@@ -1,4 +1,9 @@
-<!-- แก้ function fetchBookings() ให้ใช้ apiBase -->
+<!-- 
+Contributer: Chetsada
+[11/3/2569]
+  - แก้ function fetchBookings() ให้ใช้ apiBase 
+AI Declare
+- ใช้ ChatGPT ช่วยปรับตรงส่วนดึง bookingsAll.value -->
 
 <template>
     <div>
