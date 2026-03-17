@@ -9,11 +9,32 @@ Update 14 Feb 2026
 // [26/2/2569]
 // - เพิ่มการบันทึก completedAt เมื่อทั้ง Driver และ Passenger กดยืนยันครบ
 
+// Contributer: suttipad rodhom
+// update 1 March 2026
+// - เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived
+
+// Contributer: suttipad rodhom
+// [2/3/2569]
+// - เพิ้่มฟังก์ชัน calculateBookingTotals สำหรับคำนวณราคาทั้งหมดของการจอง (รวมราคาที่นั่ง + เงื่อนไขอื่นๆ)
+
+/* Contributer: Nattawadee Chaleechat 
+[Description] 
+เพิ่มการคำนวณราคา ตอน booking create
+Update 3 Mar 2026
+*/
+
+// Contributer: Piyawat Sawatkul
+// [3/3/2569]
+// - เพิ้่มแสดงจำนวนของที่เอามา 
+
 const prisma = require("../utils/prisma");
 const ApiError = require("../utils/ApiError");
 const { RouteStatus, BookingStatus } = require("@prisma/client");
 const { checkAndApplyPassengerSuspension } = require("./penalty.service");
-const { notifyTripCompleted } = require("./notification.service")
+const {
+  notifyTripCompleted,
+  notifyArrivedOneSide,
+} = require("./notification.service");
 
 const ACTIVE_STATUSES = [BookingStatus.PENDING, BookingStatus.CONFIRMED];
 
@@ -287,9 +308,13 @@ const adminUpdateBooking = async (id, patch) => {
 };
 
 const createBooking = async (data, passengerId) => {
+  //console.log("DATA IN SERVICE:", data);
   return prisma.$transaction(async (tx) => {
     const route = await tx.route.findUnique({
       where: { id: data.routeId },
+      include: {
+        routeExtraCharge: true,
+      },
     });
 
     if (!route) {
@@ -307,6 +332,52 @@ const createBooking = async (data, passengerId) => {
       throw new ApiError(400, "Not enough seats available on this route.");
     }
 
+    //Contributer: Nattawadee Chaleechat
+    //คำนวณราคาที่นั่ง
+    const baseTotalPrice = route.pricePerSeat * data.numberOfSeats;
+
+    // เตรียมข้อมูล extra
+    const selectedCharges = data.selectedCharges || [];
+    const chargeQuantities = data.chargeQuantities || {};
+
+    let extraTotalPrice = 0;
+    const bookingExtraData = [];
+
+    //console.log("route.routeExtraCharge:", route.routeExtraCharge);
+
+    for (const id of selectedCharges) {
+      const extra = route.routeExtraCharge.find((e) => e.id === id);
+
+      if (!extra) {
+        throw new ApiError(400, "Invalid extra charge selected.");
+      }
+
+      const qty = Number(chargeQuantities[id] || 0);
+
+      if (qty <= 0) continue;
+
+      const itemTotal = extra.unitPrice * qty;
+
+      extraTotalPrice += itemTotal;
+
+      bookingExtraData.push({
+        routeExtraChargeId: extra.id,
+        name: extra.name,
+        quantity: qty,
+        unitPrice: extra.unitPrice,
+        totalExtraPrice: itemTotal,
+      });
+    }
+
+    //คำนวณราคาสุดท้าย
+    const totalPrice = baseTotalPrice + extraTotalPrice;
+
+    //console.log("baseTotalPrice:", baseTotalPrice);
+    //console.log("extraTotalPrice:", extraTotalPrice);
+    //console.log("totalPrice:", totalPrice);
+    //console.log("bookingExtraData:", bookingExtraData);
+
+    //booking create
     const booking = await tx.booking.create({
       data: {
         routeId: data.routeId,
@@ -314,6 +385,18 @@ const createBooking = async (data, passengerId) => {
         numberOfSeats: data.numberOfSeats,
         pickupLocation: data.pickupLocation,
         dropoffLocation: data.dropoffLocation,
+
+        baseTotalPrice,
+        extraTotalPrice,
+        totalPrice,
+
+        bookingExtraCharge: {
+          create: bookingExtraData,
+        },
+      },
+      include: {
+        route: true,
+        bookingExtraCharge: true,
       },
     });
 
@@ -354,11 +437,21 @@ const createBooking = async (data, passengerId) => {
 };
 
 const getMyBookings = async (passengerId) => {
-  return prisma.booking.findMany({
+  const bookings = await prisma.booking.findMany({
     where: { passengerId },
     include: {
-      review: {
-      where: {reviewerId: passengerId}
+     review: {
+        where: { reviewerId : passengerId },
+      },
+      bookingExtraCharge: {
+        select: {
+          id: true,
+          name: true,
+          quantity: true,
+          unitPrice: true,
+          totalExtraPrice: true,
+          routeExtraChargeId: true,
+        },
       },
       route: {
         include: {
@@ -380,18 +473,69 @@ const getMyBookings = async (passengerId) => {
               amenities: true,
             },
           },
+          routeExtraCharge: {
+            select: {
+              id: true,
+              name: true,
+              unitPrice: true,
+            },
+          },
         },
       },
     },
     orderBy: { createdAt: "desc" },
   });
+
+  return bookings.map((booking) => {
+    const extraFromItems = (booking.bookingExtraCharge || []).reduce(
+      (sum, item) => sum + (Number(item.totalExtraPrice) || 0),
+      0,
+    );
+
+    const totals = calculateBookingTotals({
+      pricePerSeat: booking.route?.pricePerSeat,
+      numberOfSeats: booking.numberOfSeats,
+      extraTotalPrice: extraFromItems || booking.extraTotalPrice,
+    });
+
+    return {
+      ...booking,
+      ...totals,
+    };
+  });
 };
 
 const getBookingById = async (id) => {
-  return prisma.booking.findUnique({
+  const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { route: true, passenger: true },
+    include: {
+      route: true,
+      passenger: true,
+      bookingExtraCharge: {
+        select: {
+          totalExtraPrice: true,
+        },
+      },
+    },
   });
+
+  if (!booking) return null;
+
+  const extraFromItems = (booking.bookingExtraCharge || []).reduce(
+    (sum, item) => sum + (Number(item.totalExtraPrice) || 0),
+    0,
+  );
+
+  const totals = calculateBookingTotals({
+    pricePerSeat: booking.route?.pricePerSeat,
+    numberOfSeats: booking.numberOfSeats,
+    extraTotalPrice: extraFromItems || booking.extraTotalPrice,
+  });
+
+  return {
+    ...booking,
+    ...totals,
+  };
 };
 
 const updateBookingStatus = async (id, status, userId) => {
@@ -609,6 +753,12 @@ const markDriverArrived = async (bookingId, userId) => {
     },
   });
 
+  if (!updated.passenger_confirm_arrived) {
+    await notifyArrivedOneSide(bookingId, "DRIVER"); // 1/3 chetsada
+  }
+
+  // suttipad 26/2 หากทั้งสองฝ่ายยืนยันครบ
+  // เปลี่ยนสถานะเป็น COMPLETED และบันทึกเวลา completedAt
   if (updated.driver_confirm_arrived && updated.passenger_confirm_arrived) {
     const completed = await prisma.booking.update({
       where: { id: bookingId },
@@ -644,6 +794,12 @@ const markPassengerArrived = async (bookingId, userId) => {
     },
   });
 
+  if (!updated.driver_confirm_arrived) {
+    await notifyArrivedOneSide(bookingId, "PASSENGER"); // 1/3 chetsada
+  }
+
+  // suttipad 26/2 หากทั้งสองฝ่ายยืนยันครบ
+  // เปลี่ยนสถานะเป็น COMPLETED และบันทึกเวลา completedAt
   if (updated.driver_confirm_arrived && updated.passenger_confirm_arrived) {
     const completed = await prisma.booking.update({
       where: { id: bookingId },
@@ -660,6 +816,27 @@ const markPassengerArrived = async (bookingId, userId) => {
   return updated;
 };
 
+// add some calulation totalPrice for additional service
+const toMoney = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
+const calculateBookingTotals = ({
+  pricePerSeat,
+  numberOfSeats,
+  extraTotalPrice = 0,
+}) => {
+  const baseTotalPrice = toMoney(
+    (Number(pricePerSeat) || 0) * (Number(numberOfSeats) || 0),
+  );
+  const normalizedExtraTotalPrice = toMoney(extraTotalPrice);
+  const totalPrice = toMoney(baseTotalPrice + normalizedExtraTotalPrice);
+
+  return {
+    baseTotalPrice,
+    extraTotalPrice: normalizedExtraTotalPrice,
+    totalPrice,
+  };
+};
+
 module.exports = {
   searchBookingsAdmin,
   adminCreateBooking,
@@ -674,4 +851,5 @@ module.exports = {
   adminDeleteBooking,
   markDriverArrived,
   markPassengerArrived,
+  calculateBookingTotals,
 };

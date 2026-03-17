@@ -4,6 +4,13 @@ This file will contain all notable changes to this project.
 
 ---
 
+## [Vesion 1.0.0] - [Chetsada]
+### Update 26 February 2026
+- เพิ่มตาราง RouteExtraCharge สัมพันธ์ manny-to-one กับ Route
+- เพิ่มตาราง BookingExtraCharge สัมพันธ์ manny-to-one กับ Booking และ manny-to-one กับ RouteExtraCharge เพื่อใช้เก็บข้อมูลการสร้างตัวเลือกสำหรับเก็บเงินเพิ่มในการเดินทางนั้นๆ
+### AI Declare
+- ใช้ ChatGPT ช่วยตรวจสอบกรณีต่างๆ ของ schema ที่ออกแบบไว้
+---
 ## [Vesion 1.0.0] - [Suttipad]
 ### Update 28 February 2026
 - เพิ่ม completedAt ในตาราง Booking สำหรับเก็บเวลาที่การเดินทางเสร็จสมบูรณ์
@@ -39,7 +46,51 @@ This file will contain all notable changes to this project.
 - ใช้ ChatGPT ช่วยจัดโครงสร้าง Multer และ multiple upload
 - ใช้ ChatGPT ช่วยออกแบบระบบ Fullscreen Video ใน Modal
 ---
-
+## [Vesion 2.0.0] - [Chetsada]
+### Update 1 March 2026
+- สร้าง notifyArrivedOneSide สำหรับแจ้งเตือนผู้ใช้อีกฝั่งให้กด "สิ้นสุดการเดินทาง" เมื่ออีกฝั่งหนึ่งกดแล้ว ที่ backend\src\services\notification.service.js
+- เพิ่มส่วนเรียกใช้ notifyArrivedOneSide ที่ฟังก์ชัน markPassenger/DriverArrived ใน backend\src\services\booking.service.js
+### AI Declare
+- ใช้ ChatGPT ช่วยปรับ notifyArrivedOneSide
+--- 
+## extraCharges V.01 - [Nattawadee]
+### Update 1 Mar 2026
+File includes route.controller.js route.service.js route.validation.js \createTrip\index.vue
+- เพิ่มช่อง extraCharges ในหน้าสร้างเส้นทาง และเชื่อมกับ database
+### AI Declare ใช้ chatgpt ช่วยหาจุดผิดพลาด เนื่องจากข้อมูลไม่บันทึกลง database
+---
+## Add function calculateBookingTotals V.01 - [Piyawat]
+### Update 2 Mar 2026
+File includes booking.service.js
+- เพิ่มช่อง calculateBookingTotals สำหรับคำนวนราคาทั้งหมด
+### AI Declare 
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด
+### Update 3 Mar 2026
+File includes booking.service.js , myTrip\index.vue
+- เพิ่มแสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง รวมถึงแสดงจำนวนสิ่งของ
+### AI Declare 
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด เนื่องจากหน้า เงื่อนไขเพิ่มเติม ที่ไม่แสดง
+### Update 3 Mar 2026
+File includes booking.service.js ,route.service.js, myTrip\index.vue ,myRoute\index.vue,findTrip\index.vue,myRoute\index.vue
+- เพิ่มแสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง รวมถึงแสดงจำนวนสิ่งของ
+- เพิ่มการแก้ไขของ ในเงื่อนไขเพิ่มเติม ในแก้ไขเส้นทาง
+### AI Declare 
+- ใช้ chatgpt สำหรับcheck ความผิดพลาด เนื่องจากหน้า เงื่อนไขเพิ่มเติม ที่ไม่แสดง รวมถึงการแก้ไขที่ไม่สามรถแก้ไขได้
+---
+## extraCharges V.02 - [Nattawadee]
+### Update 3 Mar 2026
+File includes booking.service.js booking.controller.js booking.validation.js findTrip\index.vue myRoute\index.vue
+- เพิ่มเงื่อนไขที่คิดเงิน ให้ผู้โดยสารเลือก และกรอกจำนวน และคิดเงินอัตโนมัติ
+- เพิ่มการคำนวณราคา ตอน booking create
+- เพิ่มเงื่อนไขที่ผู้โดยสารเลือก และจำนวน ลง payload
+- แก้ไขให้ price ตรงกับ booking total price
+- เพิ่ม selectedCharges chargeQuantities เพื่อไม่ให้โดน validation กันออกตอนส่งข้อมูล
+### Changes from version 1.
+- เพิ่มเงื่อนไขและราคา ในหน้าการจอง ให้ผู้โดยสารเลือกเงื่อนไข และจำนวนได้
+- คำนวณราคารวมทั้งหมด
+- แสดงผลราคารวมที่ถูกต้อง
+### AI Declare ใช้ chatgpt ช่วยหาจุดผิดพลาด เนื่องจากข้อมูลที่ต้องการดึงมาแสดงไม่ขึ้น
+---
 ## [Vesion 1.0.1] - [Suttipad]
 ### Update 3 March 2026
 - Review Modal (UAT)

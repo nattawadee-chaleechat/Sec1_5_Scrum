@@ -1,5 +1,6 @@
 *** Settings ***
 Library    SeleniumLibrary
+Library    DatabaseLibrary
 Library    RequestsLibrary
 
 Suite Setup       My Suite Setup
@@ -24,6 +25,12 @@ ${IMAGE_BIG}     C:/Users/sutti/Downloads/Media/OversizePicture.jpg
 
 ${DRIVE_LINK}    https://drive.google.com/file/d/123456/view
 ${BAD_LINK}      https://example.com/file
+
+${DBNAME}    db
+${DBUSER}    postgres
+${DBPASS}    110913
+${DBHOST}    localhost
+${DBPORT}    5432
 
 
 *** Test Cases ***

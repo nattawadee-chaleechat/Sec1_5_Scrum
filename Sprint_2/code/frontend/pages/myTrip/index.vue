@@ -1,4 +1,4 @@
-Contributer: Ratchapoom Thongdaeng
+<!-- Contributer: Ratchapoom Thongdaeng
 [Description]
 - This file contains the Vue.js component for the "My Trip" page of the PaiNamNae web application.
 - It allows users to view, manage, and track their trips with various statuses.
@@ -60,6 +60,22 @@ Contributer: Piyawat Sawatkul
 // - เพิ่มฟังก์ชัน openVideo() และ closeVideo()
 // - ปรับการคำนวณ completedAt ให้ใช้ Date object โดยตรง
 // - ปรับ logic canReview() ให้คำนวณเวลาจาก trip.completedAt โดยตรง
+
+Contributer: Piyawat Sawatkul
+[3/3/2569]
+[Description] แสดงรายละเอียดของ เงื่อนไขเพิ่มเติมที่ ลูกค้าแต่ละคนที่เลือกในตอนจอง เช่น กระเป๋า ราคาต่อชิ้น 80 บาท (จำนวน 2)
+
+Contributer: Chetsada
+[3/3/2569]
+- เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
+- เพิ่ม const filteredReviews สำหรับกรองดาว
+- เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
+- แก้การแสดงผลคะแนนรีวิว ที่ Driver Profile เพิ่ม .toFixed(1) ในส่วนตกหล่น ให้แสดงจุดทศนิยมแค่จุดเดียว
+- เพิ่ม isReviewSubmitting กรณีกำลังส่งรีวิวแล้วปุ่มในหน้า review card ต้องกดไม่ได้ เหมือนกับ reviewpopup
+- แก้ชื่อตัวแปรที่ส่งไป reviewModal
+[AI Declare]
+- ใช้ ChatGPT ออกแบบฟังก์ชัน 
+-->
 
 <template>
   <div>
@@ -175,8 +191,11 @@ Contributer: Piyawat Sawatkul
                     <h5 class="font-medium text-gray-900">
                       {{ trip.driver.name }}
                     </h5>
-                    <!--reviewpopup-->
-                    <div class="flex items-center cursor-pointer" @click.stop="openReviewModalDriver(trip)">
+                    <!-- Driver Profile -->
+                    <div
+                      class="flex items-center cursor-pointer"
+                      @click.stop="openReviewModalDriver(trip)"
+                    >
                       <div class="flex text-sm text-yellow-400">
                         <span>
                           {{ "★".repeat(Math.floor(trip.driver.rating))
@@ -184,11 +203,11 @@ Contributer: Piyawat Sawatkul
                         </span>
                       </div>
                       <span class="ml-2 text-sm text-gray-600"
-                        >{{ trip.driver.rating }} ({{
-                          trip.driver.reviews
+                        >{{ (trip.driver.rating ?? 0).toFixed(1) }} ({{
+                          trip.driver.reviews ?? 0
                         }}
-                        รีวิว)</span
-                      >
+                        รีวิว)
+                      </span>
                     </div>
                   </div>
                   <div class="text-right">
@@ -264,7 +283,29 @@ Contributer: Piyawat Sawatkul
                         {{ trip.conditions }}
                       </p>
                     </div>
-
+                    <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                    <div
+                      v-if="trip.extraCharges && trip.extraCharges.length"
+                      class="mt-4"
+                    >
+                      <h5 class="mb-2 font-medium text-gray-900">
+                        เงื่อนไขที่ผู้โดยสารเลือกเพิ่มเติม
+                      </h5>
+                      <ul
+                        class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                      >
+                        <li
+                          v-for="charge in trip.extraCharges"
+                          :key="charge.id || charge.name"
+                        >
+                          • {{ charge.name }} ราคาต่อชิ้น
+                          {{ charge.unitPrice }} บาท
+                          <span v-if="charge.quantity">
+                            (จำนวน {{ charge.quantity }} ชิ้น)</span
+                          >
+                        </li>
+                      </ul>
+                    </div>
                     <div v-if="trip.photos && trip.photos.length > 0">
                       <h5 class="mb-2 font-medium text-gray-900">
                         รูปภาพรถยนต์
@@ -352,22 +393,39 @@ Contributer: Piyawat Sawatkul
 
                   <!--(Start) 
                     Contributer:Chetsada 
-                    [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
-                    ใช้ ChetGPT
                     [23:52|15/2/2569]
+                    [Description] เพิ่มส่วนของปุ่มรีวิวการเดินทาง 
+                    ใช้ ChatGPT
+
+                    [23:52|15/2/2569]
+                    [Description] เพิ่ม isReviewSubmitting
+                    ใช้ ChatGPT
                   -->
                   <ReviewModal
-                    v-if="showReview"
-                    :trip="reviewTrip"
+                    v-if="showReviewModal"
+                    :trip="reviewTripModal"
+                    :submitting="isReviewSubmitting"
                     @close="closeReview"
                     @reviewed="ReviewSuccess()"
+                    @submitting="isReviewSubmitting = $event"
                   />
                   <button
-                    v-if="trip.status === 'completed' && !trip.reviewed && canReview(trip)"        "
-                    @click.stop="openReviewModal(trip)" 
-                    class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition"
+                    v-if="
+                      trip.status === 'completed' &&
+                      !trip.reviewed &&
+                      canReview(trip)
+                    "
+                    @click.stop="openReviewModal(trip)"
+                    :disabled="isReviewSubmitting"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md transition"
+                    :class="
+                      isReviewSubmitting
+                        ? 'opacity-40 cursor-not-allowed'
+                        : 'hover:bg-blue-700'
+                    "
                   >
-                    รีวิวการเดินทาง
+                    <span v-if="isReviewSubmitting">กำลังส่งรีวิว...</span>
+                    <span v-else>รีวิวการเดินทาง</span>
                   </button>
                   <!-- Contributer:Chetsada 
                     [Description] เพิ่มส่วนของปุ่ม รีวิวแล้ว
@@ -378,15 +436,19 @@ Contributer: Piyawat Sawatkul
                     class="px-4 py-2 bg-gray-300 text-gray-600 rounded-md"
                   >
                     รีวิวแล้ว
-                    </button>
+                  </button>
                   <!--(Finish)-->
                   <!-- Contributer:Chetsada 
                     [Description] เพิ่มส่วนของปุ่ม หมดเวลารีวิว
                     [17/2/2569] -->
                   <button
-                    v-else-if="trip.status === 'completed' && !trip.reviewed && !canReview(trip)"
+                    v-else-if="
+                      trip.status === 'completed' &&
+                      !trip.reviewed &&
+                      !canReview(trip)
+                    "
                     disabled
-                    class="px-4 py-2 bg-yellow-100 text-gray-600 rounded-md"
+                    class="px-4 py-2 bg-blue-100 text-gray-600 rounded-md"
                   >
                     หมดเวลารีวิวแล้ว (เกิน 7 วัน)
                   </button>
@@ -474,15 +536,33 @@ Contributer: Piyawat Sawatkul
 
     <!--reviewpopup-->
     <transition name="modal-fade">
-      <div v-if="showreview" class="modal-overlay" @click.self="showreview=false">
+      <div
+        v-if="showreview"
+        class="modal-overlay"
+        @click.self="showreview = false"
+      >
         <div class="modal-content">
           <!-- Header -->
-          <div class="flex items-center justify-between p-6 border-b border-gray-300">
+          <div
+            class="flex items-center justify-between p-6 border-b border-gray-300"
+          >
             <h3 class="text-xl font-semibold text-gray-900">รีวิวทั้งหมด</h3>
-            <button @click="showreview=false" class="text-gray-400 hover:text-gray-600">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"></path>
+            <button
+              @click="showreview = false"
+              class="text-gray-400 hover:text-gray-600"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
               </svg>
             </button>
           </div>
@@ -490,61 +570,115 @@ Contributer: Piyawat Sawatkul
           <!-- Driver Profile -->
           <div class="p-6">
             <div class="flex flex-col items-center">
-              <img 
+              <img
                 :src="driverInfo?.image || driverInfo?.profilePicture"
                 :alt="driverInfo?.name || 'Driver'"
-                class="object-cover w-22 h-22 rounded-full">
-              
+                class="object-cover w-22 h-22 rounded-full"
+              />
+
               <div class="font-medium text-gray-900 mt-2">
-                {{ driverInfo?.name || 'ไม่มีข้อมูล' }}
+                {{ driverInfo?.name || "ไม่มีข้อมูล" }}
               </div>
-              
+
               <div class="flex items-center mt-1">
                 <div class="flex text-sm text-yellow-400">
                   <span v-for="star in 5" :key="star">
-                    {{ star <= Math.floor(driverInfo?.rating || 0) ? '★' : '☆' }}
+                    {{
+                      star <= Math.floor(driverInfo?.rating || 0) ? "★" : "☆"
+                    }}
                   </span>
                 </div>
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ (driverInfo?.rating || 0).toFixed(1) }} 
-                  ({{ driverInfo?.reviews || 0 }} รีวิว)
+                  {{ (driverInfo?.rating ?? 0).toFixed(1) }}
+                  ({{ driverInfo?.reviews ?? 0 }} รีวิว)
                 </span>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center justify-between p-6 border-b border-gray-300">
-            <h2 class="text-xl font-semibold text-gray-900">ความเห็นจากผู้โดยสาร</h2>
+          <div
+            class="flex items-center justify-between p-6 border-b border-gray-300"
+          >
+            <h2 class="text-xl font-semibold text-gray-900">
+              ความเห็นจากผู้โดยสาร
+            </h2>
           </div>
 
-          <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
+          <!-- chetsada 3/3 เพื่อส่วนฟิวเตอร์รีวิวตามดาว -->
+          <div
+            class="flex justify-center gap-2 px-6 py-4 border-b border-gray-300"
+          >
+            <!-- ปุ่มดาวทั้งหมด -->
+            <button
+              @click="selectedStarFilter = 0"
+              :class="
+                selectedStarFilter === 0
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700'
+              "
+              class="px-3 py-1 text-sm rounded-full transition"
+            >
+              ทั้งหมด ({{ starCounts[0] }})
+            </button>
+
+            <!-- ปุ่มกรองดาว -->
+            <button
+              v-for="star in [5, 4, 3, 2, 1]"
+              :key="star"
+              @click="selectedStarFilter = star"
+              :class="
+                selectedStarFilter === star
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700'
+              "
+              class="px-3 py-1 text-sm rounded-full transition"
+            >
+              {{ star }} ★ ({{ starCounts[star] }})
+            </button>
+          </div>
+
+          <div
+            v-if="!review || review.length === 0"
+            class="p-6 text-center text-gray-500"
+          >
             ยังไม่มีรีวิว
           </div>
 
+          <div
+            v-else-if="filteredReviews.length === 0"
+            class="p-6 text-center text-gray-500"
+          >
+            ไม่มีรีวิวตามตัวกรองนี้
+          </div>
+          <!-- จบ -->
+
           <!-- Reviews List -->
           <div v-else>
-            <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
+            <div
+              v-for="item in filteredReviews"
+              :key="item.id"
+              class="p-3 mx-3 border-b border-gray-300"
+            >
               <div class="flex items-center justify-between">
                 <div class="font-medium text-gray-900">
-                  {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
+                  {{ item.reviewerName || "ผู้ใช้ไม่ระบุชื่อ" }}
                 </div>
                 <div class="flex items-center">
                   <div class="flex text-sm text-yellow-400">
                     <span v-for="star in 5" :key="star">
-                      {{ star <= Number(item.review?.rating || 0) ? '★' : '☆' }}
+                      {{ star <= Number(item.review?.rating || 0) ? "★" : "☆" }}
                     </span>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Comment -->
               <div class="mb-2 text-sm text-gray-900">
-                {{ item.comment || 'ไม่มีความคิดเห็น' }}
+                {{ item.comment || "ไม่มีความคิดเห็น" }}
               </div>
-              
+
               <!-- Review Media -->
               <div class="flex flex-wrap gap-3 mb-3">
-
                 <!-- Images -->
                 <template v-if="item.images && item.images.length">
                   <div
@@ -575,10 +709,18 @@ Contributer: Piyawat Sawatkul
                       muted
                       preload="metadata"
                     />
-                    <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
+                    <div
+                      class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition"
+                    ></div>
+                    <div
+                      class="absolute inset-0 flex items-center justify-center"
+                    >
                       <div class="bg-white/80 rounded-full p-2 shadow">
-                        <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          class="w-6 h-6 text-black"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
@@ -593,7 +735,12 @@ Contributer: Piyawat Sawatkul
                     class="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
                     @click.self="closeVideo"
                   >
-                    <button class="absolute top-5 right-5 text-white text-3xl" @click="closeVideo">✕</button>
+                    <button
+                      class="absolute top-5 right-5 text-white text-3xl"
+                      @click="closeVideo"
+                    >
+                      ✕
+                    </button>
                     <video
                       :src="fullscreenVideo"
                       controls
@@ -634,17 +781,22 @@ Contributer: Piyawat Sawatkul
                       class="flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition border shadow-sm break-all"
                     >
                       <span class="text-lg">🔗</span>
-                      <span class="text-blue-600 font-medium truncate">{{ linkItem.url }}</span>
+                      <span class="text-blue-600 font-medium truncate">{{
+                        linkItem.url
+                      }}</span>
                     </a>
                   </div>
                 </template>
-
               </div>
-              
+
               <div class="text-sm text-gray-500">
-                {{ item.createdAt ? dayjs(item.createdAt).format('D MMM BBBB') : 
-                item.createAt ? dayjs(item.createAt).format('D MMM BBBB') : 
-                'ไม่ระบุวันที่' }}
+                {{
+                  item.createdAt
+                    ? dayjs(item.createdAt).format("D MMM BBBB")
+                    : item.createAt
+                      ? dayjs(item.createAt).format("D MMM BBBB")
+                      : "ไม่ระบุวันที่"
+                }}
               </div>
             </div>
           </div>
@@ -677,14 +829,15 @@ const selectedTripId = ref(null);
 const isLoading = ref(false);
 const mapContainer = ref(null);
 
-// chetsada 15/2 23:54 ให้รีวิวขึ้น
-const showReview = ref(false);
-const reviewTrip = ref(null);
-//
-
 // --- Review Modal State ---
 const showreview = ref(false);
 const review = ref([]);
+// chetsada ให้รีวิวขึ้น
+const showReviewModal = ref(false);
+const reviewTripModal = ref(null);
+const isReviewSubmitting = ref(false); // รอส่งรีวิวแล้วกดออกหน้าป๊อปอัพ
+const selectedStarFilter = ref(0); // state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
+
 const driverInfo = ref(null);
 const fullscreenVideo = ref(null);
 
@@ -752,6 +905,29 @@ const selectedTrip = computed(() => {
   );
 });
 
+// chetsada 3/3 กรองรีวิว
+const filteredReviews = computed(() => {
+  if (selectedStarFilter.value === 0) {
+    return review.value;
+  }
+  return review.value.filter(
+    (r) => Number(r.review?.rating || r.star || 0) === selectedStarFilter.value,
+  );
+});
+// นับจำนวนรีวิวในแต่ละดาว
+const starCounts = computed(() => {
+  const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  review.value.forEach((r) => {
+    const star = Number(r.review?.rating || r.star || 0);
+    if (counts[star] !== undefined) {
+      counts[star]++;
+    }
+    counts[0]++;
+  });
+  return counts;
+});
+// จบ
+
 //แปลงapi ให้เป็น UI แบบเดียวกัน
 function normalizeRatingSummary(response) {
   let rating = null;
@@ -807,13 +983,15 @@ function cleanAddr(a) {
 
 // chetsada 15/2 23:56
 function openReviewModal(trip) {
-  reviewTrip.value = trip;
-  showReview.value = true;
+  reviewTripModal.value = trip;
+  showReviewModal.value = true;
+  selectedStarFilter.value = 0;
 }
+
 // chetsada 16/2 2:56
 function closeReview() {
-  showReview.value = false;
-  reviewTrip.value = null;
+  showReviewModal.value = false;
+  reviewTripModal.value = null;
 }
 //
 
@@ -832,11 +1010,7 @@ async function fetchMyTrips() {
     const bookings = await $api("/bookings/me");
 
     const driverIds = Array.from(
-      new Set(
-        bookings
-          .map((b) => b?.route?.driver?.id)
-          .filter(Boolean),
-      ),
+      new Set(bookings.map((b) => b?.route?.driver?.id).filter(Boolean)),
     );
     const driverSummaryById = new Map();
     await Promise.allSettled(
@@ -916,17 +1090,25 @@ async function fetchMyTrips() {
         )
         .filter(Boolean);
 
+      const selectedExtraCharges = Array.isArray(b.bookingExtraCharge)
+        ? b.bookingExtraCharge.map((item) => ({
+            id: item.routeExtraChargeId || item.id,
+            name: item.name,
+            unitPrice: item.unitPrice,
+            quantity: item.quantity,
+            totalExtraPrice: item.totalExtraPrice,
+          }))
+        : [];
+
       return {
         id: b.id,
-        completedAt: new Date(b.completedAt),
 
+        completedAt: new Date(b.completedAt),
+        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25 // ChatGPT ช่วย
         // Contributer: Nattawadee Chaleechat
         // เพิ่มfield driver_confirm_arrived, passenger_confirm_arrived เมื่อทำการ fetchMyTrips() ดึงข้อมูลจาก backend จะได้ค่ามาด้วย
         driver_confirm_arrived: b.driver_confirm_arrived ?? false,
         passenger_confirm_arrived: b.passenger_confirm_arrived ?? false,
-
-        
-        reviewed: Array.isArray(b.review) && b.review.length > 0, // chetsada 16/2 1:25 // ChatGPT ช่วย
 
         status: String(b.status || "").toLowerCase(),
         origin:
@@ -942,7 +1124,8 @@ async function fetchMyTrips() {
         pickupPoint: b.pickupLocation?.name || "-",
         date: dayjs(b.route.departureTime).format("D MMMM BBBB"),
         time: dayjs(b.route.departureTime).format("HH:mm น."),
-        price: (b.route.pricePerSeat || 0) * (b.numberOfSeats || 1),
+        price:
+          b.totalPrice ?? (b.route.pricePerSeat || 0) * (b.numberOfSeats || 1), //
         seats: b.numberOfSeats || 1,
         driver: driverData,
         coords: [
@@ -953,6 +1136,7 @@ async function fetchMyTrips() {
         stops,
         stopsCoords,
         carDetails,
+        extraCharges: selectedExtraCharges,
         conditions: b.route.conditions,
         photos: b.route.vehicle?.photos || [],
         durationText:
@@ -1099,10 +1283,9 @@ const toggleTripDetails = (tripId) => {
 
 // chetsada 17/2 ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน
 async function ReviewSuccess() {
-  await fetchMyTrips()   
-  closeReview()
+  await fetchMyTrips();
+  closeReview();
 }
-// 
 // chetsada 17/2 เช็ค ว่าจบไปแล้ว 7 วันไหม
 function canReview(trip) {
   if (!trip.completedAt) return false;
@@ -1113,6 +1296,7 @@ function canReview(trip) {
 
   return differentDays <= 7;
 }
+
 async function updateMap(trip) {
   if (!trip) return;
   await waitMapReady();
@@ -1267,7 +1451,7 @@ const handleConfirmAction = async () => {
         body: { status: "COMPLETED" },
       });
       await fetchMyTrips();
-      console.log("UPDATED TRIPS:",allTrips.value); // แก้ชื่อให้ตรง
+      console.log("UPDATED TRIPS:", allTrips.value); // แก้ชื่อให้ตรง
       toast.success("สิ้นสุดการเดินทางสำเร็จ", 'ขอบคุณที่ใช้บริการ "ไปนำแหน่"');
       //(Finish)
     } else if (action === "delete") {
@@ -1408,95 +1592,101 @@ onMounted(() => {
 
 // Review Modal Functions
 async function openReviewModalDriver(trip) {
-    showreview.value = true;
-    driverInfo.value = trip.driver;
-    review.value = [];
+  showreview.value = true;
+  driverInfo.value = trip.driver;
+  review.value = [];
 
-    try{
-        if (!trip?.driver?.id) {
-            console.error('Driver ID is missing');
-            return;
-        }
-
-        console.log('Opening review modal for driver:', trip.driver.id);
-        const response = await $api(`/review/${trip.driver.id}/reviews`);
-        
-        console.log('Full API Response:', JSON.stringify(response, null, 2));
-
-        // Extract reviews from various possible response structures
-        let reviewsData = [];
-        let driverProfile = null;
-        let ratingData = null;
-
-        // Try response.data structure first (most likely based on backend code)
-        if (response?.data) {
-            console.log('Response has .data property');
-            reviewsData = response.data.reviews || [];
-            driverProfile = response.data.driverProfile || null;
-            ratingData = response.data.ratingData || null;
-            console.log('Extracted from response.data - reviews:', reviewsData.length);
-        } 
-        // Try direct reviews property
-        else if (response?.reviews && Array.isArray(response.reviews)) {
-            reviewsData = response.reviews;
-            console.log('Extracted from response.reviews - count:', reviewsData.length);
-        } 
-        // Try as direct array
-        else if (Array.isArray(response)) {
-            reviewsData = response;
-            console.log('Response is direct array - count:', reviewsData.length);
-        } 
-        // Fallback: try to find reviews in any array property
-        else {
-            console.log('Response structure:', Object.keys(response || {}));
-            for (const key in response) {
-                if (Array.isArray(response[key]) && response[key].length > 0) {
-                    if (key.includes('review') || response[key][0]?.reviewerName) {
-                        reviewsData = response[key];
-                        console.log(`Found reviews in response.${key}:`, reviewsData.length);
-                        break;
-                    }
-                }
-            }
-        }
-
-        review.value = reviewsData;
-        console.log('Final reviews array:', review.value.length, 'items');
-
-        // Update driver info
-        if (response) {
-            const ratingValue = ratingData?.averageRating ?? response.driver?.rating ?? trip.driver?.rating ?? 0;
-            const reviewsCount = ratingData?.totalReviews ?? response.driver?.reviews ?? trip.driver?.reviews ?? reviewsData.length;
-            
-            driverInfo.value = {
-                ...driverInfo.value,
-                id: driverProfile?.id || trip.driver?.id,
-                name: driverProfile?.firstName && driverProfile?.lastName
-                    ? `${driverProfile.firstName} ${driverProfile.lastName}`
-                    : response.name || trip.driver?.name,
-                profilePicture: driverProfile?.profilePicture || trip.driver?.image,
-                image: driverProfile?.profilePicture || trip.driver?.image,
-                isVerified: driverProfile?.isVerified ?? trip.driver?.isVerified,
-                rating: ratingValue,
-                reviews: reviewsCount
-            };
-            
-            console.log('Driver info updated:', {
-                name: driverInfo.value.name,
-                rating: driverInfo.value.rating,
-                reviews: driverInfo.value.reviews
-            });
-        }
-        
-        if (reviewsData.length > 0) {
-            console.log('First review structure:', JSON.stringify(reviewsData[0], null, 2));
-        }
-        
-    }catch(error){
-        console.error('Failed to load reviews - Error:', error.message);
-        console.error('Error details:', error);
-        review.value = [];
+  try {
+    if (!trip?.driver?.id) {
+      console.error("Driver ID is missing");
+      return;
     }
+
+    // console.log('Opening review modal for driver:', trip.driver.id);
+    const response = await $api(`/review/${trip.driver.id}/reviews`);
+
+    // Extract reviews from various possible response structures
+    let reviewsData = [];
+    let driverProfile = null;
+    let ratingData = null;
+
+    // Try response.data structure first (most likely based on backend code)
+    if (response?.data) {
+      // console.log('Response has .data property');
+      reviewsData = response.data.reviews || [];
+      driverProfile = response.data.driverProfile || null;
+      ratingData = response.data.ratingData || null;
+      // console.log('Extracted from response.data - reviews:', reviewsData.length);
+    }
+    // Try direct reviews property
+    else if (response?.reviews && Array.isArray(response.reviews)) {
+      reviewsData = response.reviews;
+      // console.log('Extracted from response.reviews - count:', reviewsData.length);
+    }
+    // Try as direct array
+    else if (Array.isArray(response)) {
+      reviewsData = response;
+      // console.log('Response is direct array - count:', reviewsData.length);
+    }
+    // Fallback: try to find reviews in any array property
+    else {
+      // console.log('Response structure:', Object.keys(response || {}));
+      for (const key in response) {
+        if (Array.isArray(response[key]) && response[key].length > 0) {
+          if (key.includes("review") || response[key][0]?.reviewerName) {
+            reviewsData = response[key];
+            // console.log(`Found reviews in response.${key}:`, reviewsData.length);
+            break;
+          }
+        }
+      }
+    }
+
+    review.value = reviewsData;
+    // console.log('Final reviews array:', review.value.length, 'items');
+
+    // Update driver info
+    if (response) {
+      const ratingValue =
+        ratingData?.averageRating ??
+        response.driver?.rating ??
+        trip.driver?.rating ??
+        0;
+      const reviewsCount =
+        ratingData?.totalReviews ??
+        response.driver?.reviews ??
+        trip.driver?.reviews ??
+        reviewsData.length;
+
+      driverInfo.value = {
+        ...driverInfo.value,
+        id: driverProfile?.id || trip.driver?.id,
+        name:
+          driverProfile?.firstName && driverProfile?.lastName
+            ? `${driverProfile.firstName} ${driverProfile.lastName}`
+            : response.name || trip.driver?.name,
+        profilePicture: driverProfile?.profilePicture || trip.driver?.image,
+        image: driverProfile?.profilePicture || trip.driver?.image,
+        isVerified: driverProfile?.isVerified ?? trip.driver?.isVerified,
+        rating: ratingValue,
+        reviews: reviewsCount,
+      };
+
+      // console.log('Driver info updated:', {
+      //     name: driverInfo.value.name,
+      //     rating: driverInfo.value.rating,
+      //     reviews: driverInfo.value.reviews
+      // });
+    }
+
+    // if (reviewsData.length > 0) {
+    //     console.log('First review structure:', JSON.stringify(reviewsData[0], null, 2));
+    // }
+  } catch (error) {
+    console.error("Failed to load reviews - Error:", error.message);
+    console.error("Error details:", error);
+    review.value = [];
+  }
 }
 
 function initializeMap() {
@@ -1633,7 +1823,9 @@ function initializeMap() {
   width: 95%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 .modal-fade-enter-active,

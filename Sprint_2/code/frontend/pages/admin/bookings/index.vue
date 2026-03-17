@@ -1,3 +1,5 @@
+<!-- แก้ function fetchBookings() ให้ใช้ apiBase -->
+
 <template>
     <div>
         <AdminHeader />
@@ -474,20 +476,25 @@ async function fetchBookings() {
     isLoading.value = true
     loadError.value = ''
     try {
+        const config = useRuntimeConfig()
         const token = useCookie('token').value || (process.client ? localStorage.getItem('token') : '')
-        const res = await fetch('http://localhost:3000/api/bookings/admin', {
+        const res = await $fetch('/bookings/admin', {
+            baseURL: config.public.apiBase,
             headers: {
                 Accept: 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {})
             },
             credentials: 'include'
         })
-        const body = await res.json()
-        if (!res.ok) throw new Error(body?.message || `Request failed: ${res.status}`)
-        bookingsAll.value = Array.isArray(body?.data) ? body.data : []
+        // const body = await res.json()
+        const list = res?.data || res?.items || []
+        // if (!res.ok) throw new Error(list?.message || `Request failed: ${res.status}`) ไม่มี
+        // bookingsAll.value = Array.isArray(body?.data) ? body.data : []
+        bookingsAll.value = Array.isArray(list)          ? list      : []
         // reset pagination when new data arrives
         pagination.page = 1
         applyFilters()
+
     } catch (err) {
         console.error(err)
         loadError.value = err?.message || 'ไม่สามารถโหลดข้อมูลได้'

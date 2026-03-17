@@ -37,6 +37,12 @@
 // - แก้ไขฟิลด์ในตาราง Review จาก picture → media (Json? @db.Json)
 //   เพื่อรองรับไฟล์หลายประเภท เช่น รูปภาพ วิดีโอ mp3
 
+// Contributer: chetsada kongsak
+// [26/2/2569]
+// - เพิ่มตาราง RouteExtraCharge สัมพันธ์ manny-to-one กับ Route
+// - เพิ่มตาราง BookingExtraCharge สัมพันธ์ manny-to-one กับ Booking และ manny-to-one กับ RouteExtraCharge
+// เพื่อใช้เก็บข้อมูลการสร้างตัวเลือกสำหรับเก็บเงินเพิ่มในการเดินทางนั้นๆ
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -72,7 +78,7 @@ enum BookingStatus {
   CONFIRMED
   REJECTED
   CANCELLED
-  COMPLETED      // chetsada 12/2 23:29 : เพิ่มสถานะ booking จบ
+  COMPLETED      // 12/2 เพิ่มสถานะ booking จบ
 }
 
 enum CancelReason {
@@ -233,6 +239,7 @@ model Route {
   updatedAt     DateTime @updatedAt
 
   bookings        Booking[]
+  routeExtraCharge           RouteExtraCharge[]   // 26/2
 
   @@index([driverId])
   @@index([vehicleId])
@@ -258,12 +265,16 @@ model Booking {
   updatedAt       DateTime      @updatedAt // chetsada 17/2
   completedAt     DateTime?     // suttipad 26/2 เวลาที่การเดินทางเสร็จสิ้น (ทั้งคู่กดยืนยัน)
 
-  // ถ้า driver & passenger กดสิ้นสุดการเดินทางทั้งคู่ จะเปลี่ยน status - BookingStatus เป็น 'COMPLETE'
-  driver_confirm_arrived      Boolean   @default(false)   // chetsada 12/2 23:29
-  passenger_confirm_arrived   Boolean   @default(false)   // chetsada 12/2 23:29
+  // 12/2 ถ้า driver & passenger กดสิ้นสุดการเดินทางทั้งคู่ จะเปลี่ยน status - BookingStatus เป็น 'COMPLETED'
+  driver_confirm_arrived      Boolean   @default(false)
+  passenger_confirm_arrived   Boolean   @default(false)
+  // 27/2 21:00
+  baseTotalPrice  Float   @default(0) // อาจจองหลายที่
+  extraTotalPrice Float   @default(0) // รวมที่คิดเพิ่มทุกตัวใน booking
+  totalPrice      Float   @default(0) // ที่ต้องจ่่ายทั้งหมด
 
   review          Review[]   @relation("UserReviewsBooking") // เชื่อมความสัมพันธ์กับตาราง Review โดยเชื่อมกับ bookingId
-
+  bookingExtraCharge    BookingExtraCharge[]
 }
 
 // สร้างตาราง Review
@@ -282,10 +293,43 @@ model Review {
   reviewedUser    User     @relation("ReviewedUser", fields: [reviewedUserId], references: [id], onDelete: Cascade)
   
   @@unique([bookingId, reviewerId]) // paseenger แต่ละคน รีวิว booking นั้น ได้แค่ 1 ครั้ง
-  // ถ้า booking_id, user_id เหมือนกัน รีวิวไม่ได้ เขียนดักไว้ แต่หน้าเว็บไม่มีให้กดรีวิวอีกรอบ
-  
   @@index([bookingId])
   @@index([reviewedUserId])
   @@index([reviewerId])
 }
-// Update 13 Feb 2026
+
+// 26/2
+model RouteExtraCharge {
+  id        String    @id @default(cuid())
+  name      String
+  unitPrice     Float
+  // maximum   Int // จำนวนสูงสุด?? (amount int)
+
+  routeId   String
+  route     Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  bookingExtraCharge  BookingExtraCharge[]
+
+  @@unique([routeId, name])
+  @@index([routeId])
+}
+
+// 26/2
+model BookingExtraCharge {
+  id            String  @id @default(cuid())
+  name          String
+  quantity      Int
+  unitPrice     Float  // มันเชื่อมกันมา แต่ถ้าเปลี่ยนใน route ต้องดูว่าจะปรับใน booking ด้วยไหม
+  totalExtraPrice    Float  @default(0)
+
+  bookingId     String
+  booking             Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  routeExtraChargeId  String
+  routeExtraCharge    RouteExtraCharge @relation(fields: [routeExtraChargeId], references: [id])
+
+  @@unique([bookingId, routeExtraChargeId])
+  @@index([bookingId])
+  @@index([routeExtraChargeId])
+}
+
+// Update 26 Feb 2026

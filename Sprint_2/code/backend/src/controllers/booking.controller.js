@@ -5,6 +5,8 @@
 Update 14 Feb 2026
 */
 
+//Contributer: Nattawadee Chaleechat [Description] เพิ่มเงื่อนไขที่ผู้โดยสารเลือก และจำนวน ลง payload Update 3 Mar 2026
+
 const asyncHandler = require("express-async-handler");
 const bookingService = require("../services/booking.service");
 const ApiError = require("../utils/ApiError");
@@ -34,8 +36,11 @@ const createBooking = asyncHandler(async (req, res) => {
     numberOfSeats: req.body.numberOfSeats,
     pickupLocation: req.body.pickupLocation,
     dropoffLocation: req.body.dropoffLocation,
+    //Contributer: Nattawadee Chaleechat [Description] เพิ่มเงื่อนไขที่เลือก กับจำนวน ลง payload
+    selectedCharges: req.body.selectedCharges,
+    chargeQuantities: req.body.chargeQuantities,
   };
-
+  //console.log("REQ.BODY:", req.body);
   const booking = await bookingService.createBooking(payload, passengerId);
   res.status(201).json({ success: true, data: booking });
 });
