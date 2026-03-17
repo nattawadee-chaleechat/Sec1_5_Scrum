@@ -165,6 +165,60 @@ const passwordWarningMessage = ref(
   "กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น apple-mango-banana",
 );
 
+const normalizeLoginErrorMessage = (rawMessage) => {
+  const message = String(rawMessage || "").trim();
+  const remainingMatch = message.match(/สามารถกรอกได้อีก\s*(\d+)\s*ครั้ง/);
+  const remainingMatchEn = message.match(/(?:have|left)\s*(\d+)\s*attempt/i);
+
+  if (remainingMatch) {
+    return {
+      message: `เข้าสู่ระบบไม่สำเร็จ (สามารถกรอกได้อีก ${remainingMatch[1]} ครั้ง)`,
+      isRemainingAttempts: true,
+    };
+  }
+
+  if (remainingMatchEn) {
+    return {
+      message: `เข้าสู่ระบบไม่สำเร็จ (สามารถกรอกได้อีก ${remainingMatchEn[1]} ครั้ง)`,
+      isRemainingAttempts: true,
+    };
+  }
+
+  if (/invalid credentials/i.test(message)) {
+    return {
+      message: "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบชื่อผู้ใช้/อีเมล และรหัสผ่าน",
+      isRemainingAttempts: false,
+    };
+  }
+
+  return {
+    message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง",
+    isRemainingAttempts: false,
+  };
+};
+
+const extractBackendErrorMessage = (e) => {
+  const dataMessage = e?.data?.message;
+  const statusMessage = e?.statusMessage;
+  const message = e?.message;
+
+  if (typeof dataMessage === "string" && dataMessage.trim()) {
+    return dataMessage;
+  }
+  if (typeof statusMessage === "string" && statusMessage.trim()) {
+    return statusMessage;
+  }
+  if (typeof message === "string" && message.trim()) {
+    return message;
+  }
+  return "";
+};
+
+const isBlockedAccountMessage = (rawMessage) => {
+  const message = String(rawMessage || "").trim();
+  return /ถูกระงับ|suspend|locked|lock|deactivated/i.test(message);
+};
+
 
 const submit = async () => {
   errorMessage.value = "";
@@ -198,7 +252,7 @@ const submit = async () => {
       router.push("/");
     }
   } catch (e) {
-    console.error(e);
+    console.warn("Login failed:", e?.statusCode || e?.status || "unknown");
     //errorMessage.value = e?.data?.message || "เข้าสู่ระบบไม่สำเร็จ";
 
     //console.log("statusCode:", e?.statusCode);
@@ -207,22 +261,18 @@ const submit = async () => {
     //Contributer: Nattawadee Chaleechat [Description] ถ้า account ถูก block แสดง popup แทน error ปกติ
     // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
 
-    // เช็ค statusCode จาก backend
-    if (e?.statusCode === 403) {
-      // account ถูก lock แล้ว
+    const backendMsg = extractBackendErrorMessage(e);
+
+    // แสดง popup เฉพาะกรณีบัญชีถูกระงับ/ล็อกจริงๆ
+    if (e?.statusCode === 403 && isBlockedAccountMessage(backendMsg)) {
       showBlockedPopup.value = true;
       return;
     }
 
     // ตรวจข้อความจาก backend เป็นหลัก
-    const backendMsg = e?.data?.message || "";
-    if (backendMsg.includes("สามารถกรอกได้อีก")) {
-      errorMessage.value = backendMsg;
-      isRemainingAttemptsMsg.value = true;
-    } else {
-      errorMessage.value = "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง";
-      isRemainingAttemptsMsg.value = false;
-    }
+    const normalizedError = normalizeLoginErrorMessage(backendMsg);
+    errorMessage.value = normalizedError.message;
+    isRemainingAttemptsMsg.value = normalizedError.isRemainingAttempts;
   }
 };
 

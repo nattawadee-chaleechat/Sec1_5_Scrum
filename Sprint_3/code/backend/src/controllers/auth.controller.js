@@ -26,7 +26,7 @@ const validatePasswordAgainstUserInfo = (password, userInfo) => {
 const login = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
   // Contributer: Nattawadee Chaleechat [Description] เช็คการใส่รหัสผิดเกิน 3 ครั้ง
-  const MAX_ATTEMPTS = 3;
+  const MAX_ATTEMPTS = 4;
 
   let user;
   if (email) {
@@ -35,7 +35,12 @@ const login = asyncHandler(async (req, res) => {
     user = await userService.getUserByUsername(username);
   }
 
-  if (user && !user.isActive) {
+  // ถ้าไม่พบผู้ใช้ ตอบ 401 ทันที ไม่นับครั้งผิด
+  if (!user) {
+    throw new ApiError(401, "Invalid credentials");
+  }
+
+  if (!user.isActive) {
     // Contributer: Nattawadee Chaleechat [Description] เพิ่ม throw new ApiError 403
     if (user.accountLockedUntil) {
       throw new ApiError(
