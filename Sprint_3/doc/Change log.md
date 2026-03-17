@@ -26,4 +26,5 @@ This file will contain all notable changes to this project.
 ## [Vesion 1.0.0] - [Ratchapoom]
 ### Update 17 March 2026
 - เพิ่ม user manual
+- เพิ่ม AI Declaration
 ---
