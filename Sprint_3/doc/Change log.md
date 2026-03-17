@@ -92,7 +92,14 @@ File includes Sprint_3/code/backend/src/routes/test.routes.js, Sprint_3/doc/Chan
 - อัพเดต Review เพิ่ม test case เกี่ยวกับการใส่ไฟล์อื่นนอกจาก Media 
 - อัพเดต Additional Charge เพิ่ม test case เกี่ยวกับการลบและใส่เงื่อนไขแต่ลูกค้าไม่เลือก
 [AI Declare]
-[AI Declare]
 - ใช้ ChatGPT เป็นเครื่องมือช่วยในการปรับปรุงโค้ดและให้คำแนะนำด้านการพัฒนา
+
+---
+
+## Review & Additional Charge V.03 - [Suttipad]
+### Update 16 Mar 2026
+File includes Sprint_3/doc/Change log.md, Sprint_3/doc/APITestReport_ReviewModal.pdf, Sprint_3/test/Code/API_ReviewModal.robot, Sprint_3/test/Test data/APITestData_ReviewModal.pdf, Sprint_3/test/Test design/APITestDesign_ReviewModal.pdf, Sprint_3/test/Test design/UATTestDesign_ReviewModal.pdf
+[Description]
+- เปลี่ยนชื่อไฟล์ และเพื่อ API Review
 
 ---
