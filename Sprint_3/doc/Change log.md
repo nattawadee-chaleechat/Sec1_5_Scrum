@@ -264,13 +264,29 @@ update for admin can edit password fix login page
 
 ### Update 17 March 2026
 
-#### File includes 
+#### File includes
+
 - sprint backlog.xlsx
 
 #### Description
+
 - ระบุ volunteer ค่า esitmate time และเวลาที่ทำจริง (actual time) เป็นหน่วยชั่วโมง ของแต่ละ task ที่เกี่ยวข้องกับงานที่รับเข้ามา
 
 #### AI Declare
+
 - ไม่ได้ใช้
+
+[AI Declare]
+
+- ใช้ ChatGPT เป็นเครื่องมือช่วยในการปรับปรุงโค้ดและให้คำแนะนำด้านการพัฒนา
+
+## Review & Additional Charge V.03 - [Suttipad]
+
+### Update 16 Mar 2026
+
+File includes Sprint_3/doc/Change log.md, Sprint_3/doc/APITestReport_ReviewModal.pdf, Sprint_3/test/Code/API_ReviewModal.robot, Sprint_3/test/Test data/APITestData_ReviewModal.pdf, Sprint_3/test/Test design/APITestDesign_ReviewModal.pdf, Sprint_3/test/Test design/UATTestDesign_ReviewModal.pdf
+[Description]
+
+- เปลี่ยนชื่อไฟล์ และเพื่อ API Review
 
 ---
