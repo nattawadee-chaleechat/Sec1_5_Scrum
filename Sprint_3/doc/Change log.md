@@ -84,3 +84,15 @@ File includes auth.controller.js user.service.js auth.validation.js passwordVali
 - ให้ chatgpt ช่วยหาข้อผิดพลาด และ ช่วยไกด์การเขียนโค้ด
 
 ---
+
+## Review & Additional Charge V.02 - [Suttipad]
+### Update 16 Mar 2026
+File includes Sprint_3/code/backend/src/routes/test.routes.js, Sprint_3/doc/Change log.md, Sprint_3/doc/UATTesRepot_Additional_Charges.pdf, Sprint_3/test/Code/UAT_Additional_Charges.robot, Sprint_3/test/Code/UAT_ReviewModal.robot, Sprint_3/test/Test data/UATTestData_Additional_Charges.pdf, Sprint_3test/Test data/UATTestData_ReviewModa.pdf, Sprint_3/test/Test design/UATTestDesign_Additional_Charges.pdf, Sprint_3/test/Test design/UATTestDesignReviewModal.pdf
+[Description]
+- อัพเดต Review เพิ่ม test case เกี่ยวกับการใส่ไฟล์อื่นนอกจาก Media 
+- อัพเดต Additional Charge เพิ่ม test case เกี่ยวกับการลบและใส่เงื่อนไขแต่ลูกค้าไม่เลือก
+[AI Declare]
+[AI Declare]
+- ใช้ ChatGPT เป็นเครื่องมือช่วยในการปรับปรุงโค้ดและให้คำแนะนำด้านการพัฒนา
+
+---
