@@ -184,3 +184,64 @@ This file will contain all notable changes to this project.
 - ให้ chatgpt ในการปรับแต่งภาษาภายในเอกสารให้มีความเป็นภาษาเขียนและเป็นทางการมากขึ้น
 
 ---
+## PasswordValidation V.03 - [Piyawat]
+
+### Update 17 March 2026
+
+#### Description
+
+update for admin can edit password fix login page
+
+#### AI Declare
+
+- ให้ chatgpt แก้ไขข้อผิดพลาด
+
+---
+## PasswordValidation V.031- [Piyawat]
+
+### Update 17 March 2026
+
+#### Description
+
+แก้ไขข้อความ
+---
+
+## PasswordValidation V.032  - [Piyawat]
+
+### Update 17 March 2026
+
+#### Description
+
+แก้ไขหน้าlogin ให้ถูกต้อง
+
+#### AI Declare
+
+- ให้ chatgpt แก้ไขข้อผิดพลาด
+
+---
+## PasswordValidation V.033  - [Piyawat]
+
+### Update 17 March 2026
+
+#### Description
+
+แก้ไขlogin และ เพิ่มราคาcharge ห้ามน้อยกว่า
+
+#### AI Declare
+
+- ให้ chatgpt แก้ไขข้อผิดพลาด
+
+---
+## PasswordValidation V.034  - [Piyawat]
+
+### Update 17 March 2026
+
+#### Description
+
+ตอนสมัครสมาชิกใหม่ ระบบจะตั้งวันเริ่มใช้รหัสผ่านและวันหมดอายุทันที
+
+#### AI Declare
+
+- ให้ chatgpt แก้ไขข้อผิดพลาด
+
+---
