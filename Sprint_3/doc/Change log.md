@@ -260,4 +260,17 @@ update for admin can edit password fix login page
 
 - ใช้ ChatGPT เป็นเครื่องมือช่วยในการปรับปรุงโค้ดและให้คำแนะนำด้านการพัฒนา
 
+## sprint backlog V.01
+
+### Update 17 March 2026
+
+#### File includes 
+- sprint backlog.xlsx
+
+#### Description
+- ระบุ volunteer ค่า esitmate time และเวลาที่ทำจริง (actual time) เป็นหน่วยชั่วโมง ของแต่ละ task ที่เกี่ยวข้องกับงานที่รับเข้ามา
+
+#### AI Declare
+- ไม่ได้ใช้
+
 ---
