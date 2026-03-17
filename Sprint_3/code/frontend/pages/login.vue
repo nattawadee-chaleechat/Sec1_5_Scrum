@@ -220,7 +220,7 @@ const submit = async () => {
       errorMessage.value = backendMsg;
       isRemainingAttemptsMsg.value = true;
     } else {
-      errorMessage.value = "ชื่อผู้ใช้/อีเมล หรือรหัสผ่านไม่ถูกต้อง";
+      errorMessage.value = "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง";
       isRemainingAttemptsMsg.value = false;
     }
   }
