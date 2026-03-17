@@ -53,6 +53,7 @@ const updateMyProfileSchema = z.object({
 });
 
 const updateUserByAdminSchema = updateMyProfileSchema.extend({
+  password: passwordRules.optional(),
   role: z.nativeEnum(Role).optional(),
   isVerified: z.coerce.boolean().optional(),
   isActive: z.coerce.boolean().optional(),

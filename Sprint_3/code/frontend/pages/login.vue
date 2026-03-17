@@ -56,18 +56,18 @@
           v-if="errorMessage"
           class="mt-3 p-3 rounded-md"
           :class="
-            failedAttempts > 0
+            isRemainingAttemptsMsg
               ? 'bg-orange-50 border border-orange-400'
               : 'bg-red-50 border border-red-400'
           "
         >
           <p
             class="text-sm font-medium"
-            :class="failedAttempts > 0 ? 'text-orange-700' : 'text-red-600'"
+            :class="isRemainingAttemptsMsg ? 'text-orange-700' : 'text-red-600'"
           >
             {{ errorMessage }}
           </p>
-          <p v-if="failedAttempts > 0" class="text-orange-600 text-xs mt-1">
+          <p v-if="isRemainingAttemptsMsg" class="text-orange-600 text-xs mt-1">
             ⚠️ หากกรอกผิดครบ 3 ครั้ง บัญชีของคุณจะถูกระงับและต้องติดต่อแอดมิน
           </p>
         </div>
@@ -106,7 +106,7 @@
       <!-- Popup account blocked -->
       <div
         v-if="showBlockedPopup"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+       class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[2px]"
       >
         <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
           <div class="text-center mb-4">
@@ -159,8 +159,7 @@ const { login } = useAuth();
 // Contributer: Nattawadee Chaleechat
 const showPasswordWarning = ref(false);
 const showBlockedPopup = ref(false);
-const failedAttempts = ref(0);
-const MAX_ATTEMPTS = 3;
+const isRemainingAttemptsMsg = ref(false);
 const passwordWarningTitle = ref("⚠️ รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ");
 const passwordWarningMessage = ref(
   "กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น apple-mango-banana",
@@ -172,19 +171,20 @@ const submit = async () => {
 
   // Contributer: Nattawadee Chaleechat [Description] เพิ่มการแจ้งเตือนว่ารหัสไม่ปลอดภัย เพื่อให้เป็นไปตาม NCSC UK's guidelines
   // Ai declare : ให้ claude.ai ช่วยไกด์การเขียนโค้ด
-
+ 
   // Contributer: Piyawat Sawatkul [Description] เพิ่มกรณีที่รหัสผ่านหมดอายุ เพื่อให้ผู้ใช้เปลี่ยนรหัสผ่านใหม่(ไม่บังคับเปลี่ยนทันที แต่แสดง banner แจ้งเตือนว่ารหัสผ่านหมดอายุแล้ว และให้ไปเปลี่ยนในหน้า profile)
   // Ai declare : ให้ chatgpt ช่วยไกด์การเขียนโค้ด
   showPasswordWarning.value = false;
   showBlockedPopup.value = false;
+  isRemainingAttemptsMsg.value = false;
   passwordWarningTitle.value = "⚠️ รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ";
   passwordWarningMessage.value =
     "กรุณาเปลี่ยนรหัสผ่านให้ประกอบด้วยคำอย่างน้อย 3 คำ เช่น apple-mango-banana";
   try {
     const res = await login(identifier.value, password.value);
-    console.log("res:", JSON.stringify(res));
+    //console.log("res:", JSON.stringify(res));
 
-    failedAttempts.value = 0;
+    isRemainingAttemptsMsg.value = false;
     if (res?.requirePasswordChange) {
       const warningMessage = res?.passwordChangeMessage;
       if (warningMessage?.includes("หมดอายุ")) {
@@ -211,19 +211,17 @@ const submit = async () => {
     if (e?.statusCode === 403) {
       // account ถูก lock แล้ว
       showBlockedPopup.value = true;
-      failedAttempts.value = 0;
       return;
     }
 
-    // รหัสผิดปกติ นับ frontend attempts
-    failedAttempts.value++;
-    const remaining = MAX_ATTEMPTS - failedAttempts.value;
-
-    if (remaining <= 0) {
-      showBlockedPopup.value = true;
-      failedAttempts.value = 0;
+    // ตรวจข้อความจาก backend เป็นหลัก
+    const backendMsg = e?.data?.message || "";
+    if (backendMsg.includes("สามารถกรอกได้อีก")) {
+      errorMessage.value = backendMsg;
+      isRemainingAttemptsMsg.value = true;
     } else {
-      errorMessage.value = `เข้าสู่ระบบไม่สำเร็จ (สามารถกรอกได้อีก ${remaining} ครั้ง)`;
+      errorMessage.value = "ชื่อผู้ใช้/อีเมล หรือรหัสผ่านไม่ถูกต้อง";
+      isRemainingAttemptsMsg.value = false;
     }
   }
 };
