@@ -83,4 +83,10 @@ File includes auth.controller.js user.service.js auth.validation.js passwordVali
 [AI Declare]
 - ให้ chatgpt ช่วยหาข้อผิดพลาด และ ช่วยไกด์การเขียนโค้ด
 
+## ADAPT_Blueprint version.02 - [Nattawadee,Chatsiri,Ratchapoom,Chetsada]
+### Update 17 Mar 2026
+file include ADAPT_Blueprint
+[AI Declare]
+- ไม่ได้ใช้
+
 ---
