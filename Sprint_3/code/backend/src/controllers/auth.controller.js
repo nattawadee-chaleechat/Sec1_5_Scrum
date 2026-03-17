@@ -8,23 +8,12 @@ const {
   isThreeRealWords,
   isBlacklistedPassword,
   generatePasswordSuggestion,
+  getPasswordUserInfoToken,
 } = require("../validations/passwordValidator");
 // Contributer: Piyawat Sawatkul [Description] แก้ password และเพิ่มblacklist และชื่อที่เหมือนกับข้อมูลผู้ใช้
 
-const getUserTokens = ({ username, email, firstName, lastName }) =>
-  [
-    username?.toLowerCase(),
-    email?.toLowerCase().split("@")[0],
-    firstName?.toLowerCase(),
-    lastName?.toLowerCase(),
-  ].filter(Boolean);
-
 const validatePasswordAgainstUserInfo = (password, userInfo) => {
-  const pwLower = password.toLowerCase();
-  const userTokens = getUserTokens(userInfo);
-  const matchedToken = userTokens.find(
-    (token) => token.length >= 3 && pwLower.includes(token),
-  );
+  const matchedToken = getPasswordUserInfoToken(password, userInfo);
 
   if (matchedToken) {
     throw new ApiError(
@@ -46,7 +35,12 @@ const login = asyncHandler(async (req, res) => {
     user = await userService.getUserByUsername(username);
   }
 
-  if (user && !user.isActive) {
+  // ถ้าไม่พบผู้ใช้ ตอบ 401 ทันที ไม่นับครั้งผิด
+  if (!user) {
+    throw new ApiError(401, "Invalid credentials");
+  }
+
+  if (!user.isActive) {
     // Contributer: Nattawadee Chaleechat [Description] เพิ่ม throw new ApiError 403
     if (user.accountLockedUntil) {
       throw new ApiError(
@@ -113,7 +107,7 @@ const login = asyncHandler(async (req, res) => {
 
   // Contributer: Nattawadee Chaleechat [Description] เช็ค password ให้เป็นไปตาม NCSC UK's guidelines
   const isCompliant = isThreeRealWords(password);
-  // Contributer: Piyawat Sawatkul [Description] เช็ครหัสผ่านหมดอายุหรือยัง (90 วัน)
+  // เช็ครหัสผ่านหมดอายุหรือยัง (90 วัน)
   const isPasswordExpired =
     user.passwordExpiresAt && new Date() > new Date(user.passwordExpiresAt);
   const token = signToken({ sub: user.id, role: user.role });
@@ -168,10 +162,16 @@ const changePassword = asyncHandler(async (req, res) => {
     currentPassword,
     newPassword,
   );
-//Contributer: Piyawat Sawatkul [Description] เพิ่มกรณีที่รหัสผ่านใหม่ซ้ำกับ 5 รหัสผ่านล่าสุด และกรณีที่รหัสผ่านปัจจุบันไม่ถูกต้อง
-if (!result.success) {
+
+  if (!result.success) {
     if (result.error === "INCORRECT_PASSWORD") {
       throw new ApiError(401, "Incorrect current password.");
+    }
+    if (result.error === "PASSWORD_UNCHANGED") {
+      throw new ApiError(
+        400,
+        "New password must not be the same as your current password",
+      );
     }
     if (result.error === "PASSWORD_REUSED") {
       throw new ApiError(

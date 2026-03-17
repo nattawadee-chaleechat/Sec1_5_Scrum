@@ -54,9 +54,29 @@ const getRandomWords = (count = 3) => {
 const generatePasswordSuggestion = (count = 3, separator = "-") =>
   getRandomWords(count).join(separator);
 
+const getUserTokens = ({ username, email, firstName, lastName }) =>
+  [
+    username?.toLowerCase(),
+    email?.toLowerCase().split("@")[0],
+    firstName?.toLowerCase(),
+    lastName?.toLowerCase(),
+  ].filter(Boolean);
+
+const getPasswordUserInfoToken = (password, userInfo = {}) => {
+  const pwLower = password.toLowerCase();
+  const userTokens = getUserTokens(userInfo);
+
+  return (
+    userTokens.find(
+      (token) => token.length >= 3 && pwLower.includes(token),
+    ) || null
+  );
+};
+
 module.exports = {
   isThreeRealWords,
   isBlacklistedPassword,
   getRandomWords,
   generatePasswordSuggestion,
+  getPasswordUserInfoToken,
 };

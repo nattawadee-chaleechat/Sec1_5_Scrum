@@ -4,7 +4,10 @@
 const prisma = require("../utils/prisma");
 const ApiError = require('../utils/ApiError');
 const bcrypt = require("bcrypt");
+const { getPasswordUserInfoToken } = require("../validations/passwordValidator");
 const SALT_ROUNDS = 10;
+const PASSWORD_HISTORY_LIMIT = 5;
+const PASSWORD_EXPIRES_DAYS = 90;
 
 const searchUsers = async (opts = {}) => {
     const {
@@ -173,14 +176,77 @@ const createUser = async (data) => {
     return safeUser;
 }
 
-const PASSWORD_HISTORY_LIMIT = 5;
-const PASSWORD_EXPIRES_DAYS = 90;
+const getUserWithPasswordState = async (userId) => {
+    return prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+            oldPassword: {
+                orderBy: { storedAt: 'desc' },
+                take: PASSWORD_HISTORY_LIMIT,
+            },
+        },
+    });
+};
+
+const getPasswordLifecycleDates = () => {
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setDate(expiresAt.getDate() + PASSWORD_EXPIRES_DAYS);
+
+    return { now, expiresAt };
+};
+
+const getPasswordReuseError = async (userWithPassword, newPassword) => {
+    const isSameAsCurrent = await bcrypt.compare(newPassword, userWithPassword.password);
+    if (isSameAsCurrent) {
+        return 'PASSWORD_UNCHANGED';
+    }
+
+    for (const history of userWithPassword.oldPassword) {
+        const isReused = await bcrypt.compare(newPassword, history.passwordHash);
+        if (isReused) {
+            return 'PASSWORD_REUSED';
+        }
+    }
+
+    return null;
+};
+
+const buildPasswordUpdatePayload = async (userId, newPassword) => {
+    const userWithPassword = await getUserWithPasswordState(userId);
+
+    if (!userWithPassword) {
+        throw new ApiError(404, 'User not found');
+    }
+
+    const matchedToken = getPasswordUserInfoToken(newPassword, userWithPassword);
+    if (matchedToken) {
+        throw new ApiError(400, 'รหัสผ่านต้องไม่มีชื่อผู้ใช้ อีเมล ชื่อจริง หรือนามสกุล');
+    }
+
+    const reuseError = await getPasswordReuseError(userWithPassword, newPassword);
+    if (reuseError === 'PASSWORD_UNCHANGED') {
+        throw new ApiError(400, 'New password must not be the same as the current password');
+    }
+    if (reuseError === 'PASSWORD_REUSED') {
+        throw new ApiError(400, 'รหัสผ่านใหม่ต้องไม่ซ้ำกับ 5 รหัสผ่านที่เคยใช้ล่าสุด');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const { now, expiresAt } = getPasswordLifecycleDates();
+
+    return {
+        userWithPassword,
+        passwordData: {
+            password: hashedNewPassword,
+            passwordChangedAt: now,
+            passwordExpiresAt: expiresAt,
+        },
+    };
+};
 
 const updatePassword = async (userId, currentPassword, newPassword) => {
-    const userWithPassword = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { oldPassword: { orderBy: { storedAt: 'desc' }, take: PASSWORD_HISTORY_LIMIT } },
-    });
+    const userWithPassword = await getUserWithPasswordState(userId);
 
     if (!userWithPassword) {
         return { success: false, error: 'USER_NOT_FOUND' };
@@ -191,18 +257,13 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
         return { success: false, error: 'INCORRECT_PASSWORD' };
     }
 
-    // ตรวจว่ารหัสใหม่ซ้ำกับประวัติ 5 รหัสล่าสุดหรือไม่
-    for (const history of userWithPassword.oldPassword) {
-        const isReused = await bcrypt.compare(newPassword, history.passwordHash);
-        if (isReused) {
-            return { success: false, error: 'PASSWORD_REUSED' };
-        }
+    const reuseError = await getPasswordReuseError(userWithPassword, newPassword);
+    if (reuseError) {
+        return { success: false, error: reuseError };
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    const now = new Date();
-    const expiresAt = new Date(now);
-    expiresAt.setDate(expiresAt.getDate() + PASSWORD_EXPIRES_DAYS);
+    const { now, expiresAt } = getPasswordLifecycleDates();
 
     await prisma.$transaction([
         // บันทึกรหัสเก่าลง PasswordHistory
@@ -224,7 +285,29 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
 };
 
 const updateUserProfile = async (id, data) => {
-    const updatedUser = await prisma.user.update({ where: { id }, data });
+    const { password: newPassword, ...restData } = data;
+
+    let updatedUser;
+
+    if (newPassword) {
+        const { userWithPassword, passwordData } = await buildPasswordUpdatePayload(id, newPassword);
+
+        updatedUser = await prisma.$transaction(async (tx) => {
+            await tx.passwordHistory.create({
+                data: { userId: id, passwordHash: userWithPassword.password },
+            });
+
+            return tx.user.update({
+                where: { id },
+                data: {
+                    ...restData,
+                    ...passwordData,
+                },
+            });
+        });
+    } else {
+        updatedUser = await prisma.user.update({ where: { id }, data: restData });
+    }
 
     const { password, ...safeUser } = updatedUser;
     return safeUser;

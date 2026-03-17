@@ -347,7 +347,7 @@
               <input
                 v-model.number="charge.unitPrice"
                 type="number"
-                min="0"
+                min="1"
                 placeholder="ราคา/หน่วย"
                 class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500"
               />
@@ -578,6 +578,17 @@ const handleSubmit = async () => {
     toast.error(
       "ข้อมูลไม่ครบถ้วน",
       "กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน",
+    );
+    return;
+  }
+
+  const hasInvalidUnitPrice =
+    Array.isArray(extraCharges.value) &&
+    extraCharges.value.some((item) => Number(item?.unitPrice) <= 0);
+  if (hasInvalidUnitPrice) {
+    toast.error(
+      "ข้อมูลไม่ถูกต้อง",
+      "ราคา/หน่วยของเงื่อนไขเพิ่มเติมต้องมากกว่า 0",
     );
     return;
   }
