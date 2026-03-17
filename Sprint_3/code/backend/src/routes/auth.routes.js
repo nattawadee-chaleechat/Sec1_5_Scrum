@@ -1,24 +1,27 @@
-const express = require('express');
-const authController = require('../controllers/auth.controller');
-const validate = require('../middlewares/validate');
-const { loginSchema, changePasswordSchema } = require('../validations/auth.validation');
-const { protect } = require('../middlewares/auth');
+const express = require("express");
+const authController = require("../controllers/auth.controller");
+const validate = require("../middlewares/validate");
+const {
+  loginSchema,
+  changePasswordSchema,
+} = require("../validations/auth.validation");
+const { protect } = require("../middlewares/auth");
 
 const router = express.Router();
 
 // POST /api/auth/login
-router.post(
-    '/login',
-    validate({ body: loginSchema }),
-    authController.login
-);
+router.post("/login", validate({ body: loginSchema }), authController.login);
 
 // PUT /api/auth/change-password
 router.put(
-    '/change-password',
-    protect,
-    validate({ body: changePasswordSchema }),
-    authController.changePassword
+  "/change-password",
+  protect,
+  validate({ body: changePasswordSchema }),
+  authController.changePassword,
 );
+
+// Contributer: Nattawadee Chaleechat [Description] แก้ password ให้เป็นไปตาม NCSC UK's guidelines
+router.post("/validate-password", authController.validatePassword);
+router.get("/password-suggestion", authController.getPasswordSuggestion);
 
 module.exports = router;

@@ -110,16 +110,38 @@
                                     <div>
                                         <label for="newPassword"
                                             class="block mb-2 text-sm font-medium text-gray-700">รหัสผ่านใหม่</label>
-                                        <input type="password" id="newPassword" minlength="6" v-model="form.newPassword"
-                                            placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
+                                        <input type="password" id="newPassword" minlength="8" v-model="form.newPassword"
+                                            placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                        <p class="mt-2 text-xs text-gray-500">
+                                            รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ ห้ามมีช่องว่าง และต้องไม่มีชื่อผู้ใช้ อีเมล ชื่อจริง หรือนามสกุล
+                                        </p>
                                     </div>
                                     <div>
                                         <label for="confirmNewPassword"
                                             class="block mb-2 text-sm font-medium text-gray-700">ยืนยันรหัสผ่านใหม่</label>
-                                        <input type="password" id="confirmNewPassword" minlength="6"
+                                        <input type="password" id="confirmNewPassword" minlength="8"
                                             v-model="form.confirmNewPassword" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div class="p-3 mt-1 border border-blue-200 rounded-md bg-blue-50 md:col-span-2">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <p class="text-xs font-medium text-blue-800">รหัสผ่านแนะนำ</p>
+                                            <button type="button" @click="fetchPasswordSuggestion"
+                                                :disabled="isSuggestionLoading"
+                                                class="text-xs font-medium text-blue-700 hover:underline disabled:opacity-60 disabled:cursor-not-allowed">
+                                                {{ isSuggestionLoading ? 'กำลังสุ่ม...' : 'สุ่มใหม่' }}
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-2 mt-2">
+                                            <p class="text-sm font-semibold text-blue-900 break-all">
+                                                {{ suggestedPassword }}
+                                            </p>
+                                            <button type="button" @click="applySuggestedPassword"
+                                                class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
+                                                ใช้รหัสนี้
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +179,7 @@ import { useToast } from '~/composables/useToast';
 import ProfileSidebar from '~/components/ProfileSidebar.vue';
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
-
+//contributer: Piyawat Sawatkul [Description] เพิ่มฟังก์ชัน เงื่อนไขต่างๆ เพื่อเช็ครหัสผ่านใหม่ให้เป็นไปตาม NCSC UK's guidelines
 dayjs.locale('th')
 
 definePageMeta({
@@ -167,11 +189,14 @@ definePageMeta({
 const { $api } = useNuxtApp()
 const { user: userCookie } = useAuth()
 const { toast } = useToast();
+const runtimeConfig = useRuntimeConfig();
 
 const fileInput = ref(null)
 const previewUrl = ref('')
 const isLoading = ref(false)
 const showNameWarning = ref(false);
+const suggestedPassword = ref('apple-mango-banana');
+const isSuggestionLoading = ref(false);
 
 const form = reactive({
     firstName: '',
@@ -216,9 +241,103 @@ const formatDate = (dateString) => {
     if (!dateString) return '';
     return dayjs(dateString).format('D MMMM YYYY HH:mm');
 }
+//piyawat Sawatkul : เพิ่มฟังก์ชัน normalizePasswordValidationMessage เพื่อcheck ข้อความ error จาก API
+const normalizePasswordValidationMessage = (message) => {
+    if (!message) return 'รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้';
+
+    const blacklistPatterns = ['Password is too common and not allowed'];
+    const threeWordPatterns = ['Password must contain at least 3 real words'];
+    const minLengthPatterns = ['Password must be at least 8 characters'];
+    const noSpacePatterns = ['Password must not contain spaces'];
+    const reusedPasswordPatterns = [
+        'New password must not be the same as your current password',
+        'รหัสผ่านใหม่ต้องไม่ซ้ำกับ 5 รหัสผ่านที่เคยใช้ล่าสุด',
+    ];
+
+    if (blacklistPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านนี้อยู่ใน Blacklist ไม่สามารถใช้งานได้';
+    }
+
+    if (threeWordPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านต้องประกอบด้วยอย่างน้อย 3 คำ คั่นด้วย - หรือ _ เช่น apple-mango-banana หรือ CamelCase เช่น AppleMangoBanana';
+    }
+
+    if (minLengthPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร';
+    }
+
+    if (noSpacePatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านใหม่ต้องไม่มีช่องว่าง';
+    }
+
+    if (reusedPasswordPatterns.some((pattern) => message.includes(pattern))) {
+        return 'รหัสผ่านใหม่ซ้ำรหัสเดิม กรุณาตั้งรหัสผ่านใหม่';
+    }
+
+    if (message === 'Bad Request') {
+        return 'ข้อมูลรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง';
+    }
+
+    return message;
+}
+
+const extractApiErrorMessage = (err) => {
+    return (
+        err?.data?.message ||
+        err?.response?._data?.message ||
+        err?.statusMessage ||
+        err?.message ||
+        'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
+    );
+}
+
+const validateNewPassword = async () => {
+    if (form.newPassword.length < 8) {
+        throw new Error('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
+    }
+
+    if (/\s/.test(form.newPassword)) {
+        throw new Error('รหัสผ่านใหม่ต้องไม่มีช่องว่าง');
+    }
+
+    const res = await fetch(`${runtimeConfig.public.apiBase || 'http://localhost:3000/api'}/auth/validate-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            password: form.newPassword,
+            username: originalUserData?.username,
+            email: form.email,
+            firstName: form.firstName,
+            lastName: form.lastName,
+        }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(normalizePasswordValidationMessage(data?.message));
+    }
+}
+
+const fetchPasswordSuggestion = async () => {
+    isSuggestionLoading.value = true;
+    try {
+        const res = await fetch(`${runtimeConfig.public.apiBase || 'http://localhost:3000/api'}/auth/password-suggestion`);
+        const data = await res.json();
+        suggestedPassword.value = data?.data?.suggestion || data?.suggestion || 'apple-mango-banana';
+    } catch {
+        suggestedPassword.value = 'apple-mango-banana';
+    } finally {
+        isSuggestionLoading.value = false;
+    }
+}
+
+const applySuggestedPassword = () => {
+    form.newPassword = suggestedPassword.value;
+}
 
 onMounted(() => {
     fetchUserData();
+    fetchPasswordSuggestion();
 });
 
 function handleFileChange(e) {
@@ -256,21 +375,42 @@ async function handleProfileUpdate() {
             if (!form.currentPassword || !form.newPassword || !form.confirmNewPassword) {
                 throw new Error("หากต้องการเปลี่ยนรหัสผ่าน กรุณากรอกข้อมูลรหัสผ่านให้ครบทุกช่อง");
             }
+            if (form.newPassword === form.currentPassword) {
+                throw new Error('รหัสผ่านใหม่ซ้ำรหัสเดิม กรุณาตั้งรหัสผ่านใหม่');
+            }
             if (form.newPassword !== form.confirmNewPassword) {
                 throw new Error("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน");
             }
-            if (form.newPassword.length < 6) {
-                throw new Error("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร");
-            }
 
-            await $api('/auth/change-password', {
-                method: 'PUT',
-                body: {
-                    currentPassword: form.currentPassword,
-                    newPassword: form.newPassword,
-                    confirmNewPassword: form.confirmNewPassword
+            await validateNewPassword();
+
+            try {
+                await $api('/auth/change-password', {
+                    method: 'PUT',
+                    body: {
+                        currentPassword: form.currentPassword,
+                        newPassword: form.newPassword,
+                        confirmNewPassword: form.confirmNewPassword
+                    }
+                });
+            } catch (changePasswordError) {
+                const rawMessage = extractApiErrorMessage(changePasswordError);
+                const normalized = normalizePasswordValidationMessage(rawMessage);
+                const statusCode =
+                    changePasswordError?.statusCode ||
+                    changePasswordError?.status ||
+                    changePasswordError?.response?.status;
+
+                // หลังผ่าน validateNewPassword แล้ว 400 จาก change-password โดยทั่วไปคือเคสซ้ำ PasswordHistory
+                if (
+                    statusCode === 400 &&
+                    normalized === 'ข้อมูลรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง'
+                ) {
+                    throw new Error('รหัสผ่านใหม่ซ้ำรหัสเดิม กรุณาตั้งรหัสผ่านใหม่');
                 }
-            });
+
+                throw new Error(normalized);
+            }
 
             passwordChanged = true;
             form.currentPassword = '';
@@ -284,8 +424,8 @@ async function handleProfileUpdate() {
         );
 
     } catch (err) {
-        const message = err.data?.message || err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
-        toast.error('เกิดข้อผิดพลาด', message);
+        const message = extractApiErrorMessage(err);
+        toast.error('เกิดข้อผิดพลาด', normalizePasswordValidationMessage(message));
     } finally {
         isLoading.value = false;
         if (fileInput.value) {
