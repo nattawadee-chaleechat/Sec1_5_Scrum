@@ -189,7 +189,7 @@ This file will contain all notable changes to this project.
 
 #### Description
 
-update for admin can edit password fix login page
+- update for admin can edit password fix login page
 
 #### AI Declare
 
@@ -280,8 +280,11 @@ update for admin can edit password fix login page
 
 ### Update 16 Mar 2026
 
-File includes Sprint_3/doc/Change log.md, Sprint_3/doc/APITestReport_ReviewModal.pdf, Sprint_3/test/Code/API_ReviewModal.robot, Sprint_3/test/Test data/APITestData_ReviewModal.pdf, Sprint_3/test/Test design/APITestDesign_ReviewModal.pdf, Sprint_3/test/Test design/UATTestDesign_ReviewModal.pdf
-[Description]
+#### File includes
+
+- Sprint_3/doc/Change log.md, Sprint_3/doc/APITestReport_ReviewModal.pdf, Sprint_3/test/Code/API_ReviewModal.robot, Sprint_3/test/Test data/APITestData_ReviewModal.pdf, Sprint_3/test/Test design/APITestDesign_ReviewModal.pdf, Sprint_3/test/Test design/UATTestDesign_ReviewModal.pdf
+
+#### Description
 
 - เปลี่ยนชื่อไฟล์ และเพื่อ API Review
 
