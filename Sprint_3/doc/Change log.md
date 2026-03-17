@@ -276,10 +276,6 @@ update for admin can edit password fix login page
 
 - ไม่ได้ใช้
 
-[AI Declare]
-
-- ใช้ ChatGPT เป็นเครื่องมือช่วยในการปรับปรุงโค้ดและให้คำแนะนำด้านการพัฒนา
-
 ## Review & Additional Charge V.03 - [Suttipad]
 
 ### Update 16 Mar 2026
@@ -288,5 +284,25 @@ File includes Sprint_3/doc/Change log.md, Sprint_3/doc/APITestReport_ReviewModal
 [Description]
 
 - เปลี่ยนชื่อไฟล์ และเพื่อ API Review
+
+#### AI Declare
+
+- ไม่ได้ใช้
+
+## sprint backlog V.02
+
+### Update 17 March 2026
+
+#### File includes
+
+- sprint backlog.xlsx
+
+#### Description
+
+- เพิ่มกราฟ
+
+#### AI Declare
+
+- ไม่ได้ใช้
 
 ---
