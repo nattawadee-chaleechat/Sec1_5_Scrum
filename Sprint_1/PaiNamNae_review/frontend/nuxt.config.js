@@ -1,13 +1,10 @@
-import tailwindcssVite from "@tailwindcss/vite";
-
 export default defineNuxtConfig({
-  compatibilityDate: "2025-05-15",
+  modules: ["@nuxtjs/tailwindcss"],
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      // apiBase:
-      //   "https://faqs-survivors-bet-infrastructure.trycloudflare.com/api",
-      apiBase: "http://localhost:3000/api/",
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost:3000/api/",
+      //apiBase: "http://localhost:3000/api/",
       // apiBase:"https://painamnae-backend.onrender.com/api/",
       googleMapsApiKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     },
@@ -29,9 +26,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-  },
-  vite: {
-    plugins: [tailwindcssVite()],
   },
 
   css: ["leaflet/dist/leaflet.css", "~/assets/css/input.css"],

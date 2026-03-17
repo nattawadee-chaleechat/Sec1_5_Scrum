@@ -24,20 +24,6 @@ Contributer:Chetsada
 ใช้ ChetGPT ช่วย
 
 
-Contributer: Chetsada Kongsak
-[17/2]
-[Description] 
-- ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
-- ปิด + สร้างปุ่ม "รีวิวแล้ว"
-
-[11:17|17/2]
-[Description] 
-- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
-  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
-- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
-ใช้ ChetGPT ช่วย
-
-
 Contributer: Nattawadee Chaleechat Update 16 Feb 2026
 [Description]
 เพิ่มเงื่อนไขการแสดงผล 
@@ -48,6 +34,17 @@ Contributer: Nattawadee Chaleechat Update 16 Feb 2026
 Contributer: Piyawat Sawatkul
 [Description] เพิ่ม review popup ในส่วนของการเดินทางที่จบไปแล้ว เพื่อที่เห็นจำนวนและรายละเอียดreview driver 
 รวมถึงเชื่อมข้อมูลรีวิวกับ driver ให้ถูกต้องโดยใช้ใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
+
+
+Contributer: Chetsada Kongsak
+[17/2]
+[Description] 
+- ให้ fecth หน้า หลังจากกด ส่งรีวิว แล้วส่งผ่าน ที่ function ReviewSuccess
+- ปิด + สร้างปุ่ม "รีวิวแล้ว"
+- mytrip/index เพิ่มจำกัดเวลารีวิว canReview(trip) เช็ค ว่า booking จบไปแล้ว 7 วันไหม
+  เพิ่มเงื่อนไขเช็คตรงส่วนปุ่ม "รีวิว"
+- mytrip/index เพิ่มปุ่ม "หมดเวลารีวิวแล้ว (เกิน 7 วัน)" แทนที่ปุ่ม "รีวิว" กรณี booking จบไปแล้ว 7 วัน
+ใช้ ChetGPT ช่วย
 
 -->
 <template>

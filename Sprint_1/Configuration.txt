@@ -236,7 +236,7 @@ cd Sec1_5_Scrum/Sprint_1/PaiNamNae_review/backend
 	npx prisma migrate dev --name init
 	npm run dev
 4. เปิด terminal อีกอัน ขณะที่ npm run dev
-5. ssh project@0.198.200.96
+5. ssh project@10.198.200.96
 6. ./login.sh
 7. cloudflared tunnel --url http://localhost:3000
 8. Copy URL ใหม่ ไปแก้ใน nuxt.config.js

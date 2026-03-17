@@ -1,4 +1,4 @@
-Contributer: Piyawat Sawatkul
+<!-- Contributer: Piyawat Sawatkul
 [Description] แก้ปัญหานำข้อมูลจากbackendขึ้นfrontend ให้ถูกต้องใช้AI ในการแก้ปัญหาข้อมูลที่ไม่ตรงกันระหว่าง API กับ UI
 
 // Contributer: suttipad rodhom
@@ -11,6 +11,16 @@ Contributer: Piyawat Sawatkul
 //   - audio
 //   - Google Drive links
 // - เพิ่มระบบ Fullscreen Video พร้อมปุ่มปิด
+
+Contributer: Chetsada
+[3/3/2569]
+- เพิ่มส่วนฟิลเตอร์กรองรีวิวตามดาว const selectedStarFilter เป็น state เก็บดาว
+- เพิ่ม const filteredReviews สำหรับกรองดาว
+- เพิ่ม const starCounts สำหรับนับจำนวนรีวิวในดาวนั้นๆ
+[AI Declare]
+- ใช้ ChatGPT ออกแบบฟังก์ชัน 
+-->
+
 
 <template>
     <div>
@@ -234,6 +244,26 @@ Contributer: Piyawat Sawatkul
                                                 {{ route.conditions }}
                                             </p>
                                         </div>
+                                        <!-- เงื่อนไขเก็บเงินเพิ่ม -->
+                                        <div
+                                          v-if="route.extraCharges && route.extraCharges.length"
+                                          class="mt-4"
+                                        >
+                                          <h5 class="mb-2 font-medium text-gray-900">
+                                            เงื่อนไขเพิ่มเติมอื่น ๆ
+                                          </h5>
+                                          <ul
+                                            class="p-3 space-y-1 text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md"
+                                          >
+                                            <li
+                                              v-for="charge in route.extraCharges"
+                                              :key="charge.id || charge.name"
+                                            >
+                                              • {{ charge.name }} ราคาต่อชิ้น
+                                              {{ charge.unitPrice }} บาท
+                                            </li>
+                                          </ul>
+                                        </div>
                                         <div v-if="route.photos && route.photos.length > 0">
                                             <h5 class="mb-2 font-medium text-gray-900">รูปภาพรถยนต์</h5>
                                             <div class="grid grid-cols-3 gap-2 mt-2 ">
@@ -302,8 +332,8 @@ Contributer: Piyawat Sawatkul
                                     </span>
                                 </div>
                                 <span class="ml-2 text-sm text-gray-600">
-                                    {{ (driverInfo?.driver?.rating || 0).toFixed(1) }} 
-                                    ({{ driverInfo?.driver?.reviews || 0 }} รีวิว)
+                                    {{ (driverInfo?.driver?.rating ?? 0).toFixed(1) }} 
+                                    ({{ driverInfo?.driver?.reviews ?? 0 }} รีวิว)
                                 </span>
                             </div>
                         </div>
@@ -313,14 +343,46 @@ Contributer: Piyawat Sawatkul
                         <h2 class="text-xl font-semibold text-gray-900">ความเห็นจากผู้โดยสาร</h2>
                     </div>
 
+                    <!-- chetsada 3/3 เพื่อส่วนฟิวเตอร์รีวิวตามดาว -->
+                    <div class="flex justify-center gap-2 px-6 py-4 border-b border-gray-300">
+                        <!-- ปุ่มดาวทั้งหมด -->
+                        <button
+                            @click="selectedStarFilter = 0"
+                            :class="selectedStarFilter === 0 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-700'"
+                            class="px-3 py-1 text-sm rounded-full transition"
+                        >
+                            ทั้งหมด ({{ starCounts[0] }})
+                        </button>
+
+                        <!-- ปุ่มกรองดาว -->
+                        <button
+                            v-for="star in [5,4,3,2,1]"
+                            :key="star"
+                            @click="selectedStarFilter = star"
+                            :class="selectedStarFilter === star 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-700'"
+                            class="px-3 py-1 text-sm rounded-full transition"
+                        >
+                            {{ star }} ★ ({{ starCounts[star] }})
+                        </button>
+                    </div>
 
                     <div v-if="!review || review.length === 0" class="p-6 text-center text-gray-500">
                         ยังไม่มีรีวิว
                     </div>
 
+                    <div v-else-if="filteredReviews.length === 0"class="p-6 text-center text-gray-500">
+                        ไม่มีรีวิวตามตัวกรองนี้
+                    </div>
+                    <!-- จบ -->
+
                     <!-- Reviews List -->
                     <div v-else>
-                        <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300">
+                        <div v-for="item in filteredReviews" :key="item.id"class="p-3 mx-3 border-b border-gray-300">
+                        <!-- <div v-for="item in review" :key="item.id" class="p-3 mx-3 border-b border-gray-300"> -->
                             <div class="flex items-center justify-between">
                                 <div class="font-medium text-gray-900">
                                     {{ item.reviewerName || 'ผู้ใช้ไม่ระบุชื่อ' }}
@@ -537,8 +599,10 @@ Contributer: Piyawat Sawatkul
                                             <span v-for="star in 5" :key="star">
                                                 {{ star <= bookingRoute.driver.rating? '★' : '☆' }}</span>
                                         </div>
-                                        <span class="ml-2 text-sm text-gray-600">{{ bookingRoute.driver.rating }} ({{
-                                            bookingRoute.driver.reviews }} รีวิว)</span>
+                                        <span class="ml-2 text-sm text-gray-600">
+                                            {{ bookingRoute.driver.rating }} 
+                                            ({{bookingRoute.driver.reviews }} รีวิว)
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -620,6 +684,35 @@ Contributer: Piyawat Sawatkul
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- Contributer: Nattawadee Chaleechat 
+                        [Description] เพิ่มเงื่อนไขที่คิดเงิน ให้ผู้โดยสารเลือก และกรอกจำนวน -->
+                        <div v-if="selectedRoute?.extraCharges?.length" class="mt-4">
+                          <h5 class="mb-2 font-medium">เงื่อนไขเพิ่มเติม</h5>
+
+                          <div
+                            v-for="charge in selectedRoute.extraCharges"
+                            :key="charge.id"
+                            class="flex justify-between items-center mb-2"
+                          >
+                            <label class="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                :value="charge.id"
+                                v-model="selectedCharges"
+                                @change="handleChargeToggle(charge.id)"
+                              />
+                              {{ charge.name }} ({{ charge.unitPrice }} บาท)
+                            </label>
+
+                            <input
+                              v-if="selectedCharges.includes(charge.id)"
+                              type="number"
+                              min="1"
+                              class="w-20 border p-1"
+                              v-model.number="chargeQuantities[charge.id]"
+                            />
+                          </div>
                         </div>
                         <div class="p-4 mb-6 rounded-lg bg-blue-50">
                             <div class="flex items-center justify-between mb-2">
@@ -790,10 +883,34 @@ const pickupPoint = ref('')
 const dropoffPoint = ref('')
 
 
-const bookingTotalPrice = computed(() => {
-    if (!bookingRoute.value) return 0
-    return bookingSeats.value * bookingRoute.value.price
+
+// chetsada 3/3 กรองรีวิว
+const filteredReviews = computed(() => {
+    if (selectedStarFilter.value === 0) {
+        return review.value
+    }
+    return review.value.filter(r => 
+        Number(r.review?.rating || r.star || 0) === selectedStarFilter.value,
+    )
 })
+// นับจำนวนรีวิวในแต่ละดาว
+const starCounts = computed(() => {
+    const counts = {0:0,1:0,2:0,3:0,4:0,5:0}
+    review.value.forEach(r => {
+        const star = Number(r.review?.rating || r.star || 0)
+        if (counts[star] !== undefined) {
+            counts[star]++
+        }
+        counts[0]++    
+    })
+  return counts
+})
+// จบ
+
+const bookingTotalPrice = computed(() => {
+  if (!bookingRoute.value) return 0;
+  return bookingSeats.value * bookingRoute.value.price + extraTotalPrice.value;
+});
 
 function cleanAddr(a) {
     return (a || '')
@@ -924,7 +1041,14 @@ async function handleSearch() {
                 polyline: route.routePolyline || null,
                 stops,
                 stopsCoords,
-            }
+                extraCharges: Array.isArray(route.routeExtraCharge)
+                  ? route.routeExtraCharge.map((item) => ({
+                      id: item.id,
+                      name: item.name,
+                      unitPrice: item.unitPrice,
+                    }))
+                  : [],
+              };
         })
 
         void hydrateDriverRatings(routes.value)
@@ -1014,10 +1138,10 @@ function reverseGeocode(lat, lng) {
     return new Promise((resolve) => {
         if (!geocoder) return resolve(null)
         geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-            if (status !== 'OK' || !results?.length) return resolve(null)
-            resolve(results[0]) // << คืน object เพื่อให้ formatShortAddress ใช้ address_components ได้
-        })
-    })
+    if (status !== 'OK' || !results?.length) return resolve(null)
+    resolve(results[0]) // << คืน object เพื่อให้ formatShortAddress ใช้ address_components ได้
+})
+})
 }
 
 async function extractNameParts(geocodeResult) {
@@ -1272,7 +1396,11 @@ async function confirmBooking() {
         routeId: bookingRoute.value.id,
         numberOfSeats: bookingSeats.value,
         pickupLocation: pickupData.value,
-        dropoffLocation: dropoffData.value
+        dropoffLocation: dropoffData.value,
+
+        //Contributer: Nattawadee Chaleechat [Description] เพิ่มเงื่อนไขที่เลือก กับจำนวน ลง payload
+        selectedCharges: [...selectedCharges.value],
+        chargeQuantities: { ...chargeQuantities.value },
     };
 
     try {
@@ -1667,7 +1795,7 @@ onMounted(() => {
         handleSearch()
         return
     }
-
+    
     // ยังไม่เสร็จ: รอ callback จากสคริปต์
     window[GMAPS_CB] = () => {
         try {
@@ -1680,15 +1808,16 @@ onMounted(() => {
 })
 const showreview = ref(false)
 const review = ref([]);
+const selectedStarFilter = ref(0) // chetsada 3/3 state ฟิลเตอร์ดาวรีวิว เลือก 0 คือแสดงรีวิวทั้งหมด
 const driverInfo = ref(null);
 const fullscreenVideo = ref(null)
 
 async function openVideo(url) {
-  fullscreenVideo.value = url
+    fullscreenVideo.value = url
 }
 
 function closeVideo() {
-  fullscreenVideo.value = null
+    fullscreenVideo.value = null
 }
 
 async function openReviewModal(route){
@@ -1696,15 +1825,15 @@ async function openReviewModal(route){
     driverInfo.value = route;
     
     review.value = [];
-
+    
     try{
         if (!route?.driver?.id) {
             console.error('Driver ID is missing');
             return;
         }
-
+        
         const response = await $api(`/review/${route.driver.id}/reviews`);
-
+        
         if (response?.reviews) {
             review.value = response.reviews;
         } else if (Array.isArray(response)) {
@@ -1712,7 +1841,7 @@ async function openReviewModal(route){
         } else {
             review.value = [];
         }
-
+        
         if (response) {
             driverInfo.value = {
                 ...driverInfo.value,
@@ -1725,7 +1854,7 @@ async function openReviewModal(route){
                     reviews: response.driver?.reviews ?? driverInfo.value?.driver?.reviews
                 }
             };
-
+            
             const routeIndex = routes.value.findIndex(r => r.id === route.id);
             if (routeIndex !== -1 && response.driver) {
                 const summary = normalizeRatingSummary(response)
@@ -1743,6 +1872,36 @@ async function openReviewModal(route){
         review.value = [];
     }
 }
+
+//Contributer: Nattawadee Chaleechat [Description] เก็บสถานะของแต่ละ extra charge
+const selectedCharges = ref([]);
+const chargeQuantities = ref({});
+
+function handleChargeToggle(id) {
+  if (selectedCharges.value.includes(id)) {
+    chargeQuantities.value[id] = 1;
+  } else {
+    delete chargeQuantities.value[id];
+  }
+}
+
+//Contributer: Nattawadee Chaleechat [Description] คำนวณราคาอัตโนมัติ
+const extraTotalPrice = computed(() => {
+  let total = 0;
+
+  if (!selectedRoute.value?.extraCharges) return 0;
+
+  for (const charge of selectedRoute.value.extraCharges) {
+    if (!selectedCharges.value.includes(charge.id)) continue;
+
+    const qty = Number(chargeQuantities.value[charge.id] || 0);
+    if (qty <= 0) continue;
+
+    total += charge.unitPrice * qty;
+  }
+
+  return total;
+});
 
 </script>
 
