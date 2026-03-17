@@ -18,10 +18,13 @@ ${DPASS}       123456789
 ${PNAME}       somsee123
 ${PPASS}       Somsee123
 
-${IMAGE_OK}      C:/Users/sutti/Downloads/Media/Picture.png
-${VIDEO_OK}      C:/Users/sutti/Downloads/Media/MP4.mp4
-${AUDIO_OK}      C:/Users/sutti/Downloads/Media/MP3.mp3
-${IMAGE_BIG}     C:/Users/sutti/Downloads/Media/OversizePicture.jpg
+${MEDIA_DIR}     ${CURDIR}/Media
+${IMAGE_OK}      ${MEDIA_DIR}/Picture.png
+${VIDEO_OK}      ${MEDIA_DIR}/MP4.mp4
+${AUDIO_OK}      ${MEDIA_DIR}/MP3.mp3
+${IMAGE_BIG}     ${MEDIA_DIR}/OversizePicture.jpg
+${PDF_FILE}      ${MEDIA_DIR}/PDF.pdf
+
 
 ${DRIVE_LINK}    https://drive.google.com/file/d/123456/view
 ${BAD_LINK}      https://example.com/file
@@ -130,6 +133,25 @@ Invalid Review After 7 Days
     Page Should Not Contain Element    xpath=//button[contains(.,'รีวิวการเดินทาง')]
     Wait Until Page Contains    หมดเวลารีวิวแล้ว (เกิน 7 วัน)    10s
 
+Invalid Review With Not Media File
+    Reset Booking State
+    Passenger Finish Trip
+    Driver Finish Trip
+    Open Review Page
+    Give Score    4
+    Choose File    xpath=//input[@type='file']    ${PDF_FILE}
+    Click Submit Expect Invalid Media
+
+
+Invalid Review With Not Media File and Media File
+    Reset Booking State
+    Passenger Finish Trip
+    Driver Finish Trip
+    Open Review Page
+    Give Score    4
+    Choose File    xpath=//input[@type='file']    ${PDF_FILE}\n${IMAGE_OK}
+    Click Submit Expect Invalid Media
+
 
 # ================= VIEW REVIEW =================
 
@@ -204,6 +226,11 @@ Login
     Input Text    id=identifier    ${USER}
     Input Text    id=password      ${PASS}
     Click Element    css=button[type="submit"]
+    ${popup}=    Run Keyword And Return Status
+    ...    Wait Until Page Contains    รหัสผ่านของคุณไม่ปลอดภัยเพียงพอ    3s
+    IF    ${popup}
+        Click Element    xpath=//button[contains(.,'ข้ามไปก่อน')]
+    END
     Wait Until Page Does Not Contain Element    css=a[href="/login"]    10s
 
 
@@ -273,6 +300,10 @@ Click Submit Expect Invalid Link
     Click Element    xpath=//button[normalize-space()='ส่งรีวิว']
     Wait Until Page Contains    แนบลิงก์ได้เฉพาะ Google Drive เท่านั้น    10s
 
+Click Submit Expect Invalid Media
+    Wait Until Element Is Visible    xpath=//button[normalize-space()='ส่งรีวิว']    10s
+    Click Element    xpath=//button[normalize-space()='ส่งรีวิว']
+    Wait Until Page Contains    อนุญาตเฉพาะรูป วิดีโอ หรือเสียง    10s
 
 # ================= VIEW REVIEW =================
 

@@ -183,7 +183,6 @@ This file will contain all notable changes to this project.
 
 - ให้ chatgpt ในการปรับแต่งภาษาภายในเอกสารให้มีความเป็นภาษาเขียนและเป็นทางการมากขึ้น
 
----
 ## PasswordValidation V.03 - [Piyawat]
 
 ### Update 17 March 2026
@@ -196,52 +195,69 @@ update for admin can edit password fix login page
 
 - ให้ chatgpt แก้ไขข้อผิดพลาด
 
----
 ## PasswordValidation V.031- [Piyawat]
 
 ### Update 17 March 2026
 
 #### Description
 
-แก้ไขข้อความ
----
+- แก้ไขข้อความ
 
-## PasswordValidation V.032  - [Piyawat]
+#### AI Declare
+
+- ไม่ได้ใช้
+
+## PasswordValidation V.032 - [Piyawat]
 
 ### Update 17 March 2026
 
 #### Description
 
-แก้ไขหน้าlogin ให้ถูกต้อง
+- แก้ไขหน้าlogin ให้ถูกต้อง
 
 #### AI Declare
 
 - ให้ chatgpt แก้ไขข้อผิดพลาด
 
----
-## PasswordValidation V.033  - [Piyawat]
+## PasswordValidation V.033 - [Piyawat]
 
 ### Update 17 March 2026
 
 #### Description
 
-แก้ไขlogin และ เพิ่มราคาcharge ห้ามน้อยกว่า
+- แก้ไขlogin และ เพิ่มราคาcharge ห้ามน้อยกว่า
 
 #### AI Declare
 
 - ให้ chatgpt แก้ไขข้อผิดพลาด
 
----
-## PasswordValidation V.034  - [Piyawat]
+## PasswordValidation V.034 - [Piyawat]
 
 ### Update 17 March 2026
 
 #### Description
 
-ตอนสมัครสมาชิกใหม่ ระบบจะตั้งวันเริ่มใช้รหัสผ่านและวันหมดอายุทันที
+- ตอนสมัครสมาชิกใหม่ ระบบจะตั้งวันเริ่มใช้รหัสผ่านและวันหมดอายุทันที
 
 #### AI Declare
 
 - ให้ chatgpt แก้ไขข้อผิดพลาด
+
+## Review & Additional Charge V.02 - [Suttipad]
+
+### Update 16 Mar 2026
+
+#### File includes
+
+- Sprint_3/code/backend/src/routes/test.routes.js, Sprint_3/doc/Change log.md, Sprint_3/doc/UATTesRepot_Additional_Charges.pdf, Sprint_3/test/Code/UAT_Additional_Charges.robot, Sprint_3/test/Code/UAT_ReviewModal.robot, Sprint_3/test/Test data/UATTestData_Additional_Charges.pdf, Sprint_3test/Test data/UATTestData_ReviewModa.pdf, Sprint_3/test/Test design/UATTestDesign_Additional_Charges.pdf, Sprint_3/test/Test design/UATTestDesignReviewModal.pdf
+
+#### Description
+
+- อัพเดต Review เพิ่ม test case เกี่ยวกับการใส่ไฟล์อื่นนอกจาก Media
+- อัพเดต Additional Charge เพิ่ม test case เกี่ยวกับการลบและใส่เงื่อนไขแต่ลูกค้าไม่เลือก
+
+#### AI Declare
+
+- ใช้ ChatGPT เป็นเครื่องมือช่วยในการปรับปรุงโค้ดและให้คำแนะนำด้านการพัฒนา
 
 ---
