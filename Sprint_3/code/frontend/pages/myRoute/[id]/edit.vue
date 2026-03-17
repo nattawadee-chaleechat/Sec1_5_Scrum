@@ -212,7 +212,7 @@
                         <input
                             v-model.number="charge.unitPrice"
                             type="number"
-                            min="0"
+                            min="1"
                             placeholder="ราคา/หน่วย"
                             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500"
                         />
@@ -659,6 +659,13 @@ const handleSubmit = async () => {
     // ไม่บังคับกรอกครบ: ใช้ค่าจาก original ถ้ายังไม่ได้แก้
     if (!original.value) {
         toast.error('เกิดข้อผิดพลาด', 'ยังโหลดข้อมูลเดิมไม่เสร็จ ลองอีกครั้ง')
+        return
+    }
+
+    const hasInvalidUnitPrice = Array.isArray(extraCharges.value)
+        && extraCharges.value.some((item) => Number(item?.unitPrice) <= 0)
+    if (hasInvalidUnitPrice) {
+        toast.error('ข้อมูลไม่ถูกต้อง', 'ราคา/หน่วยของเงื่อนไขเพิ่มเติมต้องมากกว่า 0')
         return
     }
 

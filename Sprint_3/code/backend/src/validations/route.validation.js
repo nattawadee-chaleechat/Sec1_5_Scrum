@@ -39,7 +39,7 @@ const createRouteSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        unitPrice: z.number(),
+        unitPrice: z.number().positive({ message: "ราคาต่อหน่วยต้องมากกว่า 0" }),
       }),
     )
     .optional(),

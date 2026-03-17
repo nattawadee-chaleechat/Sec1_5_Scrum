@@ -26,7 +26,7 @@ const validatePasswordAgainstUserInfo = (password, userInfo) => {
 const login = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
   // Contributer: Nattawadee Chaleechat [Description] เช็คการใส่รหัสผิดเกิน 3 ครั้ง
-  const MAX_ATTEMPTS = 4;
+  const MAX_ATTEMPTS = 3;
 
   let user;
   if (email) {
